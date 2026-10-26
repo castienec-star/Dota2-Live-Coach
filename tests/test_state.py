@@ -53,3 +53,19 @@ def test_match_state_detects_new_match(payload):
     payload["map"]["matchid"] = "8012345679"
     state.update(payload)
     assert state.new_match
+
+
+def test_back_to_back_bot_matches_are_separate(payload):
+    payload["map"]["matchid"] = "0"
+    state = MatchState()
+    state.update(payload)
+    assert state.new_match
+    state.update(payload)
+    assert not state.new_match
+
+    payload["map"]["game_state"] = "DOTA_GAMERULES_STATE_HERO_SELECTION"
+    state.update(payload)
+    assert state.new_match
+    payload["map"]["game_state"] = "DOTA_GAMERULES_STATE_STRATEGY_TIME"
+    state.update(payload)
+    assert not state.new_match

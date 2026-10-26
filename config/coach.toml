@@ -15,3 +15,47 @@ directory = ""
 [logging]
 # Seconds between one-line state summaries in the console.
 summary_interval = 10
+
+[voice]
+# "sapi" speaks with Windows' built-in voices; "print" only writes lines to the console.
+backend = "sapi"
+# Part of an installed voice's name, e.g. "Zira" or "David". Empty = Windows default.
+name = ""
+# Speaking speed, from -10 (slow) to 10 (fast). 0 is Windows' normal speed.
+rate = 1
+# Lines that wait longer than this many seconds to be spoken are skipped.
+max_delay = 4
+
+# Clock reminders. Times are game-clock seconds (6:00 = 360); "lead" is how many
+# seconds early to speak. Defaults follow patch 7.41; timings change between
+# patches, so adjust them here.
+# Set enabled = false to turn one off.
+[reminders.power_rune]
+first = 360
+every = 120
+lead = 15
+
+[reminders.bounty_rune]
+# Bounty runes are the gold runes: they give gold to your whole team.
+first = 240
+every = 240
+lead = 15
+
+[reminders.wisdom_shrine]
+first = 420
+every = 420
+lead = 20
+
+[reminders.water_rune]
+first = 120
+every = 120
+until = 240
+lead = 10
+
+[reminders.stack]
+# Pull the camp at about :53 each minute; stops after 11:53. Only said when your
+# hero stands within "radius" map units of a neutral camp (patch 7.41 camp spots).
+first = 113
+every = 60
+until = 713
+radius = 1000

@@ -56,11 +56,36 @@ Start a match (a bot match works). The console logs your hero's state every
 10 seconds, and each match is recorded to
 `%APPDATA%\Dota2LiveCoach\recordings\` as a `.jsonl` file.
 
+## Voice reminders
+
+Once the horn sounds, the coach speaks clock reminders through Windows'
+built-in voice. Defaults follow patch 7.41:
+
+| Reminder | Default timing |
+| --- | --- |
+| Power rune | 15 s before 6:00, then every 2 minutes |
+| Gold (bounty) runes | 15 s before 4:00, then every 4 minutes |
+| Wisdom shrines | 20 s before 7:00, then every 7 minutes |
+| Water rune | 10 s before 2:00 and 4:00 |
+| Stack the camp | at :53 each minute until 11:53, only when your hero is near a neutral camp |
+
+"Near a camp" uses your own hero's position and the fixed 7.41 camp spots
+(see `THIRD_PARTY_NOTICES.md`). Game State Integration does not say whether a
+camp is alive, already stacked or blocked, so the coach cannot check that.
+
+Test the voice with `py -m coach say`. Pick another installed voice, change
+the speed, or retime and turn off reminders in the `[voice]` and
+`[reminders.*]` sections of `coach.toml`. Rune timings change between
+patches, so check them after a big update.
+
 Replay a recording without Dota:
 
 ```
 py -m coach replay "%APPDATA%\Dota2LiveCoach\recordings\<file>.jsonl" --speed 1
 ```
+
+`--speed 1` speaks the reminders in real time; without it the replay runs
+instantly and prints them instead.
 
 Settings live in `config/coach.toml`; copy it to
 `%APPDATA%\Dota2LiveCoach\coach.toml` to override them.
