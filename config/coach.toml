@@ -1,0 +1,17 @@
+# Dota 2 Live Coach settings.
+# Copy this file to %APPDATA%\Dota2LiveCoach\coach.toml to override the defaults.
+
+[server]
+# The listener only ever binds to this machine. Non-loopback hosts are refused.
+host = "127.0.0.1"
+port = 4242
+
+[recording]
+# Save every GSI update of a match to a .jsonl file, for tests and later review.
+enabled = true
+# Leave empty to use %APPDATA%\Dota2LiveCoach\recordings
+directory = ""
+
+[logging]
+# Seconds between one-line state summaries in the console.
+summary_interval = 10

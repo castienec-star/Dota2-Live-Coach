@@ -1,0 +1,40 @@
+{
+  "provider": {"name": "Dota 2", "appid": 570, "version": 47, "timestamp": 1761497000},
+  "map": {
+    "name": "start", "matchid": "8012345678", "game_time": 754, "clock_time": 664,
+    "daytime": true, "nightstalker_night": false, "radiant_score": 9, "dire_score": 7,
+    "game_state": "DOTA_GAMERULES_STATE_GAME_IN_PROGRESS", "paused": false,
+    "win_team": "none", "customgamename": "", "ward_purchase_cooldown": 0
+  },
+  "player": {
+    "steamid": "76561198000000000", "accountid": "39734272", "name": "Castien",
+    "activity": "playing", "kills": 3, "deaths": 1, "assists": 5, "last_hits": 87,
+    "denies": 9, "kill_streak": 2, "commands_issued": 2412, "team_name": "radiant",
+    "gold": 1640, "gold_reliable": 410, "gold_unreliable": 1230, "gpm": 512, "xpm": 538
+  },
+  "hero": {
+    "xpos": -1820, "ypos": -980, "id": 1, "name": "npc_dota_hero_antimage",
+    "level": 11, "xp": 7200, "alive": true, "respawn_seconds": 0,
+    "buyback_cost": 865, "buyback_cooldown": 0, "health": 412, "max_health": 1380,
+    "health_percent": 29, "mana": 210, "max_mana": 520, "mana_percent": 40,
+    "silenced": false, "stunned": false, "disarmed": false, "magicimmune": false,
+    "hexed": false, "muted": false, "break": false, "smoked": false, "has_debuff": false
+  },
+  "abilities": {
+    "ability0": {"name": "antimage_mana_break", "level": 4, "can_cast": false, "passive": true, "ability_active": true, "cooldown": 0, "ultimate": false},
+    "ability1": {"name": "antimage_blink", "level": 4, "can_cast": true, "passive": false, "ability_active": true, "cooldown": 0, "ultimate": false},
+    "ability2": {"name": "antimage_counterspell", "level": 1, "can_cast": true, "passive": false, "ability_active": true, "cooldown": 0, "ultimate": false},
+    "ability3": {"name": "antimage_mana_void", "level": 1, "can_cast": true, "passive": false, "ability_active": true, "cooldown": 0, "ultimate": true}
+  },
+  "items": {
+    "slot0": {"name": "item_power_treads", "purchaser": 0, "can_cast": true, "cooldown": 0, "passive": false},
+    "slot1": {"name": "item_bfury", "purchaser": 0, "can_cast": true, "cooldown": 0, "passive": false},
+    "slot2": {"name": "item_magic_wand", "purchaser": 0, "can_cast": true, "cooldown": 0, "passive": false, "charges": 14},
+    "slot3": {"name": "empty"},
+    "slot4": {"name": "empty"},
+    "slot5": {"name": "empty"},
+    "teleport0": {"name": "item_tpscroll", "purchaser": 0, "can_cast": true, "cooldown": 0, "passive": false, "charges": 1},
+    "neutral0": {"name": "empty"}
+  },
+  "auth": {"token": "test-token"}
+}
