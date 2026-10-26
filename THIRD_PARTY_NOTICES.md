@@ -1,5 +1,12 @@
 # Third-party notices
 
+## Item names and prices
+
+`coach/data/items.json` is derived from `build/items.json` in
+[dotaconstants](https://github.com/odota/dotaconstants) (patch 7.41).
+MIT License, Copyright (c) 2017 The OpenDota Project. The MIT license text
+below applies to it as well.
+
 ## Neutral camp positions
 
 `coach/data/camps_7_41.json` is derived from `src/gem/data/camp_zones.json` in
