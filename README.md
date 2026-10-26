@@ -170,6 +170,16 @@ It prints the ten heroes it reads and saves the boxes it looked in to
 `%APPDATA%\Dota2LiveCoach\draft-test.png`. Adjust `top`, `height`, `width`,
 `step` and `gap` in `[pregame.capture]` until the boxes sit on the portraits.
 
+If a hero comes out wrong or as `?` (new hero art or a persona can look
+different from Valve's picture), teach it from the same screenshot. Slots are
+`r1`-`r5` for Radiant and `d1`-`d5` for Dire, left to right:
+
+```
+py -m coach draft-test "C:\path\to\screenshot.png" --teach d2="vengeful spirit"
+```
+
+The coach keeps that portrait and recognises the hero from then on.
+
 Test the voice with `py -m coach say`. Pick another installed voice, change
 the speed, or retime and turn off reminders in the `[voice]` and
 `[reminders.*]` sections of `coach.toml`. Rune timings change between

@@ -307,3 +307,26 @@ def test_draft_test_command(tmp_path, monkeypatch, capsys):
     out = capsys.readouterr().out
     assert "Radiant 1: Axe" in out
     assert (tmp_path / "Dota2LiveCoach" / "draft-test.png").is_file()
+
+
+def test_teach_a_portrait(tmp_path, monkeypatch, capsys):
+    from coach import __main__ as cli
+    from coach import capture
+
+    refs = {hero_id: noise(hero_id, (256, 144)) for hero_id in (1, 2)}
+    monkeypatch.setattr(capture, "load_references", lambda heroes, cache_dir: refs)
+    layout = Layout()
+    shot = Image.new("RGB", (1920, 1080))
+    box = layout.slots(1920, 1080)[6]
+    # New art that looks nothing like the official picture.
+    shot.paste(noise(99, (box[2] - box[0], box[3] - box[1])), box[:2])
+    path = tmp_path / "shot.png"
+    shot.save(path)
+    monkeypatch.setenv("APPDATA", str(tmp_path))
+    assert cli.main(["draft-test", str(path)]) == 0
+    assert "Dire 2: ?" in capsys.readouterr().out
+    assert cli.main(["draft-test", str(path), "--teach", "d2=vengeful spirit"]) == 0
+    out = capsys.readouterr().out
+    assert "Learned Vengeful Spirit from slot d2" in out
+    assert "Dire 2: Vengeful Spirit" in out
+    assert cli.main(["draft-test", str(path), "--teach", "x9=nobody"]) == 1
