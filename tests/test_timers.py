@@ -1,5 +1,5 @@
 from coach.rules import Engine
-from coach.rules.timers import TimedReminder, build
+from coach.rules.timers import StackReminder, TimedReminder, build, load_camps
 from coach.state import MatchState
 
 
@@ -47,12 +47,57 @@ def test_gold_runes_every_four_minutes(payload):
     assert bounty.event_times(0, 1000) == [240, 480, 720, 960]
 
 
+def stand_at_camp(payload, kind="large"):
+    camp = next(c for c in load_camps() if c.type == kind)
+    payload["hero"]["xpos"], payload["hero"]["ypos"] = camp.x + 300, camp.y - 200
+
+
 def test_stack_reminder_stops_after_until(payload):
     said = []
     engine = Engine(build({}), said.append)
+    stand_at_camp(payload)
     play(MatchState(), payload, [112, 113], engine)
     play(MatchState(), payload, [772, 773], engine)
-    assert said == ["Stack the camp."]
+    assert said == ["Stack the large camp."]
+
+
+def test_no_stack_call_away_from_camps(payload):
+    said = []
+    engine = Engine(build({}), said.append)
+    payload["hero"]["xpos"], payload["hero"]["ypos"] = 0, 0  # middle of the river
+    play(MatchState(), payload, [112, 113], engine)
+    assert said == []
+
+
+def test_no_stack_call_while_dead(payload):
+    said = []
+    engine = Engine(build({}), said.append)
+    stand_at_camp(payload)
+    payload["hero"]["alive"] = False
+    play(MatchState(), payload, [112, 113], engine)
+    assert said == []
+
+
+def test_stack_names_nearest_camp_type(payload):
+    said = []
+    engine = Engine(build({}), said.append)
+    stand_at_camp(payload, "ancient")
+    play(MatchState(), payload, [112, 113], engine)
+    assert said == ["Stack the ancient camp."]
+
+
+def test_camp_data_covers_both_jungles():
+    camps = load_camps()
+    assert len(camps) >= 20
+    # Map coordinates are centred on 0: camps on both sides of the river.
+    assert any(c.x < 0 and c.y < 0 for c in camps)
+    assert any(c.x > 0 and c.y > 0 for c in camps)
+
+
+def test_stack_radius_from_config():
+    stack = next(r for r in build({"stack": {"radius": 500}}) if r.name == "stack")
+    assert isinstance(stack, StackReminder)
+    assert stack.radius == 500
 
 
 def test_clock_jump_is_ignored(payload):

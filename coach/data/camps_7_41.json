@@ -1,0 +1,203 @@
+{
+ "patch": "7.41",
+ "source": "https://github.com/whanyu1212/gem-dota (src/gem/data/camp_zones.json, MIT License)",
+ "note": "Camp centres in GSI world coordinates: replay coordinates minus 16384.",
+ "camps": [
+  {
+   "id": 1,
+   "type": "large",
+   "x": -8313,
+   "y": -553,
+   "team": "radiant"
+  },
+  {
+   "id": 2,
+   "type": "small",
+   "x": -8023,
+   "y": -1838,
+   "team": "radiant"
+  },
+  {
+   "id": 3,
+   "type": "ancient",
+   "x": -5015,
+   "y": -96,
+   "team": "radiant"
+  },
+  {
+   "id": 4,
+   "type": "large",
+   "x": -4824,
+   "y": 3915,
+   "team": "dire"
+  },
+  {
+   "id": 5,
+   "type": "medium",
+   "x": -4208,
+   "y": 8336,
+   "team": "dire"
+  },
+  {
+   "id": 6,
+   "type": "medium",
+   "x": -4013,
+   "y": 992,
+   "team": "radiant"
+  },
+  {
+   "id": 7,
+   "type": "small",
+   "x": -3911,
+   "y": 4829,
+   "team": "dire"
+  },
+  {
+   "id": 8,
+   "type": "flooded_small",
+   "x": -2880,
+   "y": 7376,
+   "team": "dire"
+  },
+  {
+   "id": 9,
+   "type": "medium",
+   "x": -2596,
+   "y": 3850,
+   "team": "dire"
+  },
+  {
+   "id": 10,
+   "type": "medium",
+   "x": -2415,
+   "y": -8402,
+   "team": "radiant"
+  },
+  {
+   "id": 11,
+   "type": "medium",
+   "x": -1983,
+   "y": -4815,
+   "team": "radiant"
+  },
+  {
+   "id": 12,
+   "type": "large",
+   "x": -1454,
+   "y": -3356,
+   "team": "radiant"
+  },
+  {
+   "id": 13,
+   "type": "flooded_medium",
+   "x": -852,
+   "y": 4940,
+   "team": "dire"
+  },
+  {
+   "id": 14,
+   "type": "flooded_medium",
+   "x": 336,
+   "y": 7696,
+   "team": "dire"
+  },
+  {
+   "id": 15,
+   "type": "flooded_medium",
+   "x": -720,
+   "y": -7696,
+   "team": "radiant"
+  },
+  {
+   "id": 16,
+   "type": "flooded_medium",
+   "x": 186,
+   "y": -5197,
+   "team": "radiant"
+  },
+  {
+   "id": 17,
+   "type": "large",
+   "x": 1064,
+   "y": 2580,
+   "team": "dire"
+  },
+  {
+   "id": 18,
+   "type": "medium",
+   "x": 1224,
+   "y": 4176,
+   "team": "dire"
+  },
+  {
+   "id": 19,
+   "type": "medium",
+   "x": 1922,
+   "y": -3975,
+   "team": "radiant"
+  },
+  {
+   "id": 20,
+   "type": "medium",
+   "x": 2016,
+   "y": 7896,
+   "team": "dire"
+  },
+  {
+   "id": 21,
+   "type": "flooded_small",
+   "x": 2768,
+   "y": -8336,
+   "team": "radiant"
+  },
+  {
+   "id": 22,
+   "type": "medium",
+   "x": 3392,
+   "y": -1408,
+   "team": "dire"
+  },
+  {
+   "id": 23,
+   "type": "small",
+   "x": 3978,
+   "y": -5027,
+   "team": "radiant"
+  },
+  {
+   "id": 24,
+   "type": "ancient",
+   "x": 4352,
+   "y": 48,
+   "team": "dire"
+  },
+  {
+   "id": 25,
+   "type": "large",
+   "x": 4649,
+   "y": -3699,
+   "team": "radiant"
+  },
+  {
+   "id": 26,
+   "type": "medium",
+   "x": 4416,
+   "y": -8432,
+   "team": "radiant"
+  },
+  {
+   "id": 27,
+   "type": "large",
+   "x": 7928,
+   "y": -120,
+   "team": "dire"
+  },
+  {
+   "id": 28,
+   "type": "small",
+   "x": 8430,
+   "y": 1263,
+   "team": "dire"
+  }
+ ]
+}

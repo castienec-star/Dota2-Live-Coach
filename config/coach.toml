@@ -53,7 +53,9 @@ until = 240
 lead = 10
 
 [reminders.stack]
-# Pull the camp at about :53 each minute; stops after 11:53.
+# Pull the camp at about :53 each minute; stops after 11:53. Only said when your
+# hero stands within "radius" map units of a neutral camp (patch 7.41 camp spots).
 first = 113
 every = 60
 until = 713
+radius = 1000

@@ -19,6 +19,9 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools]
 packages = ["coach", "coach.rules"]
 
+[tool.setuptools.package-data]
+coach = ["data/*.json"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"

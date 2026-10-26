@@ -54,6 +54,8 @@ class Snapshot:
     denies: int = 0
 
     hero_name: str | None = None
+    x: float | None = None
+    y: float | None = None
     level: int = 0
     alive: bool = True
     respawn_seconds: int = 0
@@ -93,6 +95,8 @@ class Snapshot:
             last_hits=int(player.get("last_hits", 0)),
             denies=int(player.get("denies", 0)),
             hero_name=hero.get("name"),
+            x=hero.get("xpos"),
+            y=hero.get("ypos"),
             level=int(hero.get("level", 0)),
             alive=bool(hero.get("alive", True)),
             respawn_seconds=int(hero.get("respawn_seconds", 0)),
@@ -114,6 +118,7 @@ class Snapshot:
             f"[{clock}] {hero} lvl {self.level} {status} "
             f"hp {self.health_percent:.0f}% gold {self.gold} "
             f"k/d/a {self.kills}/{self.deaths}/{self.assists} lh {self.last_hits}"
+            + ("" if self.x is None else f" pos {self.x:.0f},{self.y:.0f}")
         )
 
 
