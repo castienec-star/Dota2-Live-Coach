@@ -148,8 +148,9 @@ height = 0.0316
 width = 0.0428
 step = 0.0576
 gap = 0.1018
-# How alike a portrait and a hero picture must be (0 to 1).
-min_score = 0.6
+# How alike a portrait and a hero picture must be (0 to 1). A hero below 0.75
+# also has to be clearly ahead of the next best guess.
+min_score = 0.5
 
 # Item builds, per hero (the name without npc_dota_hero_). The coach says
 # "You have gold for ..." for the first item on the list you don't own yet.

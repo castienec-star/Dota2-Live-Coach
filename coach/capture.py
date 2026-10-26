@@ -30,13 +30,17 @@ SAMPLE = (24, 14)  # portraits are compared at this size
 # The top bar shows each hero's portrait slanted, so the coach reads a box
 # inside it. These are the parts of Valve's full portrait (left, top, right,
 # bottom, as fractions) that such a box may show; the best one counts.
-REF_CROPS = (
-    (0.13, 0.0, 0.87, 1.0),
-    (0.10, 0.0, 0.90, 1.0),
-    (0.16, 0.0, 0.84, 1.0),
-    (0.13, 0.05, 0.87, 1.0),
-    (0.13, 0.0, 0.87, 0.95),
+REF_CROPS = tuple(
+    (inset + shift, top, 1 - inset + shift, bottom)
+    for inset in (0.13, 0.09, 0.17)
+    for shift in (0.0, -0.03, 0.03)
+    for top in (0.0, 0.05)
+    for bottom in (1.0, 0.95)
 )
+# A portrait counts as read when its best hero scores at least min_score and
+# beats every other hero by MARGIN, or scores SURE whatever the others do.
+MARGIN = 0.05
+SURE = 0.75
 
 
 @dataclass(frozen=True)
@@ -87,7 +91,11 @@ def _features(
 
 
 class PortraitMatcher:
-    def __init__(self, references: dict[int, Image.Image]) -> None:
+    def __init__(
+        self,
+        references: dict[int, Image.Image],
+        taught: list[tuple[int, Image.Image]] = (),
+    ) -> None:
         ids, rows = [], []
         for hero_id, image in references.items():
             for part in REF_CROPS:
@@ -95,17 +103,35 @@ class PortraitMatcher:
                 if features is not None:
                     ids.append(hero_id)
                     rows.append(features)
+        # Portraits you taught are already top bar boxes, so they are used whole.
+        for hero_id, image in taught:
+            features = _features(image)
+            if features is not None:
+                ids.append(hero_id)
+                rows.append(features)
         self.ids = ids
         self.matrix = np.stack(rows) if rows else np.zeros((0, SAMPLE[0] * SAMPLE[1] * 3))
 
-    def match(self, crop: Image.Image) -> tuple[int | None, float]:
-        """The best-matching hero id and its similarity (1.0 is identical)."""
+    def candidates(self, crop: Image.Image, top: int = 3) -> list[tuple[int, float]]:
+        """The best-matching heroes and their similarity (1.0 is identical), best first."""
         features = _features(crop)
         if features is None or not self.ids:
+            return []
+        best: dict[int, float] = {}
+        for hero_id, score in zip(self.ids, (self.matrix @ features).tolist()):
+            if score > best.get(hero_id, -1.0):
+                best[hero_id] = score
+        return sorted(best.items(), key=lambda kv: kv[1], reverse=True)[:top]
+
+    def match(self, crop: Image.Image, min_score: float = 0.5) -> tuple[int | None, float]:
+        """The hero in a portrait, or None when no hero is a clear match; and its score."""
+        found = self.candidates(crop, top=2)
+        if not found:
             return None, 0.0
-        scores = self.matrix @ features
-        best = int(np.argmax(scores))
-        return self.ids[best], float(scores[best])
+        hero_id, score = found[0]
+        runner_up = found[1][1] if len(found) > 1 else -1.0
+        clear = score >= SURE or (score >= min_score and score - runner_up >= MARGIN)
+        return (hero_id if clear else None), score
 
 
 def read_top_bar(
@@ -113,14 +139,10 @@ def read_top_bar(
     screen_size: tuple[int, int],
     layout: Layout,
     matcher: PortraitMatcher,
-    min_score: float = 0.6,
+    min_score: float = 0.5,
 ) -> list[tuple[int | None, float]]:
     """(hero id or None, score) for each of the ten slots in a top-of-screen strip."""
-    results = []
-    for box in layout.slots(*screen_size):
-        hero_id, score = matcher.match(strip.crop(box))
-        results.append((hero_id if score >= min_score else None, score))
-    return results
+    return [matcher.match(strip.crop(box), min_score) for box in layout.slots(*screen_size)]
 
 
 def load_references(
@@ -147,6 +169,35 @@ def load_references(
     if failed:
         log.warning("Could not get %d hero pictures; those heroes can't be read", failed)
     return images
+
+
+def load_taught(heroes: dict[int, HeroInfo], cache_dir: Path) -> list[tuple[int, Image.Image]]:
+    """Portraits you taught with draft-test --teach, for heroes the official
+    picture doesn't match well (new art, personas)."""
+    by_key = {h.key: h.id for h in heroes.values()}
+    taught = []
+    for path in sorted((cache_dir / "taught").glob("*.png")):
+        hero_id = by_key.get(path.stem.rsplit("-", 1)[0])
+        if hero_id is None:
+            continue
+        try:
+            with Image.open(path) as image:
+                taught.append((hero_id, image.convert("RGB")))
+        except (OSError, ValueError):
+            log.warning("Could not read taught portrait %s", path.name)
+    return taught
+
+
+def teach(hero: HeroInfo, portrait: Image.Image, cache_dir: Path) -> Path:
+    """Keep a top bar portrait as an extra picture of this hero."""
+    folder = cache_dir / "taught"
+    folder.mkdir(parents=True, exist_ok=True)
+    n = 1
+    while (folder / f"{hero.key}-{n}.png").exists():
+        n += 1
+    path = folder / f"{hero.key}-{n}.png"
+    portrait.save(path)
+    return path
 
 
 def grab_top_strip(layout: Layout) -> tuple[Image.Image, tuple[int, int]]:
@@ -181,9 +232,13 @@ def make_reader(
     Hero pictures load in the background at start-up, so the first match
     doesn't wait for them."""
     layout = Layout.from_settings(settings)
-    min_score = float(settings.get("min_score", 0.6))
+    min_score = float(settings.get("min_score", 0.5))
     pool = ThreadPoolExecutor(max_workers=1, thread_name_prefix="hero-images")
-    matcher = pool.submit(lambda: PortraitMatcher(load_references(heroes, cache_dir)))
+    matcher = pool.submit(
+        lambda: PortraitMatcher(
+            load_references(heroes, cache_dir), load_taught(heroes, cache_dir)
+        )
+    )
     pool.shutdown(wait=False)
 
     def read() -> list[int | None]:
