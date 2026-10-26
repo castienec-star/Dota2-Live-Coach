@@ -14,7 +14,7 @@ from .gsi_server import Coach, make_app
 from .install import find_dota, install
 from .recorder import MatchRecorder
 from .replay import replay
-from .rules import Engine, hero, timers
+from .rules import Engine, death_tip, hero, timers
 from .speaker import Speaker, make_backend
 
 
@@ -30,11 +30,16 @@ def make_coach(
     speaker: Speaker,
     recorder: MatchRecorder | None = None,
     summary_interval: float | None = None,
+    tips: bool = True,
 ) -> Coach:
     if summary_interval is None:
         summary_interval = cfg.summary_interval
     coach = Coach(cfg.token, recorder, summary_interval)
-    rules = timers.build(cfg.reminders) + hero.build(cfg.reminders, cfg.builds)
+    rules = (
+        timers.build(cfg.reminders)
+        + hero.build(cfg.reminders, cfg.builds)
+        + (death_tip.build(cfg.reminders, speaker.say) if tips else [])
+    )
     coach.listeners.append(Engine(rules, speaker.say))
     return coach
 
@@ -72,7 +77,8 @@ def cmd_replay(cfg: config_mod.Config, args: argparse.Namespace) -> int:
         speaker, summary_interval = make_speaker(cfg), None
     else:
         speaker, summary_interval = Speaker(), float("inf")
-    coach = make_coach(cfg, speaker, summary_interval=summary_interval)
+    # A fast replay skips Claude tips: they would cost money and arrive too late.
+    coach = make_coach(cfg, speaker, summary_interval=summary_interval, tips=args.speed > 0)
     count = replay(coach, args.recording, args.speed)
     speaker.close(timeout=30)
     print(f"Replayed {count} updates")

@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "aiohttp>=3.9",
+    "anthropic>=2.0",
     "comtypes>=1.2; sys_platform == 'win32'",
 ]
 

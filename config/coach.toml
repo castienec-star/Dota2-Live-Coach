@@ -84,6 +84,18 @@ below = 50
 # Remind when an observer ward has sat in your inventory this many seconds.
 hold_seconds = 60
 
+[reminders.death_tip]
+# While you wait to respawn, Claude gives one short tip based on your own hero's
+# stats. Needs a Claude API key (see README). Set enabled = false to turn it off.
+enabled = true
+model = "claude-opus-5-5"
+# "low" answers fastest; tips arriving after you respawn are dropped.
+effort = "low"
+# Seconds to wait for a tip before giving up.
+timeout = 8
+# Only ask when the death timer is at least this long.
+min_respawn = 10
+
 [reminders.item_ready]
 enabled = true
 
