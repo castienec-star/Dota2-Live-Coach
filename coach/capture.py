@@ -27,7 +27,16 @@ log = logging.getLogger(__name__)
 
 CDN_URL = "https://cdn.cloudflare.steamstatic.com"
 SAMPLE = (24, 14)  # portraits are compared at this size
-TRIM = 0.12  # share of each edge left out, where health bars and borders sit
+# The top bar shows each hero's portrait slanted, so the coach reads a box
+# inside it. These are the parts of Valve's full portrait (left, top, right,
+# bottom, as fractions) that such a box may show; the best one counts.
+REF_CROPS = (
+    (0.13, 0.0, 0.87, 1.0),
+    (0.10, 0.0, 0.90, 1.0),
+    (0.16, 0.0, 0.84, 1.0),
+    (0.13, 0.05, 0.87, 1.0),
+    (0.13, 0.0, 0.87, 0.95),
+)
 
 
 @dataclass(frozen=True)
@@ -35,11 +44,12 @@ class Layout:
     """Where the top bar portraits sit. All sizes are fractions of screen height,
     because Dota scales its interface with height and centers the top bar."""
 
-    top: float = 0.0
-    height: float = 0.034
-    width: float = 0.058
-    step: float = 0.061  # from one portrait's left edge to the next
-    gap: float = 0.115  # from the screen's center to the nearest portrait
+    # Measured on a 1920-wide screenshot at patch 7.41.
+    top: float = 0.0046
+    height: float = 0.0316
+    width: float = 0.0428
+    step: float = 0.0576  # from one portrait's left edge to the next
+    gap: float = 0.1018  # from the screen's center to the nearest box
 
     @classmethod
     def from_settings(cls, settings: dict) -> Layout:
@@ -61,10 +71,12 @@ class Layout:
         return [(round(x), round(top), round(x + width), round(bottom)) for x in lefts]
 
 
-def _features(image: Image.Image) -> np.ndarray | None:
+def _features(
+    image: Image.Image, part: tuple[float, float, float, float] = (0, 0, 1, 1)
+) -> np.ndarray | None:
     w, h = image.size
-    dx, dy = round(w * TRIM), round(h * TRIM)
-    small = image.convert("RGB").crop((dx, dy, w - dx, h - dy)).resize(SAMPLE, Image.BILINEAR)
+    box = (round(part[0] * w), round(part[1] * h), round(part[2] * w), round(part[3] * h))
+    small = image.convert("RGB").crop(box).resize(SAMPLE, Image.BILINEAR)
     values = np.asarray(small, dtype=np.float32).ravel()
     values -= values.mean()
     norm = float(np.linalg.norm(values))
@@ -78,10 +90,11 @@ class PortraitMatcher:
     def __init__(self, references: dict[int, Image.Image]) -> None:
         ids, rows = [], []
         for hero_id, image in references.items():
-            features = _features(image)
-            if features is not None:
-                ids.append(hero_id)
-                rows.append(features)
+            for part in REF_CROPS:
+                features = _features(image, part)
+                if features is not None:
+                    ids.append(hero_id)
+                    rows.append(features)
         self.ids = ids
         self.matrix = np.stack(rows) if rows else np.zeros((0, SAMPLE[0] * SAMPLE[1] * 3))
 

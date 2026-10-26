@@ -6,7 +6,7 @@ import pytest
 from PIL import Image
 
 from coach import config as config_mod
-from coach.capture import Layout, PortraitMatcher, read_top_bar
+from coach.capture import REF_CROPS, Layout, PortraitMatcher, read_top_bar
 from coach.draft import Window
 from coach.heroes import HeroIndex
 from coach.pregame import Pregame, build, builtin_briefing
@@ -86,6 +86,21 @@ def noise(seed, size=(64, 36)):
     return Image.fromarray(rng.integers(0, 255, (size[1], size[0], 3), dtype=np.uint8))
 
 
+def on_screen(ref, box):
+    """How a portrait looks in a top bar box: the middle of it, resized."""
+    w, h = ref.size
+    part = REF_CROPS[0]
+    inner = ref.crop((round(part[0] * w), round(part[1] * h), round(part[2] * w), round(part[3] * h)))
+    return inner.resize((box[2] - box[0], box[3] - box[1]))
+
+
+def test_layout_matches_the_measured_screenshot():
+    # Box positions measured on Castien's 1917x1076 screenshot.
+    slots = Layout().slots(1917, 1076)
+    assert slots[0] == (555, 5, 601, 39)
+    assert slots[5][0] == 1068
+
+
 def test_layout_slots_are_mirrored():
     slots = Layout().slots(1920, 1080)
     assert len(slots) == 10
@@ -104,8 +119,7 @@ def test_read_top_bar_finds_heroes():
     picks = [1, 2, 3, 4, 5, 6, 7, 8, 9, None]
     for hero_id, box in zip(picks, layout.slots(*size)):
         if hero_id is not None:
-            portrait = refs[hero_id].resize((box[2] - box[0], box[3] - box[1]))
-            strip.paste(portrait, box[:2])
+            strip.paste(on_screen(refs[hero_id], box), box[:2])
     results = read_top_bar(strip, size, layout, matcher)
     assert [hero_id for hero_id, _ in results] == picks
 
@@ -285,7 +299,7 @@ def test_draft_test_command(tmp_path, monkeypatch, capsys):
     layout = Layout()
     shot = Image.new("RGB", (1920, 1080))
     box = layout.slots(1920, 1080)[0]
-    shot.paste(refs[2].resize((box[2] - box[0], box[3] - box[1])), box[:2])
+    shot.paste(on_screen(refs[2], box), box[:2])
     path = tmp_path / "shot.png"
     shot.save(path)
     monkeypatch.setenv("APPDATA", str(tmp_path))

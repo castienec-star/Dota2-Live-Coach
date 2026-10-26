@@ -143,11 +143,11 @@ enabled = false
 delay = 2
 # Where the portraits are, as fractions of screen height. Check them with
 #   py -m coach draft-test <screenshot.png>
-top = 0.0
-height = 0.034
-width = 0.058
-step = 0.061
-gap = 0.115
+top = 0.0046
+height = 0.0316
+width = 0.0428
+step = 0.0576
+gap = 0.1018
 # How alike a portrait and a hero picture must be (0 to 1).
 min_score = 0.6
 
