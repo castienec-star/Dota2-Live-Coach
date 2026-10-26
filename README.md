@@ -88,22 +88,41 @@ Item builds are per hero in the `[builds]` section of `coach.toml`, for
 example `luna = ["Power Treads", "Manta Style", "Black King Bar"]`. Prices come
 from a 7.41 snapshot of OpenDota's item data.
 
-### Death-timer tips (Claude)
+### Death-timer tips
 
-When you die with at least 10 seconds to wait, the coach asks Claude for one
-short tip for your next life and speaks it, if it arrives before you respawn.
-The prompt holds only your own hero's stats and items, nothing about enemies.
+When you die with at least 10 seconds to wait, the coach speaks one short tip
+for your next life, if it is ready before you respawn. The tip is based only on
+your own hero's stats and items, nothing about enemies.
 
-This needs a Claude API key from [console.anthropic.com](https://console.anthropic.com).
-Set it once in Command Prompt, then open a new window:
+Choose where tips come from with `provider` in `[reminders.death_tip]`:
+
+| Provider | Cost | Needs |
+| --- | --- | --- |
+| `ollama` (default) | Free | [Ollama](https://ollama.com) running on your PC with a model pulled |
+| `claude` | About a cent per tip | A Claude API key in `ANTHROPIC_API_KEY` |
+| `builtin` | Free | Nothing; written tips based on your stats |
+
+If the model is not running or takes longer than `timeout` seconds, the coach
+falls back to a built-in tip, so you always get one.
+
+**Free local tips with Ollama (Windows):**
+
+```
+winget install --id Ollama.Ollama -e
+ollama pull llama3.1:8b
+```
+
+Ollama then runs in the background (tray icon) and starts with Windows. The
+8B model needs about 5 GB of GPU memory and only works for a moment at each
+death. Check it with `ollama run llama3.1:8b "say hi"`. To use another model,
+pull it and set `ollama_model`.
+
+**Claude instead:** set `provider = "claude"` and your key, then open a new
+Command Prompt:
 
 ```
 setx ANTHROPIC_API_KEY "sk-ant-..."
 ```
-
-Without a key the coach runs as before and logs that tips are off. Each tip is
-one short request (about a cent with the default model). Change the model,
-speed and timeout, or turn tips off, in `[reminders.death_tip]`.
 
 Test the voice with `py -m coach say`. Pick another installed voice, change
 the speed, or retime and turn off reminders in the `[voice]` and
