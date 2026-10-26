@@ -15,24 +15,33 @@ The coach only tells you things you could already see or work out yourself.
 
 ## Setup (Windows)
 
-Requires Python 3.12 or newer and [Git for Windows](https://git-scm.com/download/win).
-Run these in Command Prompt. The `cd` matters: `pip install -e .` must run
+Requires Python 3.12 or newer from [python.org](https://www.python.org/downloads/windows/),
+which also installs the `py` launcher. Use `py` rather than `python`: on many
+PCs `python` opens the Microsoft Store instead.
+
+Install Git once (then open a new Command Prompt so it is found):
+
+```
+winget install --id Git.Git -e
+```
+
+Then, in Command Prompt. The `cd` matters: `py -m pip install -e .` must run
 inside the downloaded folder.
 
 ```
 git clone https://github.com/castienec-star/Dota2-Live-Coach.git
 cd Dota2-Live-Coach
-pip install -e .
-python -m coach install
+py -m pip install -e .
+py -m coach install
 ```
 
 No Git? Click **Code > Download ZIP** on GitHub, unzip it, then `cd` into the
-unzipped folder before running `pip install -e .`.
+unzipped folder before running `py -m pip install -e .`.
 
 `install` finds Dota 2 through Steam and writes
 `gamestate_integration_coach.cfg` into
 `dota 2 beta\game\dota\cfg\gamestate_integration\`. If it cannot find Dota,
-pass the folder: `python -m coach install --dota-path "D:\SteamLibrary\steamapps\common\dota 2 beta"`.
+pass the folder: `py -m coach install --dota-path "D:\SteamLibrary\steamapps\common\dota 2 beta"`.
 
 Then in Steam, right-click Dota 2 > Properties > Launch Options and add
 `-gamestateintegration`.
@@ -40,7 +49,7 @@ Then in Steam, right-click Dota 2 > Properties > Launch Options and add
 ## Run
 
 ```
-python -m coach
+py -m coach
 ```
 
 Start a match (a bot match works). The console logs your hero's state every
@@ -50,7 +59,7 @@ Start a match (a bot match works). The console logs your hero's state every
 Replay a recording without Dota:
 
 ```
-python -m coach replay "%APPDATA%\Dota2LiveCoach\recordings\<file>.jsonl" --speed 1
+py -m coach replay "%APPDATA%\Dota2LiveCoach\recordings\<file>.jsonl" --speed 1
 ```
 
 Settings live in `config/coach.toml`; copy it to
@@ -59,6 +68,6 @@ Settings live in `config/coach.toml`; copy it to
 ## Development
 
 ```
-pip install -e ".[dev]"
-pytest
+py -m pip install -e ".[dev]"
+py -m pytest
 ```
