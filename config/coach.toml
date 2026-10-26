@@ -106,6 +106,51 @@ min_respawn = 10
 [reminders.item_ready]
 enabled = true
 
+[reminders.power_window]
+# Says when the stretches the pre-game briefing found begin: when your lineup
+# is strongest and when the enemy's is. "lead" = seconds early.
+enabled = true
+lead = 10
+
+# The spoken briefing in the countdown before the horn: your team's strengths
+# and weaknesses, counters, when to fight, and tips from your own past games.
+[pregame]
+enabled = true
+# "ollama" (free, local model) or "builtin" (written from the facts, no AI).
+provider = "ollama"
+ollama_model = "llama3.1:8b"
+ollama_url = "http://127.0.0.1:11434"
+# Seconds to wait for the model before using the built-in briefing.
+timeout = 20
+# Longest briefing, in words.
+words = 70
+# Use public hero statistics from OpenDota (counters, win rate by game length).
+opendota = true
+# Learn from your own recordings (deaths, last hits, item timings).
+learn = true
+# Also read your own public match history on OpenDota (needs "Expose Public
+# Match Data" on in Dota's settings). Other players are never looked up.
+my_history = true
+
+[pregame.capture]
+# Read the draft from the top bar of the screen. Off by default: when on, the
+# coach captures one thin strip at the top of your main monitor just before
+# the horn (once more if heroes are missing), reads the ten hero portraits,
+# and throws the picture away. Dota must run in borderless window mode.
+# You can always type picks instead:  vs am cm lion pudge sf
+enabled = false
+# Seconds after the countdown starts before the capture.
+delay = 2
+# Where the portraits are, as fractions of screen height. Check them with
+#   py -m coach draft-test <screenshot.png>
+top = 0.0
+height = 0.034
+width = 0.058
+step = 0.061
+gap = 0.115
+# How alike a portrait and a hero picture must be (0 to 1).
+min_score = 0.6
+
 # Item builds, per hero (the name without npc_dota_hero_). The coach says
 # "You have gold for ..." for the first item on the list you don't own yet.
 # Use names like "Black King Bar" or GSI keys like "black_king_bar".

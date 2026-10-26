@@ -33,6 +33,8 @@ class Config:
     voice_max_delay: float = 4.0
     reminders: dict = field(default_factory=dict)
     builds: dict = field(default_factory=dict)
+    pregame: dict = field(default_factory=dict)
+    app_dir: Path = Path()
 
     @property
     def url(self) -> str:
@@ -97,4 +99,6 @@ def load(user_file: Path | None = None, app_dir: Path | None = None) -> Config:
         voice_max_delay=float(voice.get("max_delay", 4)),
         reminders=raw.get("reminders", {}),
         builds=raw.get("builds", {}),
+        pregame=raw.get("pregame", {}),
+        app_dir=app_dir,
     )

@@ -1,8 +1,9 @@
 # Third-party notices
 
-## Item names and prices
+## Item and hero data
 
-`coach/data/items.json` is derived from `build/items.json` in
+`coach/data/items.json` and `coach/data/heroes.json` are derived from
+`build/items.json` and `build/heroes.json` in
 [dotaconstants](https://github.com/odota/dotaconstants) (patch 7.41).
 MIT License, Copyright (c) 2017 The OpenDota Project. The MIT license text
 below applies to it as well.

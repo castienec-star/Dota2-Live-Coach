@@ -32,6 +32,7 @@ class Coach:
         self.summary_interval = summary_interval
         self.state = MatchState()
         self.listeners: list[Listener] = []
+        self.pregame = None  # the pre-game briefing, which also takes typed picks
         self._last_summary = 0.0
 
     def handle(self, payload: dict[str, Any]) -> Snapshot:
