@@ -1,20 +1,22 @@
-"""Command line entry point: py -m coach [run|install|replay|say]."""
+"""Command line entry point: py -m coach [run|install|replay|say|draft-test]."""
 
 from __future__ import annotations
 
 import argparse
 import logging
 import sys
+import threading
 from pathlib import Path
 
 from aiohttp import web
 
 from . import config as config_mod
+from . import pregame as pregame_mod
 from .gsi_server import Coach, make_app
 from .install import find_dota, install
 from .recorder import MatchRecorder
 from .replay import replay
-from .rules import Engine, death_tip, hero, timers
+from .rules import Engine, death_tip, hero, timers, windows
 from .speaker import Speaker, make_backend
 
 
@@ -31,23 +33,50 @@ def make_coach(
     recorder: MatchRecorder | None = None,
     summary_interval: float | None = None,
     tips: bool = True,
+    capture: bool = False,
 ) -> Coach:
+    """tips turns on the features that call a model; capture lets the pre-game
+    briefing read the top bar, when coach.toml also turns that on."""
     if summary_interval is None:
         summary_interval = cfg.summary_interval
     coach = Coach(cfg.token, recorder, summary_interval)
+    power_windows = windows.build(cfg.reminders)
     rules = (
         timers.build(cfg.reminders)
         + hero.build(cfg.reminders, cfg.builds)
+        + power_windows
         + (death_tip.build(cfg.reminders, speaker.say) if tips else [])
     )
     coach.listeners.append(Engine(rules, speaker.say))
+    if tips:
+        coach.pregame = pregame_mod.build(
+            cfg.pregame,
+            speaker.say,
+            power_windows[0] if power_windows else None,
+            cfg.app_dir,
+            cfg.record_dir,
+            capture=capture,
+        )
+        if coach.pregame is not None:
+            coach.listeners.append(coach.pregame)
     return coach
+
+
+def read_typed_picks(coach: Coach) -> None:
+    """Lets you type the draft in the coach window: "vs am cm lion pudge sf"."""
+    for line in sys.stdin:
+        reply = coach.pregame.typed(line)
+        if reply:
+            print(reply, flush=True)
 
 
 def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
     recorder = MatchRecorder(cfg.record_dir) if cfg.record else None
     speaker = make_speaker(cfg)
-    coach = make_coach(cfg, speaker, recorder)
+    coach = make_coach(cfg, speaker, recorder, capture=True)
+    if coach.pregame is not None and sys.stdin is not None and sys.stdin.isatty():
+        threading.Thread(target=read_typed_picks, args=(coach,), daemon=True).start()
+        logging.info('Type the enemy picks any time, e.g.  vs am cm lion pudge sf')
     logging.info("Listening for Dota 2 on %s", cfg.url)
     try:
         web.run_app(make_app(coach), host=cfg.host, port=cfg.port, print=None, access_log=None)
@@ -77,7 +106,7 @@ def cmd_replay(cfg: config_mod.Config, args: argparse.Namespace) -> int:
         speaker, summary_interval = make_speaker(cfg), None
     else:
         speaker, summary_interval = Speaker(), float("inf")
-    # A fast replay skips Claude tips: they would cost money and arrive too late.
+    # A fast replay skips model calls (tips, briefing): they would arrive too late.
     coach = make_coach(cfg, speaker, summary_interval=summary_interval, tips=args.speed > 0)
     count = replay(coach, args.recording, args.speed)
     speaker.close(timeout=30)
@@ -89,6 +118,35 @@ def cmd_say(cfg: config_mod.Config, args: argparse.Namespace) -> int:
     speaker = make_speaker(cfg)
     speaker.say(args.text)
     speaker.close(timeout=30)
+    return 0
+
+
+def cmd_draft_test(cfg: config_mod.Config, args: argparse.Namespace) -> int:
+    """Read the heroes from a saved screenshot, to check the top bar settings."""
+    from PIL import ImageDraw
+
+    from .capture import Layout, PortraitMatcher, load_references, load_screenshot, read_top_bar
+    from .heroes import load_heroes
+
+    heroes = load_heroes()
+    settings = cfg.pregame.get("capture", {})
+    layout = Layout.from_settings(settings)
+    image, size = load_screenshot(args.screenshot)
+    print("Loading hero pictures (downloaded once)...")
+    matcher = PortraitMatcher(load_references(heroes, cfg.app_dir / "hero_images"))
+    results = read_top_bar(image, size, layout, matcher, float(settings.get("min_score", 0.6)))
+    marked = image.copy()
+    draw = ImageDraw.Draw(marked)
+    for i, ((hero_id, score), box) in enumerate(zip(results, layout.slots(*size))):
+        team = "Radiant" if i < 5 else "Dire"
+        name = heroes[hero_id].name if hero_id in heroes else "?"
+        print(f"{team} {i % 5 + 1}: {name:<20} match {score:.2f}")
+        draw.rectangle(box, outline=(255, 0, 255), width=2)
+    strip = marked.crop((0, 0, size[0], min(size[1], layout.strip_height(size[1]) * 3)))
+    out = cfg.app_dir / "draft-test.png"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    strip.save(out)
+    print(f"Saved the portrait boxes to {out}")
     return 0
 
 
@@ -104,11 +162,19 @@ def main(argv: list[str] | None = None) -> int:
     p_replay.add_argument("--speed", type=float, default=0.0, help="1.0 = real time")
     p_say = sub.add_parser("say", help="test the voice")
     p_say.add_argument("text", nargs="?", default="Power rune in 15 seconds.")
+    p_draft = sub.add_parser("draft-test", help="read the top bar heroes from a screenshot")
+    p_draft.add_argument("screenshot", type=Path)
     args = parser.parse_args(argv)
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s", datefmt="%H:%M:%S")
     cfg = config_mod.load(args.config)
-    commands = {"run": cmd_run, "install": cmd_install, "replay": cmd_replay, "say": cmd_say}
+    commands = {
+        "run": cmd_run,
+        "install": cmd_install,
+        "replay": cmd_replay,
+        "say": cmd_say,
+        "draft-test": cmd_draft_test,
+    }
     return commands[args.command or "run"](cfg, args)
 
 

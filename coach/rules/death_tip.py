@@ -9,15 +9,13 @@ ready while you are still dead.
 
 from __future__ import annotations
 
-import json
 import logging
 import threading
 import time
-import urllib.error
-import urllib.request
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 
+from .. import llm
 from ..items import ItemInfo, load_items
 from ..state import MatchState, Snapshot
 
@@ -30,7 +28,7 @@ words of plain spoken English: no lists, no emoji, no numbers read as digits \
 unless short. Base it only on the player's own data below. Do not guess where \
 enemies are or what they are doing."""
 
-Ask = Callable[[str], "str | None"]
+Ask = llm.Ask
 
 
 def describe(snap: Snapshot, items: dict[str, ItemInfo]) -> str:
@@ -114,41 +112,8 @@ def claude_asker(model: str, effort: str, timeout: float) -> Ask:
 
 
 def ollama_asker(model: str, url: str, timeout: float) -> Ask:
-    """Ask a local Ollama model; returns None if Ollama is not running or is slow."""
-    warned = False
-
-    def ask(prompt: str) -> str | None:
-        nonlocal warned
-        body = json.dumps({
-            "model": model,
-            "messages": [
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": prompt},
-            ],
-            "stream": False,
-            # Keep the model loaded between deaths so tips come back fast.
-            "keep_alive": "30m",
-            "options": {"num_predict": 80, "temperature": 0.7},
-        }).encode()
-        request = urllib.request.Request(
-            url.rstrip("/") + "/api/chat", body, {"Content-Type": "application/json"}
-        )
-        try:
-            with urllib.request.urlopen(request, timeout=timeout) as response:
-                data = json.load(response)
-        except urllib.error.HTTPError as exc:
-            detail = exc.read().decode(errors="replace")[:200]
-            log.warning("Ollama tip failed: %s %s", exc.code, detail)
-            return None
-        except (urllib.error.URLError, TimeoutError, OSError) as exc:
-            if not warned:
-                warned = True
-                log.warning("Ollama not reachable at %s (%s); using built-in tips", url, exc)
-            return None
-        text = (data.get("message") or {}).get("content", "").strip()
-        return text or None
-
-    return ask
+    """Ask a local Ollama model for a tip; returns None if it is not running or is slow."""
+    return llm.ollama_asker(model, url, timeout, SYSTEM_PROMPT, label="Ollama tip")
 
 
 BUILTIN_TIPS = [

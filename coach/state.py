@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 IN_PROGRESS = "DOTA_GAMERULES_STATE_GAME_IN_PROGRESS"
+PRE_GAME = "DOTA_GAMERULES_STATE_PRE_GAME"
 INVENTORY_SLOTS = {f"slot{i}" for i in range(6)}
 
 # Phases a match passes through before the game starts. Entering one of these
@@ -47,7 +48,10 @@ class Snapshot:
     clock_time: int | None = None
     daytime: bool | None = None
     paused: bool = False
+    win_team: str | None = None
 
+    team: str | None = None  # "radiant" or "dire"
+    account_id: str | None = None  # Steam account id (or 64-bit Steam id)
     gold: int = 0
     kills: int = 0
     deaths: int = 0
@@ -105,6 +109,9 @@ class Snapshot:
             clock_time=game.get("clock_time"),
             daytime=game.get("daytime"),
             paused=bool(game.get("paused", False)),
+            win_team=game.get("win_team"),
+            team=player.get("team_name"),
+            account_id=player.get("accountid") or player.get("steamid"),
             gold=int(player.get("gold", 0)),
             kills=int(player.get("kills", 0)),
             deaths=int(player.get("deaths", 0)),

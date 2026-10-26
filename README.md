@@ -10,8 +10,10 @@ The coach only tells you things you could already see or work out yourself.
 - Data comes only from Valve's official Game State Integration (your own hero
   and the game clock) and public post-game match data.
 - Output is audio only. Nothing is drawn over the game.
-- It never captures the screen, reads game memory, edits game files, sends
-  input, or looks up opponents.
+- It never reads game memory, edits game files, sends input, or looks up
+  other players' profiles.
+- It does not look at your screen, with one exception you have to turn on
+  yourself: reading the draft from the top bar (see below).
 
 ## Setup (Windows)
 
@@ -123,6 +125,50 @@ Command Prompt:
 ```
 setx ANTHROPIC_API_KEY "sk-ant-..."
 ```
+
+### Pre-game briefing
+
+In the countdown before the horn, the coach speaks a short briefing: what your
+lineup is good and bad at, which enemy hero to watch, and when each team is
+strongest. When those stretches begin in the game, it reminds you ("Your
+team's strongest stretch starts now...").
+
+It uses:
+
+- **The draft**: the heroes you can see. Type them in the coach window at any
+  time during the draft, e.g. `vs am cm lion pudge sf` for enemies and
+  `with luna tide` for allies (`clear` starts over). Short names like `am`,
+  `cm` and `qop` work. Your own hero is always known.
+- **Public hero statistics** from [OpenDota](https://www.opendota.com): how
+  each hero does against the others and by game length, like Dota Plus shows.
+  They are saved on your PC and refreshed weekly.
+- **Your own games**: after each match the coach learns from its recording
+  (your deaths and when they happen, last hits at 10 minutes, item timings),
+  plus your own public match history if "Expose Public Match Data" is on in
+  Dota. This is how it learns your playstyle: the more you play, the more
+  personal the briefing gets.
+- **Ollama** turns those facts into the spoken briefing. Without it, a written
+  briefing from the same facts is used.
+
+**Reading the draft from the screen (optional, off by default).** Set
+`enabled = true` under `[pregame.capture]` in your `coach.toml`. The coach
+then takes one picture of a thin strip at the very top of your main monitor
+just before the horn (once more if heroes are missing), matches the ten hero
+portraits against Valve's official hero pictures, and throws the picture
+away. Dota must run in borderless window mode. This never touches the game
+itself, but Valve has not approved screen-reading tools, so use it at your
+own risk. Typed picks always win over what the screen showed.
+
+To check that the portraits line up on your screen, take a screenshot in a
+game (F12 in Steam saves one) and run:
+
+```
+py -m coach draft-test "C:\path\to\screenshot.png"
+```
+
+It prints the ten heroes it reads and saves the boxes it looked in to
+`%APPDATA%\Dota2LiveCoach\draft-test.png`. Adjust `top`, `height`, `width`,
+`step` and `gap` in `[pregame.capture]` until the boxes sit on the portraits.
 
 Test the voice with `py -m coach say`. Pick another installed voice, change
 the speed, or retime and turn off reminders in the `[voice]` and
