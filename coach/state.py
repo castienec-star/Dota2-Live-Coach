@@ -10,6 +10,14 @@ from dataclasses import dataclass, field
 from typing import Any
 
 IN_PROGRESS = "DOTA_GAMERULES_STATE_GAME_IN_PROGRESS"
+# Phases a match passes through before the game starts. Entering one of these
+# from any other phase means a new match, even when the match id stays the same
+# (bot and lobby games all report match id 0).
+LOBBY_STATES = {
+    "DOTA_GAMERULES_STATE_INIT",
+    "DOTA_GAMERULES_STATE_WAIT_FOR_PLAYERS_TO_LOAD",
+    "DOTA_GAMERULES_STATE_HERO_SELECTION",
+}
 
 
 @dataclass
@@ -169,10 +177,12 @@ class MatchState:
 
     @property
     def new_match(self) -> bool:
-        return (
-            self.current.match_id is not None
-            and self.current.match_id != self.previous.match_id
-        )
+        cur, prev = self.current, self.previous
+        if cur.match_id is None:
+            return False
+        if cur.match_id != prev.match_id:
+            return True
+        return cur.game_state in LOBBY_STATES and prev.game_state not in LOBBY_STATES
 
     @property
     def game_state_changed(self) -> bool:

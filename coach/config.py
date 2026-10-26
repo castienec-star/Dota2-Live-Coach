@@ -6,7 +6,7 @@ import ipaddress
 import os
 import secrets
 import tomllib
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 APP_DIR_NAME = "Dota2LiveCoach"
@@ -27,6 +27,11 @@ class Config:
     record: bool = True
     record_dir: Path = Path()
     summary_interval: float = 10.0
+    voice_backend: str = "sapi"
+    voice_name: str = ""
+    voice_rate: int = 180
+    voice_max_delay: float = 4.0
+    reminders: dict = field(default_factory=dict)
 
     @property
     def url(self) -> str:
@@ -71,6 +76,7 @@ def load(user_file: Path | None = None, app_dir: Path | None = None) -> Config:
     server = raw.get("server", {})
     recording = raw.get("recording", {})
     logging = raw.get("logging", {})
+    voice = raw.get("voice", {})
 
     host = server.get("host", "127.0.0.1")
     if not ipaddress.ip_address(host).is_loopback:
@@ -84,4 +90,9 @@ def load(user_file: Path | None = None, app_dir: Path | None = None) -> Config:
         record=bool(recording.get("enabled", True)),
         record_dir=Path(record_dir),
         summary_interval=float(logging.get("summary_interval", 10)),
+        voice_backend=voice.get("backend", "sapi"),
+        voice_name=voice.get("name", ""),
+        voice_rate=int(voice.get("rate", 180)),
+        voice_max_delay=float(voice.get("max_delay", 4)),
+        reminders=raw.get("reminders", {}),
     )
