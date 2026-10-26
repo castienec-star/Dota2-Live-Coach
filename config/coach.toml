@@ -84,6 +84,25 @@ below = 50
 # Remind when an observer ward has sat in your inventory this many seconds.
 hold_seconds = 60
 
+[reminders.death_tip]
+# While you wait to respawn, the coach speaks one short tip based on your own
+# hero's stats. Where tips come from:
+#   "ollama"  - a free model running on your PC through Ollama (see README)
+#   "claude"  - Claude through the paid API (needs ANTHROPIC_API_KEY)
+#   "builtin" - free written tips, no AI
+# If the model is not running or too slow, a built-in tip is used instead.
+enabled = true
+provider = "ollama"
+ollama_model = "llama3.1:8b"
+ollama_url = "http://127.0.0.1:11434"
+claude_model = "claude-opus-5-5"
+# Claude only: "low" answers fastest.
+effort = "low"
+# Seconds to wait for the model before falling back to a built-in tip.
+timeout = 8
+# Only give a tip when the death timer is at least this long.
+min_respawn = 10
+
 [reminders.item_ready]
 enabled = true
 
