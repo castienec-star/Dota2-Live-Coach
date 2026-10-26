@@ -15,12 +15,19 @@ The coach only tells you things you could already see or work out yourself.
 
 ## Setup (Windows)
 
-Requires Python 3.12 or newer.
+Requires Python 3.12 or newer and [Git for Windows](https://git-scm.com/download/win).
+Run these in Command Prompt. The `cd` matters: `pip install -e .` must run
+inside the downloaded folder.
 
 ```
+git clone https://github.com/castienec-star/Dota2-Live-Coach.git
+cd Dota2-Live-Coach
 pip install -e .
 python -m coach install
 ```
+
+No Git? Click **Code > Download ZIP** on GitHub, unzip it, then `cd` into the
+unzipped folder before running `pip install -e .`.
 
 `install` finds Dota 2 through Steam and writes
 `gamestate_integration_coach.cfg` into
