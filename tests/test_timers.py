@@ -11,11 +11,11 @@ def play(state, payload, clocks, engine):
         engine(state)
 
 
-def test_power_rune_called_once_15s_before_8_minutes(payload):
+def test_power_rune_called_once_15s_before_10_minutes(payload):
     said = []
     engine = Engine(build({}), said.append)
     # Several updates per clock second, as GSI sends them.
-    play(MatchState(), payload, [463, 464, 464, 465, 465, 466], engine)
+    play(MatchState(), payload, [583, 584, 584, 585, 585, 586], engine)
     assert said == ["Power rune in 15 seconds."]
 
 
@@ -29,9 +29,22 @@ def test_no_power_rune_call_before_six_minutes(payload):
 def test_same_second_reminders_become_one_line(payload):
     said = []
     engine = Engine(build({}), said.append)
-    # 6:00 has both a power rune and a bounty rune, each 15 s ahead.
-    play(MatchState(), payload, [344, 345], engine)
-    assert said == ["Power rune in 15 seconds. Bounty runes in 15 seconds."]
+    # 8:00 has both a power rune and gold (bounty) runes, each 15 s ahead.
+    play(MatchState(), payload, [464, 465], engine)
+    assert said == ["Power rune in 15 seconds. Gold runes in 15 seconds."]
+
+
+def test_both_water_runes_are_called(payload):
+    said = []
+    engine = Engine(build({}), said.append)
+    play(MatchState(), payload, range(100, 300), engine)
+    water = [line for line in said if "Water" in line]
+    assert water == ["Water rune in 10 seconds."] * 2
+
+
+def test_gold_runes_every_four_minutes(payload):
+    bounty = next(r for r in build({}) if r.name == "bounty_rune")
+    assert bounty.event_times(0, 1000) == [240, 480, 720, 960]
 
 
 def test_stack_reminder_stops_after_until(payload):

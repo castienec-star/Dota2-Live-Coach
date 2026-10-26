@@ -27,34 +27,37 @@ class PrintBackend:
 
 
 class SapiBackend:
-    """Windows' built-in text-to-speech, through pyttsx3."""
+    """Windows' built-in text-to-speech (SAPI), called directly through COM."""
 
-    def __init__(self, voice: str = "", rate: int = 180) -> None:
-        import pyttsx3
+    def __init__(self, voice: str = "", rate: int = 0) -> None:
+        import comtypes
+        import comtypes.client
 
-        self.engine = pyttsx3.init()
-        self.engine.setProperty("rate", rate)
+        # COM must be set up on the thread that speaks; Speaker builds the
+        # backend on its own thread for this reason.
+        comtypes.CoInitialize()
+        self.voice = comtypes.client.CreateObject("SAPI.SpVoice")
+        self.voice.Rate = max(-10, min(10, rate))
         if voice:
-            match = next(
-                (v for v in self.engine.getProperty("voices") if voice.lower() in v.name.lower()),
-                None,
-            )
+            tokens = self.voice.GetVoices()
+            names = [tokens.Item(i).GetDescription() for i in range(tokens.Count)]
+            match = next((i for i, n in enumerate(names) if voice.lower() in n.lower()), None)
             if match is None:
-                log.warning("No installed voice matches %r; using the default", voice)
+                log.warning("No installed voice matches %r; voices: %s", voice, ", ".join(names))
             else:
-                self.engine.setProperty("voice", match.id)
+                self.voice.Voice = tokens.Item(match)
 
     def speak(self, text: str) -> None:
         log.info("Coach: %s", text)
-        self.engine.say(text)
-        self.engine.runAndWait()
+        # Blocks until the line has been spoken, so lines never overlap.
+        self.voice.Speak(text)
 
 
-def make_backend(name: str, voice: str = "", rate: int = 180) -> Backend:
+def make_backend(name: str, voice: str = "", rate: int = 0) -> Backend:
     if name == "sapi":
         try:
             return SapiBackend(voice, rate)
-        except Exception as exc:  # pyttsx3 missing, or no speech engine
+        except Exception as exc:  # not Windows, or no speech engine
             log.warning("Voice unavailable (%s); printing lines instead", exc)
     return PrintBackend()
 

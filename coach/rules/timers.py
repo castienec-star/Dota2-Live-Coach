@@ -53,10 +53,11 @@ class TimedReminder:
         self._fired.clear()
 
 
+# Patch 7.41 timings.
 DEFAULTS: dict[str, dict] = {
     "power_rune": {"message": "Power rune in {lead} seconds.", "first": 360, "every": 120, "lead": 15},
-    "bounty_rune": {"message": "Bounty runes in {lead} seconds.", "first": 180, "every": 180, "lead": 15},
-    "wisdom_rune": {"message": "Wisdom runes in {lead} seconds.", "first": 420, "every": 420, "lead": 20},
+    "bounty_rune": {"message": "Gold runes in {lead} seconds.", "first": 240, "every": 240, "lead": 15},
+    "wisdom_shrine": {"message": "Wisdom shrines in {lead} seconds.", "first": 420, "every": 420, "lead": 20},
     "water_rune": {"message": "Water rune in {lead} seconds.", "first": 120, "every": 120, "until": 240, "lead": 10},
     "stack": {"message": "Stack the camp.", "first": 113, "every": 60, "until": 713, "lead": 0},
 }

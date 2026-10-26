@@ -29,7 +29,7 @@ class Config:
     summary_interval: float = 10.0
     voice_backend: str = "sapi"
     voice_name: str = ""
-    voice_rate: int = 180
+    voice_rate: int = 0
     voice_max_delay: float = 4.0
     reminders: dict = field(default_factory=dict)
 
@@ -92,7 +92,7 @@ def load(user_file: Path | None = None, app_dir: Path | None = None) -> Config:
         summary_interval=float(logging.get("summary_interval", 10)),
         voice_backend=voice.get("backend", "sapi"),
         voice_name=voice.get("name", ""),
-        voice_rate=int(voice.get("rate", 180)),
+        voice_rate=int(voice.get("rate", 0)),
         voice_max_delay=float(voice.get("max_delay", 4)),
         reminders=raw.get("reminders", {}),
     )

@@ -1,5 +1,8 @@
+import sys
 import threading
 import time
+
+import pytest
 
 from coach.speaker import PrintBackend, Speaker, make_backend
 
@@ -45,3 +48,22 @@ def test_backend_is_created_on_speaker_thread():
 
 def test_print_backend_fallback():
     assert isinstance(make_backend("print"), PrintBackend)
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="SAPI is Windows-only")
+def test_sapi_backend_starts_on_windows():
+    # Building it on a fresh thread mirrors how Speaker uses it.
+    errors = []
+
+    def build():
+        try:
+            from coach.speaker import SapiBackend
+
+            SapiBackend(voice="no-such-voice", rate=1)
+        except Exception as exc:
+            errors.append(exc)
+
+    t = threading.Thread(target=build)
+    t.start()
+    t.join(30)
+    assert errors == []

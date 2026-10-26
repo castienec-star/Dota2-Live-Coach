@@ -21,13 +21,14 @@ summary_interval = 10
 backend = "sapi"
 # Part of an installed voice's name, e.g. "Zira" or "David". Empty = Windows default.
 name = ""
-# Words per minute.
-rate = 180
+# Speaking speed, from -10 (slow) to 10 (fast). 0 is Windows' normal speed.
+rate = 1
 # Lines that wait longer than this many seconds to be spoken are skipped.
 max_delay = 4
 
 # Clock reminders. Times are game-clock seconds (6:00 = 360); "lead" is how many
-# seconds early to speak. Rune timings change between patches, so adjust them here.
+# seconds early to speak. Defaults follow patch 7.41; timings change between
+# patches, so adjust them here.
 # Set enabled = false to turn one off.
 [reminders.power_rune]
 first = 360
@@ -35,11 +36,12 @@ every = 120
 lead = 15
 
 [reminders.bounty_rune]
-first = 180
-every = 180
+# Bounty runes are the gold runes: they give gold to your whole team.
+first = 240
+every = 240
 lead = 15
 
-[reminders.wisdom_rune]
+[reminders.wisdom_shrine]
 first = 420
 every = 420
 lead = 20

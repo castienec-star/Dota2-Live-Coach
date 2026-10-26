@@ -59,13 +59,13 @@ Start a match (a bot match works). The console logs your hero's state every
 ## Voice reminders
 
 Once the horn sounds, the coach speaks clock reminders through Windows'
-built-in voice:
+built-in voice. Defaults follow patch 7.41:
 
 | Reminder | Default timing |
 | --- | --- |
 | Power rune | 15 s before 6:00, then every 2 minutes |
-| Bounty runes | 15 s before 3:00, then every 3 minutes |
-| Wisdom runes | 20 s before 7:00, then every 7 minutes |
+| Gold (bounty) runes | 15 s before 4:00, then every 4 minutes |
+| Wisdom shrines | 20 s before 7:00, then every 7 minutes |
 | Water rune | 10 s before 2:00 and 4:00 |
 | Stack the camp | at :53 each minute, until 11:53 |
 
