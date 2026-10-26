@@ -14,7 +14,7 @@ from .gsi_server import Coach, make_app
 from .install import find_dota, install
 from .recorder import MatchRecorder
 from .replay import replay
-from .rules import Engine, timers
+from .rules import Engine, hero, timers
 from .speaker import Speaker, make_backend
 
 
@@ -34,7 +34,8 @@ def make_coach(
     if summary_interval is None:
         summary_interval = cfg.summary_interval
     coach = Coach(cfg.token, recorder, summary_interval)
-    coach.listeners.append(Engine(timers.build(cfg.reminders), speaker.say))
+    rules = timers.build(cfg.reminders) + hero.build(cfg.reminders, cfg.builds)
+    coach.listeners.append(Engine(rules, speaker.say))
     return coach
 
 

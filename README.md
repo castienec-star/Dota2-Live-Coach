@@ -73,6 +73,21 @@ built-in voice. Defaults follow patch 7.41:
 (see `THIRD_PARTY_NOTICES.md`). Game State Integration does not say whether a
 camp is alive, already stacked or blocked, so the coach cannot check that.
 
+### Your hero
+
+| Reminder | When |
+| --- | --- |
+| You have gold for (item) | You can afford the next item on your build list |
+| Low health, back off | Health drops under 25% (again after you heal over 40%) |
+| Under buyback gold | After 30:00, your gold drops under the buyback cost |
+| Skill point unused | 10 s after a level-up you haven't spent (up to level 16) |
+| Use your wand | Hurt under 50% with a Magic Wand/Stick of 10+ charges |
+| Place your observer ward | An observer ward has sat in your inventory for 60 s |
+
+Item builds are per hero in the `[builds]` section of `coach.toml`, for
+example `luna = ["Power Treads", "Manta Style", "Black King Bar"]`. Prices come
+from a 7.41 snapshot of OpenDota's item data.
+
 Test the voice with `py -m coach say`. Pick another installed voice, change
 the speed, or retime and turn off reminders in the `[voice]` and
 `[reminders.*]` sections of `coach.toml`. Rune timings change between

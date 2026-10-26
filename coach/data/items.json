@@ -1,0 +1,838 @@
+{
+"patch": "7.41",
+"source": "https://github.com/odota/dotaconstants (build/items.json, MIT License)",
+"items": {
+"item_abyssal_blade": {
+"name": "Abyssal Blade",
+"cost": 6250
+},
+"item_aeon_disk": {
+"name": "Aeon Disk",
+"cost": 3000
+},
+"item_aether_lens": {
+"name": "Aether Lens",
+"cost": 2275
+},
+"item_aghanims_shard": {
+"name": "Aghanim's Shard",
+"cost": 1400
+},
+"item_aghanims_shard_roshan": {
+"name": "Aghanim's Shard - Consumable",
+"cost": 1400
+},
+"item_ancient_janggo": {
+"name": "Drum of Endurance",
+"cost": 1625
+},
+"item_angels_demise": {
+"name": "Khanda",
+"cost": 5600
+},
+"item_arcane_blink": {
+"name": "Arcane Blink",
+"cost": 6800
+},
+"item_arcane_boots": {
+"name": "Arcane Boots",
+"cost": 1500
+},
+"item_armlet": {
+"name": "Armlet of Mordiggian",
+"cost": 2500
+},
+"item_assault": {
+"name": "Assault Cuirass",
+"cost": 5125
+},
+"item_basher": {
+"name": "Skull Basher",
+"cost": 2875
+},
+"item_belt_of_strength": {
+"name": "Belt of Strength",
+"cost": 450
+},
+"item_bfury": {
+"name": "Battle Fury",
+"cost": 3900
+},
+"item_black_king_bar": {
+"name": "Black King Bar",
+"cost": 4050
+},
+"item_blade_mail": {
+"name": "Blade Mail",
+"cost": 2400
+},
+"item_blade_of_alacrity": {
+"name": "Blade of Alacrity",
+"cost": 1000
+},
+"item_blades_of_attack": {
+"name": "Blades of Attack",
+"cost": 450
+},
+"item_blight_stone": {
+"name": "Orb of Blight",
+"cost": 300
+},
+"item_blink": {
+"name": "Blink Dagger",
+"cost": 2250
+},
+"item_blitz_knuckles": {
+"name": "Blitz Knuckles",
+"cost": 1000
+},
+"item_blood_grenade": {
+"name": "Blood Grenade",
+"cost": 50
+},
+"item_bloodstone": {
+"name": "Bloodstone",
+"cost": 4700
+},
+"item_bloodthorn": {
+"name": "Bloodthorn",
+"cost": 6400
+},
+"item_boots": {
+"name": "Boots of Speed",
+"cost": 500
+},
+"item_boots_of_bearing": {
+"name": "Boots of Bearing",
+"cost": 4225
+},
+"item_boots_of_elves": {
+"name": "Band of Elvenskin",
+"cost": 450
+},
+"item_bottle": {
+"name": "Bottle",
+"cost": 675
+},
+"item_bracer": {
+"name": "Bracer",
+"cost": 505
+},
+"item_branches": {
+"name": "Iron Branch",
+"cost": 55
+},
+"item_broadsword": {
+"name": "Broadsword",
+"cost": 1000
+},
+"item_buckler": {
+"name": "Buckler",
+"cost": 425
+},
+"item_butterfly": {
+"name": "Butterfly",
+"cost": 5450
+},
+"item_chainmail": {
+"name": "Chainmail",
+"cost": 500
+},
+"item_chasm_stone": {
+"name": "Chasm Stone",
+"cost": 900
+},
+"item_cheese": {
+"name": "Cheese",
+"cost": 1000
+},
+"item_circlet": {
+"name": "Circlet",
+"cost": 155
+},
+"item_clarity": {
+"name": "Clarity",
+"cost": 60
+},
+"item_claymore": {
+"name": "Claymore",
+"cost": 1350
+},
+"item_cloak": {
+"name": "Cloak",
+"cost": 900
+},
+"item_consecrated_wraps": {
+"name": "Consecrated Wraps",
+"cost": 2600
+},
+"item_cornucopia": {
+"name": "Cornucopia",
+"cost": 1200
+},
+"item_courier": {
+"name": "Animal Courier",
+"cost": 50
+},
+"item_crellas_crozier": {
+"name": "Crella's Crozier",
+"cost": 4800
+},
+"item_crimson_guard": {
+"name": "Crimson Guard",
+"cost": 3725
+},
+"item_crown": {
+"name": "Crown",
+"cost": 450
+},
+"item_cyclone": {
+"name": "Eul's Scepter of Divinity",
+"cost": 2600
+},
+"item_dagon": {
+"name": "Dagon",
+"cost": 3000
+},
+"item_dagon_2": {
+"name": "Dagon",
+"cost": 4100
+},
+"item_dagon_3": {
+"name": "Dagon",
+"cost": 5200
+},
+"item_dagon_4": {
+"name": "Dagon",
+"cost": 6300
+},
+"item_dagon_5": {
+"name": "Dagon",
+"cost": 7400
+},
+"item_demon_edge": {
+"name": "Demon Edge",
+"cost": 2200
+},
+"item_desolator": {
+"name": "Desolator",
+"cost": 3500
+},
+"item_devastator": {
+"name": "Parasma",
+"cost": 5975
+},
+"item_diadem": {
+"name": "Diadem",
+"cost": 1000
+},
+"item_diffusal_blade": {
+"name": "Diffusal Blade",
+"cost": 2500
+},
+"item_diffusal_blade_2": {
+"name": "Diffusal Blade",
+"cost": 3850
+},
+"item_disperser": {
+"name": "Disperser",
+"cost": 6100
+},
+"item_dragon_lance": {
+"name": "Dragon Lance",
+"cost": 2000
+},
+"item_dust": {
+"name": "Dust of Appearance",
+"cost": 80
+},
+"item_eagle": {
+"name": "Eaglesong",
+"cost": 2800
+},
+"item_echo_sabre": {
+"name": "Echo Sabre",
+"cost": 2700
+},
+"item_enchanted_mango": {
+"name": "Enchanted Mango",
+"cost": 65
+},
+"item_energy_booster": {
+"name": "Energy Booster",
+"cost": 800
+},
+"item_essence_distiller": {
+"name": "Essence Distiller",
+"cost": 1775
+},
+"item_eternal_shroud": {
+"name": "Eternal Shroud",
+"cost": 3900
+},
+"item_ethereal_blade": {
+"name": "Ethereal Blade",
+"cost": 5200
+},
+"item_faerie_fire": {
+"name": "Faerie Fire",
+"cost": 65
+},
+"item_falcon_blade": {
+"name": "Falcon Blade",
+"cost": 1125
+},
+"item_flask": {
+"name": "Healing Salve",
+"cost": 100
+},
+"item_fluffy_hat": {
+"name": "Fluffy Hat",
+"cost": 250
+},
+"item_flying_courier": {
+"name": "Flying Courier",
+"cost": 100
+},
+"item_force_staff": {
+"name": "Force Staff",
+"cost": 2200
+},
+"item_gauntlets": {
+"name": "Gauntlets of Strength",
+"cost": 140
+},
+"item_gem": {
+"name": "Gem of True Sight",
+"cost": 900
+},
+"item_ghost": {
+"name": "Ghost Scepter",
+"cost": 1500
+},
+"item_glimmer_cape": {
+"name": "Glimmer Cape",
+"cost": 2150
+},
+"item_gloves": {
+"name": "Gloves of Haste",
+"cost": 450
+},
+"item_greater_crit": {
+"name": "Daedalus",
+"cost": 5200
+},
+"item_guardian_greaves": {
+"name": "Guardian Greaves",
+"cost": 4450
+},
+"item_gungir": {
+"name": "Gleipnir",
+"cost": 4650
+},
+"item_hand_of_midas": {
+"name": "Hand of Midas",
+"cost": 2200
+},
+"item_harpoon": {
+"name": "Harpoon",
+"cost": 4700
+},
+"item_headdress": {
+"name": "Headdress",
+"cost": 425
+},
+"item_heart": {
+"name": "Heart of Tarrasque",
+"cost": 5300
+},
+"item_heavens_halberd": {
+"name": "Heaven's Halberd",
+"cost": 3300
+},
+"item_helm_of_iron_will": {
+"name": "Helm of Iron Will",
+"cost": 975
+},
+"item_helm_of_the_dominator": {
+"name": "Helm of the Dominator",
+"cost": 2550
+},
+"item_helm_of_the_overlord": {
+"name": "Helm of the Overlord",
+"cost": 5650
+},
+"item_holy_locket": {
+"name": "Holy Locket",
+"cost": 2250
+},
+"item_hurricane_pike": {
+"name": "Hurricane Pike",
+"cost": 4550
+},
+"item_hydras_breath": {
+"name": "Hydra's Breath",
+"cost": 5900
+},
+"item_hyperstone": {
+"name": "Hyperstone",
+"cost": 2000
+},
+"item_infused_raindrop": {
+"name": "Infused Raindrops",
+"cost": 225
+},
+"item_invis_sword": {
+"name": "Shadow Blade",
+"cost": 3250
+},
+"item_javelin": {
+"name": "Javelin",
+"cost": 900
+},
+"item_kaya": {
+"name": "Kaya",
+"cost": 2100
+},
+"item_kaya_and_sange": {
+"name": "Kaya and Sange",
+"cost": 4200
+},
+"item_lesser_crit": {
+"name": "Crystalys",
+"cost": 2000
+},
+"item_lifesteal": {
+"name": "Morbid Mask",
+"cost": 900
+},
+"item_lotus_orb": {
+"name": "Lotus Orb",
+"cost": 3850
+},
+"item_maelstrom": {
+"name": "Maelstrom",
+"cost": 2950
+},
+"item_mage_slayer": {
+"name": "Mage Slayer",
+"cost": 3100
+},
+"item_magic_stick": {
+"name": "Magic Stick",
+"cost": 200
+},
+"item_magic_wand": {
+"name": "Magic Wand",
+"cost": 460
+},
+"item_manta": {
+"name": "Manta Style",
+"cost": 4650
+},
+"item_mantle": {
+"name": "Mantle of Intelligence",
+"cost": 140
+},
+"item_mask_of_madness": {
+"name": "Mask of Madness",
+"cost": 1900
+},
+"item_mekansm": {
+"name": "Mekansm",
+"cost": 1775
+},
+"item_meteor_hammer": {
+"name": "Meteor Hammer",
+"cost": 2850
+},
+"item_mithril_hammer": {
+"name": "Mithril Hammer",
+"cost": 1600
+},
+"item_mjollnir": {
+"name": "Mjollnir",
+"cost": 5500
+},
+"item_monkey_king_bar": {
+"name": "Monkey King Bar",
+"cost": 5000
+},
+"item_moon_shard": {
+"name": "Moon Shard",
+"cost": 4000
+},
+"item_mystic_staff": {
+"name": "Mystic Staff",
+"cost": 2800
+},
+"item_necronomicon": {
+"name": "Necronomicon",
+"cost": 2050
+},
+"item_necronomicon_2": {
+"name": "Necronomicon",
+"cost": 3300
+},
+"item_necronomicon_3": {
+"name": "Necronomicon",
+"cost": 4550
+},
+"item_null_talisman": {
+"name": "Null Talisman",
+"cost": 505
+},
+"item_nullifier": {
+"name": "Nullifier",
+"cost": 4350
+},
+"item_oblivion_staff": {
+"name": "Oblivion Staff",
+"cost": 1625
+},
+"item_octarine_core": {
+"name": "Octarine Core",
+"cost": 5100
+},
+"item_ogre_axe": {
+"name": "Ogre Axe",
+"cost": 1000
+},
+"item_orb_of_corrosion": {
+"name": "Orb of Corrosion",
+"cost": 1050
+},
+"item_orb_of_frost": {
+"name": "Orb of Frost",
+"cost": 300
+},
+"item_orb_of_venom": {
+"name": "Orb of Venom",
+"cost": 350
+},
+"item_orchid": {
+"name": "Orchid Malevolence",
+"cost": 3275
+},
+"item_overwhelming_blink": {
+"name": "Overwhelming Blink",
+"cost": 6800
+},
+"item_pavise": {
+"name": "Pavise",
+"cost": 1350
+},
+"item_pers": {
+"name": "Perseverance",
+"cost": 1400
+},
+"item_phase_boots": {
+"name": "Phase Boots",
+"cost": 1450
+},
+"item_phylactery": {
+"name": "Phylactery",
+"cost": 2600
+},
+"item_pipe": {
+"name": "Pipe of Insight",
+"cost": 3725
+},
+"item_platemail": {
+"name": "Platemail",
+"cost": 1400
+},
+"item_pocket_roshan": {
+"name": "Pocket Roshan",
+"cost": 1000
+},
+"item_point_booster": {
+"name": "Point Booster",
+"cost": 1200
+},
+"item_power_treads": {
+"name": "Power Treads",
+"cost": 1400
+},
+"item_quarterstaff": {
+"name": "Quarterstaff",
+"cost": 875
+},
+"item_quelling_blade": {
+"name": "Quelling Blade",
+"cost": 100
+},
+"item_radiance": {
+"name": "Radiance",
+"cost": 4700
+},
+"item_rapier": {
+"name": "Divine Rapier",
+"cost": 5600
+},
+"item_reaver": {
+"name": "Reaver",
+"cost": 2800
+},
+"item_refresher": {
+"name": "Refresher Orb",
+"cost": 5000
+},
+"item_refresher_shard": {
+"name": "Refresher Shard",
+"cost": 1000
+},
+"item_relic": {
+"name": "Sacred Relic",
+"cost": 3400
+},
+"item_revenants_brooch": {
+"name": "Revenant's Brooch",
+"cost": 3300
+},
+"item_ring_of_basilius": {
+"name": "Ring of Basilius",
+"cost": 425
+},
+"item_ring_of_health": {
+"name": "Ring of Health",
+"cost": 700
+},
+"item_ring_of_protection": {
+"name": "Ring of Protection",
+"cost": 175
+},
+"item_ring_of_regen": {
+"name": "Ring of Regen",
+"cost": 175
+},
+"item_ring_of_tarrasque": {
+"name": "Ring of Tarrasque",
+"cost": 1700
+},
+"item_robe": {
+"name": "Robe of the Magi",
+"cost": 450
+},
+"item_rod_of_atos": {
+"name": "Rod of Atos",
+"cost": 2250
+},
+"item_royale_with_cheese": {
+"name": "Block of Cheese",
+"cost": 2
+},
+"item_sange": {
+"name": "Sange",
+"cost": 2100
+},
+"item_sange_and_yasha": {
+"name": "Sange and Yasha",
+"cost": 4200
+},
+"item_satanic": {
+"name": "Satanic",
+"cost": 5050
+},
+"item_shadow_amulet": {
+"name": "Shadow Amulet",
+"cost": 900
+},
+"item_shawl": {
+"name": "Shawl",
+"cost": 450
+},
+"item_sheepstick": {
+"name": "Scythe of Vyse",
+"cost": 5200
+},
+"item_shivas_guard": {
+"name": "Shiva's Guard",
+"cost": 4500
+},
+"item_silver_edge": {
+"name": "Silver Edge",
+"cost": 5700
+},
+"item_skadi": {
+"name": "Eye of Skadi",
+"cost": 5900
+},
+"item_slippers": {
+"name": "Slippers of Agility",
+"cost": 140
+},
+"item_smoke_of_deceit": {
+"name": "Smoke of Deceit",
+"cost": 50
+},
+"item_sobi_mask": {
+"name": "Sage's Mask",
+"cost": 175
+},
+"item_solar_crest": {
+"name": "Solar Crest",
+"cost": 2575
+},
+"item_soul_booster": {
+"name": "Soul Booster",
+"cost": 3000
+},
+"item_soul_ring": {
+"name": "Soul Ring",
+"cost": 805
+},
+"item_specialists_array": {
+"name": "Specialist's Array",
+"cost": 2550
+},
+"item_sphere": {
+"name": "Linken's Sphere",
+"cost": 4800
+},
+"item_spirit_vessel": {
+"name": "Spirit Vessel",
+"cost": 2725
+},
+"item_splintmail": {
+"name": "Splintmail",
+"cost": 950
+},
+"item_staff_of_wizardry": {
+"name": "Staff of Wizardry",
+"cost": 1000
+},
+"item_stout_shield": {
+"name": "Stout Shield",
+"cost": 100
+},
+"item_swift_blink": {
+"name": "Swift Blink",
+"cost": 6800
+},
+"item_talisman_of_evasion": {
+"name": "Talisman of Evasion",
+"cost": 1300
+},
+"item_tango": {
+"name": "Tango",
+"cost": 90
+},
+"item_tango_single": {
+"name": "Tango (Shared)",
+"cost": 30
+},
+"item_tiara_of_selemene": {
+"name": "Tiara of Selemene",
+"cost": 1700
+},
+"item_tome_of_knowledge": {
+"name": "Tome of Knowledge",
+"cost": 75
+},
+"item_tpscroll": {
+"name": "Town Portal Scroll",
+"cost": 100
+},
+"item_tranquil_boots": {
+"name": "Tranquil Boots",
+"cost": 900
+},
+"item_travel_boots": {
+"name": "Boots of Travel",
+"cost": 2500
+},
+"item_travel_boots_2": {
+"name": "Boots of Travel 2",
+"cost": 4500
+},
+"item_trident": {
+"name": "Trident",
+"cost": 6301
+},
+"item_ultimate_orb": {
+"name": "Ultimate Orb",
+"cost": 2800
+},
+"item_ultimate_scepter": {
+"name": "Aghanim's Scepter",
+"cost": 4200
+},
+"item_ultimate_scepter_2": {
+"name": "Aghanim's Blessing",
+"cost": 5800
+},
+"item_ultimate_scepter_roshan": {
+"name": "Aghanim's Blessing - Roshan",
+"cost": 5800
+},
+"item_urn_of_shadows": {
+"name": "Urn of Shadows",
+"cost": 825
+},
+"item_vanguard": {
+"name": "Vanguard",
+"cost": 1700
+},
+"item_veil_of_discord": {
+"name": "Veil of Discord",
+"cost": 1700
+},
+"item_vitality_booster": {
+"name": "Vitality Booster",
+"cost": 1000
+},
+"item_vladmir": {
+"name": "Vladmir's Offering",
+"cost": 2200
+},
+"item_void_stone": {
+"name": "Void Stone",
+"cost": 700
+},
+"item_voodoo_mask": {
+"name": "Voodoo Mask",
+"cost": 650
+},
+"item_ward_dispenser": {
+"name": "Observer and Sentry Wards",
+"cost": 50
+},
+"item_ward_sentry": {
+"name": "Sentry Ward",
+"cost": 50
+},
+"item_wind_lace": {
+"name": "Wind Lace",
+"cost": 225
+},
+"item_wind_waker": {
+"name": "Wind Waker",
+"cost": 6800
+},
+"item_witch_blade": {
+"name": "Witch Blade",
+"cost": 2775
+},
+"item_wizard_hat": {
+"name": "Wizard Hat",
+"cost": 250
+},
+"item_wraith_band": {
+"name": "Wraith Band",
+"cost": 505
+},
+"item_wraith_pact": {
+"name": "Wraith Pact",
+"cost": 3800
+},
+"item_yasha": {
+"name": "Yasha",
+"cost": 2100
+},
+"item_yasha_and_kaya": {
+"name": "Yasha and Kaya",
+"cost": 4200
+}
+}
+}

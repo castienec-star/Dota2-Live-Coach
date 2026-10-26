@@ -10,6 +10,8 @@ from dataclasses import dataclass, field
 from typing import Any
 
 IN_PROGRESS = "DOTA_GAMERULES_STATE_GAME_IN_PROGRESS"
+INVENTORY_SLOTS = {f"slot{i}" for i in range(6)}
+
 # Phases a match passes through before the game starts. Entering one of these
 # from any other phase means a new match, even when the match id stays the same
 # (bot and lobby games all report match id 0).
@@ -65,6 +67,8 @@ class Snapshot:
     max_mana: int = 0
     buyback_cost: int = 0
     buyback_cooldown: int = 0
+    talents_taken: int = 0
+    attributes_level: int = 0
 
     abilities: list[Ability] = field(default_factory=list)
     items: list[Item] = field(default_factory=list)
@@ -72,6 +76,19 @@ class Snapshot:
     @property
     def in_game(self) -> bool:
         return self.game_state == IN_PROGRESS
+
+    @property
+    def skill_points_spent(self) -> int:
+        return sum(a.level for a in self.abilities) + self.talents_taken + self.attributes_level
+
+    def has_item(self, name: str) -> bool:
+        return any(i.name == name for i in self.items)
+
+    def item(self, name: str) -> Item | None:
+        """The first copy of an item in your inventory (not backpack or stash)."""
+        return next(
+            (i for i in self.items if i.name == name and i.slot in INVENTORY_SLOTS), None
+        )
 
     @property
     def health_percent(self) -> float:
@@ -106,6 +123,8 @@ class Snapshot:
             max_mana=int(hero.get("max_mana", 0)),
             buyback_cost=int(hero.get("buyback_cost", 0)),
             buyback_cooldown=int(hero.get("buyback_cooldown", 0)),
+            talents_taken=sum(1 for k, v in hero.items() if k.startswith("talent_") and v is True),
+            attributes_level=int(hero.get("attributes_level", 0)),
             abilities=_abilities(payload.get("abilities") or {}),
             items=_items(payload.get("items") or {}),
         )

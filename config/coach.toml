@@ -59,3 +59,37 @@ first = 113
 every = 60
 until = 713
 radius = 1000
+
+# Reminders about your own hero. Set enabled = false to turn one off.
+[reminders.low_health]
+# Said once when health drops under "below" %, again after it climbs over "rearm" %.
+below = 25
+rearm = 40
+
+[reminders.buyback]
+# From this minute on, warn when your gold drops under the buyback cost.
+from_minute = 30
+
+[reminders.skill_point]
+# Seconds to wait after a level-up before reminding. Not said above max_level.
+delay = 10
+max_level = 16
+
+[reminders.wand]
+# Use Magic Wand/Stick when it has at least min_charges and health is under "below" %.
+min_charges = 10
+below = 50
+
+[reminders.ward]
+# Remind when an observer ward has sat in your inventory this many seconds.
+hold_seconds = 60
+
+[reminders.item_ready]
+enabled = true
+
+# Item builds, per hero (the name without npc_dota_hero_). The coach says
+# "You have gold for ..." for the first item on the list you don't own yet.
+# Use names like "Black King Bar" or GSI keys like "black_king_bar".
+# A "default" list is used for heroes without their own.
+[builds]
+luna = ["Power Treads", "Mask of Madness", "Manta Style", "Black King Bar", "Butterfly"]

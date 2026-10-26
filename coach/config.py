@@ -32,6 +32,7 @@ class Config:
     voice_rate: int = 0
     voice_max_delay: float = 4.0
     reminders: dict = field(default_factory=dict)
+    builds: dict = field(default_factory=dict)
 
     @property
     def url(self) -> str:
@@ -95,4 +96,5 @@ def load(user_file: Path | None = None, app_dir: Path | None = None) -> Config:
         voice_rate=int(voice.get("rate", 0)),
         voice_max_delay=float(voice.get("max_delay", 4)),
         reminders=raw.get("reminders", {}),
+        builds=raw.get("builds", {}),
     )
