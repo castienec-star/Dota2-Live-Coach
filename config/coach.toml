@@ -51,7 +51,9 @@ device = ""
 # Clock reminders. Times are game-clock seconds (6:00 = 360); "lead" is how many
 # seconds early to speak. Defaults follow patch 7.41; timings change between
 # patches, so adjust them here.
-# Set enabled = false to turn one off.
+# Set enabled = false to turn one off. Any reminder (here or below) can be
+# limited to some positions with e.g. positions = [4, 5]; while the coach
+# doesn't know your position, it says them all.
 [reminders.power_rune]
 first = 360
 every = 120
@@ -69,6 +71,8 @@ every = 420
 lead = 20
 
 [reminders.water_rune]
+# The mid player usually takes the water runes, so only mid hears this.
+positions = [2]
 first = 120
 every = 120
 until = 240
@@ -176,9 +180,12 @@ position = 0
 # Item builds, per hero (the name without npc_dota_hero_). The coach says
 # "You have gold for ..." for the first item on the list you don't own yet.
 # Use names like "Black King Bar" or GSI keys like "black_king_bar".
-# Heroes without their own list use "default_support" if they are a support,
-# otherwise "default". An empty list (pudge = []) turns the reminder off for
-# that hero.
+# Per position: "pudge_pos2" is Pudge's build when you play mid, and "pos3" is
+# for any hero in the offlane without its own list. The coach uses the first
+# that exists: hero_posN, hero, posN, then "default_support" in positions 4
+# and 5, otherwise "default". While your position isn't known, supports by
+# hero role get "default_support". An empty list (pudge = []) turns the
+# reminder off for that hero.
 #
 # These are simple, forgiving builds for heroes popular from Herald to Ancient.
 # Don't list an item and then its upgrade (Dragon Lance, then Hurricane Pike):

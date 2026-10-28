@@ -15,11 +15,21 @@ from . import pregame as pregame_mod
 from . import voice
 from .gsi_server import Coach, make_app
 from .install import find_dota, install
-from .lineup import Interview
+from .lineup import Interview, configured_position
 from .recorder import MatchRecorder
 from .replay import replay
-from .rules import Engine, death_tip, hero, timers, windows
+from .rules import (
+    Engine,
+    PositionOf,
+    death_tip,
+    for_positions,
+    hero,
+    split_positions,
+    timers,
+    windows,
+)
 from .speaker import Speaker, make_backend
+from .state import Snapshot
 
 
 def make_speaker(cfg: config_mod.Config) -> Speaker:
@@ -27,6 +37,17 @@ def make_speaker(cfg: config_mod.Config) -> Speaker:
         lambda: make_backend(cfg.voice_backend, cfg.voice_name, cfg.voice_rate),
         cfg.voice_max_delay,
     )
+
+
+def position_of(cfg: config_mod.Config, coach: Coach) -> PositionOf:
+    """The position the player told the coach this match, else the one set
+    in coach.toml, else 0 (not known)."""
+
+    def position(snap: Snapshot) -> int:
+        told = coach.pregame.position if coach.pregame is not None else 0
+        return told or configured_position(cfg.pregame, snap.hero_name)
+
+    return position
 
 
 def make_coach(
@@ -40,14 +61,16 @@ def make_coach(
     if summary_interval is None:
         summary_interval = cfg.summary_interval
     coach = Coach(cfg.token, recorder, summary_interval)
-    power_windows = windows.build(cfg.reminders)
+    position = position_of(cfg, coach)
+    reminders, positions = split_positions(cfg.reminders)
+    power_windows = windows.build(reminders)
     rules = (
-        timers.build(cfg.reminders)
-        + hero.build(cfg.reminders, cfg.builds)
+        timers.build(reminders)
+        + hero.build(reminders, cfg.builds, position)
         + power_windows
-        + (death_tip.build(cfg.reminders, speaker.say) if tips else [])
+        + (death_tip.build(reminders, speaker.say) if tips else [])
     )
-    coach.listeners.append(Engine(rules, speaker.say))
+    coach.listeners.append(Engine(for_positions(rules, positions, position), speaker.say))
     if tips:
         coach.pregame = pregame_mod.build(
             cfg.pregame,
@@ -95,9 +118,10 @@ def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
         coach.state,
         speaker.say,
         lambda: speaker.busy,
-        cfg.reminders,
+        split_positions(cfg.reminders)[0],
         cfg.builds,
         pending=interview.pending if interview else None,
+        position=position_of(cfg, coach),
     )
     if interview is not None and listening is not None:
         # Only ask when the coach can hear the answers. It goes before the
