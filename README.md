@@ -83,6 +83,7 @@ camp is alive, already stacked or blocked, so the coach cannot check that.
 | --- | --- |
 | You have gold for (item) | You can afford the next item on your build list |
 | Buy a (cheap item) now, you'll get your (item) later | Before 25:00, the next build item is 1500+ gold away and you can afford a Magic Wand or your hero's Bracer, Wraith Band or Null Talisman that you don't own. Each one at most once a match |
+| You're ahead / about even / behind for (minutes) ... | At 15:00 and 25:00, your gold, experience and last hits per minute against public numbers for your hero, with what to do about it (see "How am I doing?" below). Change the minutes in `[reminders.game_check]` |
 | Low health, back off | Health drops under 25% (again after you heal over 40%) |
 | Under buyback gold | After 30:00, your gold drops under the buyback cost |
 | Skill point unused | 10 s after a level-up you haven't spent (up to level 16) |
@@ -183,8 +184,16 @@ It uses:
 ### Ask the coach out loud
 
 Hands free, no window or key: say **"hey coach"**, wait for the beep, then
-ask. For now the coach answers three questions from your own hero's data and
+ask. For now the coach answers four questions from your own hero's data and
 the game clock:
+
+- "How am I doing?" / "Am I ahead?": from 8 minutes on, whether you are
+  ahead, even or behind for this point of the match, comparing your gold,
+  experience and last hits per minute with public OpenDota numbers for your
+  hero (supports only by experience), and what to do about it. Numbers for
+  popular low-bracket heroes come with the coach; other heroes are read once
+  from OpenDota if `opendota` is on in `[pregame]`. See
+  [docs/strategy/ahead-or-behind.md](docs/strategy/ahead-or-behind.md).
 
 - "What's my next item?" / "What should I buy?": the next item on your build
   and how much gold you still need.

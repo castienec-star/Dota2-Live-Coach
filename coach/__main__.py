@@ -13,9 +13,12 @@ from aiohttp import web
 from . import config as config_mod
 from . import pregame as pregame_mod
 from . import voice
+from .benchmarks import Benchmarks
 from .gsi_server import Coach, make_app
+from .heroes import load_heroes
 from .install import find_dota, install
 from .lineup import Interview, configured_position
+from .opendota import OpenDota
 from .recorder import MatchRecorder
 from .replay import replay
 from .rules import (
@@ -23,6 +26,7 @@ from .rules import (
     PositionOf,
     death_tip,
     for_positions,
+    game_check,
     hero,
     split_positions,
     timers,
@@ -50,12 +54,22 @@ def position_of(cfg: config_mod.Config, coach: Coach) -> PositionOf:
     return position
 
 
+def make_benchmarks(cfg: config_mod.Config) -> Benchmarks:
+    """Bundled hero benchmarks, plus OpenDota for other heroes if it is on."""
+    if not cfg.pregame.get("opendota", True):
+        return Benchmarks()
+    stats = OpenDota(cfg.app_dir / "opendota")
+    hero_ids = {h.key: h.id for h in load_heroes().values()}
+    return Benchmarks(fetch=stats.benchmarks, hero_ids=hero_ids)
+
+
 def make_coach(
     cfg: config_mod.Config,
     speaker: Speaker,
     recorder: MatchRecorder | None = None,
     summary_interval: float | None = None,
     tips: bool = True,
+    benchmarks: Benchmarks | None = None,
 ) -> Coach:
     """tips turns on the features that call a model."""
     if summary_interval is None:
@@ -68,6 +82,9 @@ def make_coach(
         timers.build(reminders)
         + hero.build(reminders, cfg.builds, position)
         + power_windows
+        + game_check.build(
+            reminders, benchmarks or (make_benchmarks(cfg) if tips else Benchmarks()), position
+        )
         + (death_tip.build(reminders, speaker.say) if tips else [])
     )
     coach.listeners.append(Engine(for_positions(rules, positions, position), speaker.say))
@@ -108,7 +125,8 @@ def make_interview(cfg: config_mod.Config, coach: Coach) -> Interview | None:
 def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
     recorder = MatchRecorder(cfg.record_dir) if cfg.record else None
     speaker = make_speaker(cfg)
-    coach = make_coach(cfg, speaker, recorder)
+    benchmarks = make_benchmarks(cfg)
+    coach = make_coach(cfg, speaker, recorder, benchmarks=benchmarks)
     if coach.pregame is not None and sys.stdin is not None and sys.stdin.isatty():
         threading.Thread(target=read_typed_picks, args=(coach,), daemon=True).start()
         logging.info('Type the enemy picks any time, e.g.  vs am cm lion pudge sf')
@@ -122,6 +140,7 @@ def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
         cfg.builds,
         pending=interview.pending if interview else None,
         position=position_of(cfg, coach),
+        benchmarks=benchmarks,
     )
     if interview is not None and listening is not None:
         # Only ask when the coach can hear the answers. It goes before the

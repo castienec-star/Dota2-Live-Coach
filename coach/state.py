@@ -58,6 +58,8 @@ class Snapshot:
     assists: int = 0
     last_hits: int = 0
     denies: int = 0
+    gpm: int = 0
+    xpm: int = 0
 
     hero_name: str | None = None
     x: float | None = None
@@ -118,6 +120,8 @@ class Snapshot:
             assists=int(player.get("assists", 0)),
             last_hits=int(player.get("last_hits", 0)),
             denies=int(player.get("denies", 0)),
+            gpm=int(player.get("gpm", 0)),
+            xpm=int(player.get("xpm", 0)),
             hero_name=hero.get("name"),
             x=hero.get("xpos"),
             y=hero.get("ypos"),
