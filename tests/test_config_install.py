@@ -21,7 +21,7 @@ def test_load_defaults_and_user_override(tmp_path):
     assert cfg.port == 5000
     assert cfg.host == "127.0.0.1"
     assert cfg.record_dir == tmp_path / "recordings"
-    assert cfg.listen["enabled"] is False
+    assert cfg.listen["enabled"] is True
     assert cfg.listen["wake_word"] == "hey coach"
 
 

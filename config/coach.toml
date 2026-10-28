@@ -32,7 +32,8 @@ max_delay = 4
 # Needs:  pip install -e ".[voice]"  (the speech models download once, about
 # 200 MB). Everything runs on this PC; nothing is recorded or sent anywhere.
 # A headset helps, so game sound and Discord don't wake the coach.
-enabled = false
+# Without those packages the coach just skips listening. Set false to turn it off.
+enabled = true
 wake_word = "hey coach"
 # faster-whisper model: "tiny.en" is lighter on the CPU, "small.en" understands more.
 model = "base.en"

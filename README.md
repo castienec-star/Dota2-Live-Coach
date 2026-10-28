@@ -14,7 +14,7 @@ The coach only tells you things you could already see or work out yourself.
   other players' profiles.
 - It does not look at your screen, with one exception you have to turn on
   yourself: reading the draft from the top bar (see below).
-- If you turn on voice questions, your microphone is only heard by speech
+- Voice questions (on by default, once installed): your microphone is only heard by speech
   models running on your PC. Nothing is recorded or sent anywhere.
 
 ## Setup (Windows)
@@ -201,15 +201,15 @@ the game clock:
 - "When is the next rune?": the next power rune, gold runes and wisdom
   shrines.
 
-Anything else gets "I can't help with that yet". It is off by default and
+Anything else gets "I can't help with that yet". It is on by default and
 needs two free speech models that run on your PC (downloaded once, about
-200 MB):
+200 MB). Install them once; until you do, the coach simply doesn't listen:
 
 ```
 py -m pip install -e ".[voice]"
 ```
 
-Then set `enabled = true` under `[listen]` in your `coach.toml`. A headset
+To turn it off, set `enabled = false` under `[listen]` in your `coach.toml`. A headset
 helps so game sound and Discord don't wake the coach; it never listens while
 it is talking itself. Change the wake word, the microphone, or use the
 lighter `tiny.en` model there too.
