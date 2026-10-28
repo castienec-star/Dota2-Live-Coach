@@ -70,7 +70,7 @@ built-in voice. Defaults follow patch 7.41:
 | Power rune | 15 s before 6:00, then every 2 minutes |
 | Gold (bounty) runes | 15 s before 4:00, then every 4 minutes |
 | Wisdom shrines | 20 s before 7:00, then every 7 minutes |
-| Water rune | 10 s before 2:00 and 4:00 |
+| Water rune | 10 s before 2:00 and 4:00 (mid only, once your position is known) |
 | Stack the camp | at :53 each minute until 11:53, only when your hero is near a neutral camp |
 
 "Near a camp" uses your own hero's position and the fixed 7.41 camp spots
@@ -94,9 +94,17 @@ example `luna = ["Power Treads", "Manta Style", "Black King Bar"]`. The coach
 comes with simple builds for heroes popular from Herald to Ancient (Axe,
 Bristleback, Drow Ranger, Juggernaut, Legion Commander, Lion, Luna, Ogre Magi,
 Phantom Assassin, Pudge, Slark, Sniper, Viper, Witch Doctor, Wraith King and
-Zeus). Any other hero gets a support build if it is a support, otherwise a core
-build (`default_support` and `default`). Put `pudge = []` in your own
-`coach.toml` to turn the reminder off for one hero. Prices come from OpenDota's
+Zeus). Any other hero gets a support build in positions 4 and 5, otherwise a
+core build (`default_support` and `default`); while your position isn't known,
+it goes by the hero's usual role. Builds can also depend on your position:
+`pudge_pos2 = [...]` is Pudge's build when you play mid, and `pos3 = [...]` is
+for any hero without its own list when you play offlane. Put `pudge = []` in
+your own `coach.toml` to turn the reminder off for one hero.
+
+Any reminder can be limited to some positions, e.g. `positions = [4, 5]` under
+`[reminders.stack]`. Out of the box only the water rune reminder is (mid only).
+The position is the one you said or typed at the start of the game, or the one
+set in `[pregame]`; until it is known, every reminder is said. Prices come from OpenDota's
 item data; `coach/data/PATCH` names the patch the bundled data is current for
 (7.41f).
 

@@ -22,7 +22,7 @@ from collections.abc import Callable, Iterable, Iterator
 from .heroes import HeroIndex
 from .items import load_items
 from .lineup import Question
-from .rules import timers
+from .rules import PositionOf, timers
 from .rules.hero import ItemReady, parse_builds
 from .state import MatchState, Snapshot
 
@@ -69,10 +69,15 @@ class Answers:
 
     RUNES = (("power_rune", "Power rune"), ("bounty_rune", "Gold runes"), ("wisdom_shrine", "Wisdom shrines"))
 
-    def __init__(self, reminders: dict[str, dict], builds: dict[str, list[str]]) -> None:
+    def __init__(
+        self,
+        reminders: dict[str, dict],
+        builds: dict[str, list[str]],
+        position: PositionOf | None = None,
+    ) -> None:
         settings = {name: reminders.get(name, {}) for name, _ in self.RUNES}
         self.timers = {r.name: r for r in timers.build(settings) if r.name in dict(self.RUNES)}
-        self.items = ItemReady(parse_builds(builds, load_items()), HeroIndex()) if builds else None
+        self.items = ItemReady(parse_builds(builds, load_items()), HeroIndex(), position) if builds else None
 
     def answer(self, text: str, snap: Snapshot) -> str:
         kind = intent(text)
@@ -332,6 +337,7 @@ def start(
     reminders: dict[str, dict],
     builds: dict[str, list[str]],
     pending: Callable[[], Question | None] | None = None,
+    position: PositionOf | None = None,
 ) -> threading.Thread | None:
     """Start listening on a background thread, if [listen] is on and installed."""
     if not settings.get("enabled", False):
@@ -346,7 +352,7 @@ def start(
     except Exception as exc:
         log.warning("Voice questions unavailable (%s)", exc)
         return None
-    answers = Answers(reminders, builds)
+    answers = Answers(reminders, builds, position)
     loop = VoiceLoop(
         wake,
         transcribe,

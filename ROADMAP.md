@@ -102,9 +102,14 @@ CLAUDE.md).
 - Translations of the spoken lines.
 - Upgrade-aware builds: know that Dragon Lance went into Hurricane Pike (from
   dotaconstants' item components) so builds can list both steps.
-- Per-position builds and reminders (issue #11, next step): the start-of-game
-  answers now give the player's position; use it to pick `[builds.pos4]`
-  style lists and support-only reminders (wards, stacks, pulls).
+- Per-position builds and reminders (issue #11): done in the
+  `agent/position-builds` PR (`hero_posN` / `posN` builds, a `positions` list
+  on any reminder). Next: support-only lines the coach can back with GSI,
+  e.g. "buy a sentry" when a pos 4/5 holds no wards at a rune or shrine
+  time, and core-only last-hit pace (item 4) once the position is known.
+- Bundled per-position builds for heroes often played in two roles at low
+  MMR (Pudge mid or support, Zeus mid or support), checked against public
+  per-bracket item data.
 - Learn the player's usual position per hero from their answers, so after a
   few games the coach only confirms it ("Pudge, position 4 again?").
 - Check the default builds against OpenDota's public per-bracket item data

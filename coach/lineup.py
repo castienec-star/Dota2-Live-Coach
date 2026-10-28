@@ -61,6 +61,14 @@ _FILLER = {
 }
 
 
+def configured_position(settings: dict, hero: str | None) -> int:
+    """The position set in coach.toml: [pregame.positions] for this hero, else
+    [pregame] position. 0 when none is set."""
+    key = (hero or "").removeprefix("npc_dota_hero_")
+    position = int(settings.get("positions", {}).get(key, 0) or settings.get("position", 0))
+    return position if position in POSITIONS else 0
+
+
 def parse_position(text: str) -> int | None:
     """1 to 5 from "four", "pos 4", "position four", "support", "mid"..."""
     folded = _words(text)
