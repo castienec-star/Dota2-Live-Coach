@@ -28,8 +28,8 @@ max_delay = 4
 
 [listen]
 # Ask the coach questions out loud: say the wake word, wait for the beep, then
-# ask, e.g. "how am I doing?", "what's my next item?", "can I buy back?",
-# "when is the next rune?".
+# ask, e.g. "how am I doing?", "what should I buy?", "what's my next item?",
+# "can I buy back?", "when is the next rune?".
 # Needs:  pip install -e ".[voice]"  (the speech models download once, about
 # 200 MB). Everything runs on this PC; nothing is recorded or sent anywhere.
 # A headset helps, so game sound and Discord don't wake the coach.
@@ -149,6 +149,9 @@ cooldown = 180
 [reminders.game_check]
 # At these minutes the coach says whether you are ahead, even or behind for
 # your hero, and what to do about it (the same as asking "how am I doing?").
+# If you told the coach the enemy heroes and one calls for a counter item, it
+# names that item too, e.g. "Buy Monkey King Bar now: Phantom Assassin dodges
+# your attacks."
 enabled = true
 minutes = [15, 25]
 

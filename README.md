@@ -83,7 +83,7 @@ camp is alive, already stacked or blocked, so the coach cannot check that.
 | --- | --- |
 | You have gold for (item) | You can afford the next item on your build list |
 | Buy a (cheap item) now, you'll get your (item) later | Before 25:00, the next build item is 1500+ gold away and you can afford a Magic Wand or your hero's Bracer, Wraith Band or Null Talisman that you don't own. Each one at most once a match |
-| You're ahead / about even / behind for (minutes) ... | At 15:00 and 25:00, your gold, experience and last hits per minute against public numbers for your hero, with what to do about it (see "How am I doing?" below). Change the minutes in `[reminders.game_check]` |
+| You're ahead / about even / behind for (minutes) ... | At 15:00 and 25:00, your gold, experience and last hits per minute against public numbers for your hero, with what to do about it (see "How am I doing?" below). If you told the coach the enemy heroes and one calls for a counter, it names that item and why (see "What should I buy?"). Change the minutes in `[reminders.game_check]` |
 | Low health, back off | Health drops under 25% (again after you heal over 40%) |
 | Under buyback gold | After 30:00, your gold drops under the buyback cost |
 | Skill point unused | 10 s after a level-up you haven't spent (up to level 16) |
@@ -184,8 +184,8 @@ It uses:
 ### Ask the coach out loud
 
 Hands free, no window or key: say **"hey coach"**, wait for the beep, then
-ask. For now the coach answers four questions from your own hero's data and
-the game clock:
+ask. For now the coach answers five questions from your own hero's data,
+the game clock and the enemy heroes you told it:
 
 - "How am I doing?" / "Am I ahead?": from 8 minutes on, whether you are
   ahead, even or behind for this point of the match, comparing your gold,
@@ -195,8 +195,18 @@ the game clock:
   from OpenDota if `opendota` is on in `[pregame]`. See
   [docs/strategy/ahead-or-behind.md](docs/strategy/ahead-or-behind.md).
 
-- "What's my next item?" / "What should I buy?": the next item on your build
-  and how much gold you still need.
+- "What should I buy?": one item for right now, from how your game is going
+  and the enemy heroes you named at the start of the game (or typed). A
+  counter comes first, picked for your position: Monkey King Bar against
+  Phantom Assassin, Dust or Sentries against invisible heroes, Black King
+  Bar, Pipe or Glimmer Cape against a lot of magic damage, and so on. When
+  you are behind and nothing needs countering, a defensive item; otherwise
+  the next item on your build. For example: "You're behind for 20 minutes.
+  Get Black King Bar next, 1200 more gold: Lina and Lion do a lot of magic
+  damage." See
+  [docs/strategy/situational-items.md](docs/strategy/situational-items.md).
+- "What's my next item?": the next item on your build and how much gold you
+  still need.
 - "Can I buy back?": the buyback cost against your gold, or its cooldown.
 - "When is the next rune?": the next power rune, gold runes and wisdom
   shrines.

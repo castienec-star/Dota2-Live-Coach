@@ -4,7 +4,8 @@ Everything runs on this PC. The microphone is only heard by a small local
 wake-word model until it catches the wake word; then a few seconds of speech
 are turned into text by a local model and thrown away. Nothing is recorded or
 sent anywhere. Answers come only from your own hero's GSI data, your build
-list and the game clock, like every other reminder.
+list, the game clock and the enemy heroes you told the coach, like every
+other reminder.
 
 Needs the optional packages:  pip install -e ".[voice]"
 """
@@ -19,8 +20,9 @@ import threading
 import time
 from collections.abc import Callable, Iterable, Iterator
 
+from . import situational
 from .benchmarks import EARLIEST, Benchmarks, is_support, spoken
-from .heroes import HeroIndex
+from .heroes import HeroIndex, HeroInfo
 from .items import load_items
 from .lineup import Question
 from .rules import PositionOf, timers
@@ -33,7 +35,8 @@ RATE = 16000  # samples per second, 16-bit mono: what both speech models expect
 FRAME = 1280  # samples per microphone read (80 ms)
 
 UNKNOWN = (
-    "I can't help with that yet. Ask me how you're doing, or about your next item, buyback or runes."
+    "I can't help with that yet. Ask me how you're doing, what to buy, "
+    "or about your next item, buyback or runes."
 )
 
 # First match wins, so the narrower questions come first.
@@ -47,7 +50,13 @@ INTENTS: list[tuple[str, re.Pattern[str]]] = [
         ),
     ),
     ("rune", re.compile(r"\b(runes?|shrines?|bounty|bounties|wisdom)\b")),
-    ("next_item", re.compile(r"\b(items?|buy|build|purchase|get next|shop)\b")),
+    # "What's my next item?" is the build list; "what should I buy?" weighs
+    # the game and the enemy heroes too.
+    ("next_item", re.compile(r"\b(next item|next on my build|my build|build list|get next)\b")),
+    (
+        "what_to_buy",
+        re.compile(r"\b(items?|buy|build|purchase|shop|recommend|counters?|what (should|do|can) i get)\b"),
+    ),
 ]
 
 
@@ -85,13 +94,16 @@ class Answers:
         builds: dict[str, list[str]],
         position: PositionOf | None = None,
         benchmarks: Benchmarks | None = None,
+        enemies: Callable[[], list[HeroInfo]] | None = None,
     ) -> None:
         settings = {name: reminders.get(name, {}) for name, _ in self.RUNES}
         self.timers = {r.name: r for r in timers.build(settings) if r.name in dict(self.RUNES)}
         self.heroes = HeroIndex()
-        self.items = ItemReady(parse_builds(builds, load_items()), self.heroes, position) if builds else None
+        self.all_items = load_items()
+        self.items = ItemReady(parse_builds(builds, self.all_items), self.heroes, position) if builds else None
         self.position = position
         self.benchmarks = benchmarks if benchmarks is not None else Benchmarks()
+        self.enemies = enemies or list
 
     def answer(self, text: str, snap: Snapshot) -> str:
         kind = intent(text)
@@ -108,6 +120,21 @@ class Answers:
         if snap.gold >= target.cost:
             return f"Buy {target.name} now, you have the gold."
         return f"Next is {target.name}. You need {target.cost - snap.gold} more gold."
+
+    def what_to_buy(self, snap: Snapshot) -> str:
+        position = self.position(snap) if self.position else 0
+        support = is_support(self.heroes.by_key(snap.hero_name), position)
+        verdict = self.benchmarks.verdict(snap, support)
+        next_item = self.items.next_item(snap) if self.items else None
+        pick = situational.recommend(
+            snap,
+            verdict,
+            self.enemies(),
+            situational.role(position, support),
+            self.all_items,
+            next_item,
+        )
+        return situational.spoken(pick, verdict, snap)
 
     def how_am_i_doing(self, snap: Snapshot) -> str:
         if (snap.clock_time or 0) < EARLIEST:
@@ -364,6 +391,7 @@ def start(
     pending: Callable[[], Question | None] | None = None,
     position: PositionOf | None = None,
     benchmarks: Benchmarks | None = None,
+    enemies: Callable[[], list[HeroInfo]] | None = None,
 ) -> threading.Thread | None:
     """Start listening on a background thread, if [listen] is on and installed."""
     if not settings.get("enabled", False):
@@ -378,7 +406,7 @@ def start(
     except Exception as exc:
         log.warning("Voice questions unavailable (%s)", exc)
         return None
-    answers = Answers(reminders, builds, position, benchmarks)
+    answers = Answers(reminders, builds, position, benchmarks, enemies)
     loop = VoiceLoop(
         wake,
         transcribe,
