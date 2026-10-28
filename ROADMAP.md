@@ -22,60 +22,66 @@ CLAUDE.md).
    per-bracket item data, plus a role-based `default` list. *Why:* most
    players will never edit `coach.toml`; the item reminder is useless
    without a build.
-2. [ ] **Post-game review: three things to fix.** After the match, speak
+2. [ ] **"Worth buying now" while saving.** When the next build item is
+   far off and the player sits on spare gold, suggest one cheap, always-good
+   item first, for example "Buy a Magic Wand, you'll get your Black King Bar
+   later." At most once every few minutes, and never after the item is owned.
+   *Why:* low-bracket players often carry unspent gold for minutes and lose
+   it on death; Castien asked for this (2026-10-28).
+3. [ ] **Post-game review: three things to fix.** After the match, speak
    (and save as a text file) three short points from the player's own
    recording: deaths and when, last hits at 10 minutes against a target for
    their role, slow big-item timings. *Why:* this is the "learn something
    every game" moment that justifies a subscription.
-3. [ ] **Last-hit pace check.** At 5 and 10 minutes, compare the player's
+4. [ ] **Last-hit pace check.** At 5 and 10 minutes, compare the player's
    last hits with a simple target (for example 35 at 10:00 for a core) and
    give one encouraging line. Supports skip it. *Why:* last hitting is the
    biggest farm gap in low brackets and GSI gives last hits directly.
-4. [ ] **"Don't fight, heal" after a near-death.** When health stays under
+5. [ ] **"Don't fight, heal" after a near-death.** When health stays under
    the low-health line for a while without healing, suggest going back or
    using regen (salve, tango, fountain), naming regen the player owns.
    *Why:* dying is the number one habit to fix below Divine.
-5. [ ] **Death streak tip.** After two or three deaths close together, one
+6. [ ] **Death streak tip.** After two or three deaths close together, one
    calm line: farm safely, stay near towers, buy a Black King Bar or
    defensive item if it is on the build. *Why:* tilt and feeding are classic
    low-bracket losses; one sentence can stop the spiral.
-6. [ ] **Neutral item tier reminders.** Tell the player when each tier of
+7. [ ] **Neutral item tier reminders.** Tell the player when each tier of
    neutral items starts dropping and remind them to pick one up from the
    stash. Timings from the live patch. *Why:* new players forget neutral
    items entirely.
-7. [ ] **Day/night and Roshan basics.** Say when night starts (vision is
+8. [ ] **Day/night and Roshan basics.** Say when night starts (vision is
    shorter) for the first few cycles, and give one reminder at a sensible
    minute that Roshan is worth taking after a won fight. Uses only the game
    clock and `daytime`. *Why:* objective play is what turns won fights into
    won games at low MMR.
-8. [ ] **Beginner and experienced modes.** One switch in `coach.toml` that
+9. [ ] **Beginner and experienced modes.** One switch in `coach.toml` that
    sets how talkative the coach is. Beginner: all reminders, longer lines.
    Experienced: only gold, stacks, power rune and buyback. *Why:* the same
    app must suit a Herald and an Ancient without editing ten settings.
-9. [ ] **Don't talk over itself.** Give reminders a priority (low health
-   beats runes) and drop low-priority lines when several land at once.
-   *Why:* a coach that chatters gets turned off.
-10. [ ] **GSI health check on start.** If no GSI update arrives within a
+10. [ ] **Don't talk over itself.** Give reminders a priority (low health
+    beats runes) and drop low-priority lines when several land at once.
+    *Why:* a coach that chatters gets turned off.
+11. [ ] **GSI health check on start.** If no GSI update arrives within a
     minute of starting, say and print what to check (launch option, config
     file path, firewall), then detect when Dota connects. *Why:* "it does
     nothing" is the top support problem for a paid app.
-11. [ ] **Strategy notes in `docs/strategy/`.** Short, sourced notes on low-
+12. [ ] **Strategy notes in `docs/strategy/`.** Short, sourced notes on low-
     bracket fundamentals and the heroes from item 1, used to make the
     coach's tips and builds accurate. *Why:* the coach is only as good as its
     advice.
-12. [ ] **Better built-in death tips.** Use the strategy notes to make the
+13. [ ] **Better built-in death tips.** Use the strategy notes to make the
     no-AI tips specific to role and game stage (laning, mid game, late), so
     players without a GPU still get good advice. *Why:* many low-bracket
     players have modest PCs and no API key.
-13. [ ] **Windows installer prototype.** Build a single `.exe` with
+14. [ ] **Windows installer prototype.** Build a single `.exe` with
     PyInstaller and a GitHub Actions job that produces it as an artifact, so
     nobody needs Python or Git. No signing or auto-update yet. *Why:* the
     current command-line setup loses most buyers before their first game.
-14. [ ] **First-run setup in plain words.** `py -m coach` (and the future
+15. [ ] **First-run setup in plain words.** `py -m coach` (and the future
     installer) runs install automatically when the GSI config is missing,
     tests the voice, and tells the player exactly what to do next.
     *Why:* onboarding decides whether a trial turns into a subscription.
-15. [ ] **Simple settings window.** A small local window (tkinter, no
+16. [ ] **Simple settings window.** A small local window (tkinter, no
     server) to toggle reminders, pick the voice and mode, and edit the build
     for the current hero. *Why:* paying users expect not to edit TOML.
 
