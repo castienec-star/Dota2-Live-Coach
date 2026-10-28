@@ -170,6 +170,18 @@ It uses:
   under `[pregame]`, or per hero under `[pregame.positions]` (e.g.
   `pudge = 4`). To turn the questions off, set `start_questions = false`
   under `[listen]`. Your own hero is always known.
+- **Short questions during the match** about what the game data can't show:
+  "How did your lane go: won, even or lost?" around 10 minutes, then "Which
+  enemy hero is giving you the most trouble?", "Is their carry farming
+  freely?" and "Is your team ahead or behind in fights?". The coach only asks
+  at a calm moment (while you wait to respawn, or when your hero is healthy
+  and hasn't been hit for a while), never in a fight, at most one question
+  every 5 minutes and each once a match. Answer in a word after the beep and
+  it gives one line of advice ("Then group up with your team and go find
+  their carry"); say nothing or "skip" and it lets it go. Answers are
+  forgotten after the match. Turn them off with `game_questions = false`, or
+  space them out with `question_every`, under `[listen]`. See
+  [docs/strategy/game-state-questions.md](docs/strategy/game-state-questions.md).
 - **Public hero statistics** from [OpenDota](https://www.opendota.com): how
   each hero does against the others and by game length, like Dota Plus shows.
   They are saved on your PC and refreshed weekly.

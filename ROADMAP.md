@@ -107,6 +107,11 @@ CLAUDE.md).
 - Translations of the spoken lines.
 - Upgrade-aware builds: know that Dragon Lance went into Hurricane Pike (from
   dotaconstants' item components) so builds can list both steps.
+- Questions during the match (issue #11 step 3): done in the
+  `agent/game-questions` PR (lane, trouble hero, enemy carry, fights, at calm
+  moments). Next, step 4: feed the answers into "what should I buy?", the
+  15/25 minute check and death tips. Later maybe "Is Roshan down?" once a
+  Roshan reminder exists (item 8).
 - Per-position builds and reminders (issue #11): done in the
   `agent/position-builds` PR (`hero_posN` / `posN` builds, a `positions` list
   on any reminder). Next: support-only lines the coach can back with GSI,
