@@ -103,7 +103,7 @@ class Answers:
         self.items = ItemReady(parse_builds(builds, self.all_items), self.heroes, position) if builds else None
         self.position = position
         self.benchmarks = benchmarks if benchmarks is not None else Benchmarks()
-        self.enemies = enemies or (lambda: [])
+        self.enemies = enemies or list
 
     def answer(self, text: str, snap: Snapshot) -> str:
         kind = intent(text)

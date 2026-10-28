@@ -89,8 +89,8 @@ CLAUDE.md).
 - Voice questions (issue #9): the ahead/behind verdict ("how am I doing?")
   is done in the `agent/ahead-or-behind` PR, and "what should I buy?" with
   counters from the known enemy lineup in the `agent/situational-items` PR.
-  Next, name the counter item in the unasked 15:00 and 25:00 check too, and
-  optional LLM phrasing (step 4). The coach also says the verdict
+  The unasked 15:00 and 25:00 check names the counter too. Next, optional
+  LLM phrasing (step 4). The coach also says the verdict
   unasked at 15 and 25 minutes. Next, tune the time ramp in
   `docs/strategy/ahead-or-behind.md` from real recordings. More
   questions that fit the current answers: "when should I stack?", "how many

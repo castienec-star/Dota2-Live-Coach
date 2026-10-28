@@ -2,13 +2,18 @@
 
 The same verdict as asking "hey coach, how am I doing?" (see
 coach/benchmarks.py): your own hero's GSI numbers against public numbers
-for your hero.
+for your hero. When you told the coach the enemy heroes and one of them
+calls for a counter item, it is named too (see coach/situational.py).
 """
 
 from __future__ import annotations
 
+from collections.abc import Callable
+
+from .. import situational
 from ..benchmarks import Benchmarks, is_support, spoken
-from ..heroes import HeroIndex
+from ..heroes import HeroIndex, HeroInfo
+from ..items import load_items
 from ..state import MatchState
 from . import PositionOf
 
@@ -26,12 +31,15 @@ class GameCheck:
         late: int = 60,
         position: PositionOf | None = None,
         heroes: HeroIndex | None = None,
+        enemies: Callable[[], list[HeroInfo]] | None = None,
     ) -> None:
         self.benchmarks = benchmarks
         self.times = sorted(int(m) * 60 for m in (minutes if minutes is not None else [15, 25]))
         self.late = late
         self.position = position
         self.heroes = heroes or HeroIndex()
+        self.enemies = enemies or list
+        self._items = load_items()
         self._done: set[int] = set()
 
     def check(self, state: MatchState) -> list[str]:
@@ -44,18 +52,28 @@ class GameCheck:
             return []
         self._done.update(t for t in self.times if t <= now)
         hero = self.heroes.by_key(snap.hero_name)
-        support = is_support(hero, self.position(snap) if self.position else 0)
+        position = self.position(snap) if self.position else 0
+        support = is_support(hero, position)
         verdict = self.benchmarks.verdict(snap, support)
-        return [spoken(verdict, support)] if verdict else []
+        if verdict is None:
+            return []
+        role = situational.role(position, support)
+        counter = situational.against(self.enemies(), role, snap, self._items)
+        if counter is None:
+            return [spoken(verdict, support)]
+        return [f"{spoken(verdict, support, items=False)} {situational.spoken(counter, None, snap)}"]
 
     def reset(self) -> None:
         self._done.clear()
 
 
 def build(
-    settings: dict[str, dict], benchmarks: Benchmarks, position: PositionOf | None = None
+    settings: dict[str, dict],
+    benchmarks: Benchmarks,
+    position: PositionOf | None = None,
+    enemies: Callable[[], list[HeroInfo]] | None = None,
 ) -> list[GameCheck]:
     options = dict(settings.get("game_check", {}))
     if not options.pop("enabled", True):
         return []
-    return [GameCheck(benchmarks, position=position, **options)]
+    return [GameCheck(benchmarks, position=position, enemies=enemies, **options)]

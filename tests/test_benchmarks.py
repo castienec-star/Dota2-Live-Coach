@@ -180,3 +180,21 @@ def test_game_check_from_config():
     assert rule.times == [600]
     (rule,) = game_check.build({}, Benchmarks())
     assert rule.times == [900, 1500]
+
+
+def test_game_check_names_a_counter_from_the_enemy_lineup():
+    lineup = [HeroIndex().by_key(k) for k in ("phantom_assassin", "lion")]
+    rule = GameCheck(Benchmarks(), minutes=[25], enemies=lambda: lineup)
+    snap = jugg(clock=1500, gpm=350, xpm=400, last_hits=80)
+    snap.gold = 6000
+    (line,) = run_check(rule, snap)
+    assert line.startswith("You're behind for 25 minutes")
+    assert "Black King Bar or a defensive item" not in line
+    assert line.endswith("Buy Monkey King Bar now: Phantom Assassin dodges your attacks.")
+
+
+def test_game_check_without_a_counter_keeps_the_general_advice():
+    lineup = [HeroIndex().by_key("lina")]
+    rule = GameCheck(Benchmarks(), minutes=[25], enemies=lambda: lineup)
+    (line,) = run_check(rule, jugg(clock=1500, gpm=350, xpm=400, last_hits=80))
+    assert line.endswith("buy a Black King Bar or a defensive item.")

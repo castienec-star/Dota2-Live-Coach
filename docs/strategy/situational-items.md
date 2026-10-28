@@ -67,5 +67,10 @@ is known (from 8:00, for heroes with benchmark numbers).
 - It doesn't know what the enemy has bought, so it can't say "they have
   Butterfly, buy MKB". That would need enemy items, which GSI doesn't give a
   player and the fair-play rule forbids looking up.
-- The unasked 15:00 and 25:00 check still gives the general advice; naming
-  the counter there too is a next step.
+
+## In the unasked check
+
+At 15:00 and 25:00 the coach says the verdict (see
+[ahead-or-behind.md](ahead-or-behind.md)); when the enemy lineup calls for a
+counter (step 1 above), it names that item and why, in place of the general
+item advice. Castien asked for this on 2026-10-28.

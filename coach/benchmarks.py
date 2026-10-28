@@ -154,8 +154,9 @@ def is_support(hero: HeroInfo | None, position: int = 0) -> bool:
     return hero is not None and "Support" in hero.roles and "Carry" not in hero.roles
 
 
-def spoken(verdict: Verdict, support: bool) -> str:
-    """The verdict as one or two short sentences, with what to do about it."""
+def spoken(verdict: Verdict, support: bool, items: bool = True) -> str:
+    """The verdict as one or two short sentences, with what to do about it.
+    items=False leaves out the item advice, when a counter item is named next."""
     minutes = f"{verdict.minute} minutes"
     if verdict.kind == "ahead":
         return (
@@ -167,9 +168,19 @@ def spoken(verdict: Verdict, support: bool) -> str:
     name = METRICS[verdict.weakest]
     low = f"{name} {'are' if name.endswith('s') else 'is'} low"
     if support:
+        if not items:
+            return (
+                f"You're behind for {minutes}, your {low}. "
+                "Stay near your cores and soak experience from fights."
+            )
         return (
             f"You're behind for {minutes}, your {low}. Stay near your cores, "
             "soak experience from fights, and buy Glimmer Cape or Force Staff to stay alive."
+        )
+    if not items:
+        return (
+            f"You're behind for {minutes}, your {low}. Farm the safe side of the map "
+            "near your towers and skip risky fights."
         )
     return (
         f"You're behind for {minutes}, your {low}. Farm the safe side of the map "

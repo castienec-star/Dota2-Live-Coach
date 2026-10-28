@@ -83,7 +83,11 @@ def make_coach(
         + hero.build(reminders, cfg.builds, position)
         + power_windows
         + game_check.build(
-            reminders, benchmarks or (make_benchmarks(cfg) if tips else Benchmarks()), position
+            reminders,
+            benchmarks or (make_benchmarks(cfg) if tips else Benchmarks()),
+            position,
+            # The enemy heroes the player told the coach; pregame is made below.
+            lambda: coach.pregame.enemies if coach.pregame is not None else [],
         )
         + (death_tip.build(reminders, speaker.say) if tips else [])
     )
@@ -141,7 +145,7 @@ def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
         pending=interview.pending if interview else None,
         position=position_of(cfg, coach),
         benchmarks=benchmarks,
-        enemies=(lambda: coach.pregame.enemies) if coach.pregame is not None else None,
+        enemies=lambda: coach.pregame.enemies if coach.pregame is not None else [],
     )
     if interview is not None and listening is not None:
         # Only ask when the coach can hear the answers. It goes before the
