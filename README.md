@@ -203,3 +203,6 @@ Settings live in `config/coach.toml`; copy it to
 py -m pip install -e ".[dev]"
 py -m pytest
 ```
+
+Where the project is heading: [VISION.md](VISION.md) (who it is for and the
+path to a paid app) and [ROADMAP.md](ROADMAP.md) (what gets built next).
