@@ -87,8 +87,15 @@ camp is alive, already stacked or blocked, so the coach cannot check that.
 | Place your observer ward | An observer ward has sat in your inventory for 60 s |
 
 Item builds are per hero in the `[builds]` section of `coach.toml`, for
-example `luna = ["Power Treads", "Manta Style", "Black King Bar"]`. Prices come
-from a 7.41 snapshot of OpenDota's item data.
+example `luna = ["Power Treads", "Manta Style", "Black King Bar"]`. The coach
+comes with simple builds for heroes popular from Herald to Ancient (Axe,
+Bristleback, Drow Ranger, Juggernaut, Legion Commander, Lion, Luna, Ogre Magi,
+Phantom Assassin, Pudge, Slark, Sniper, Viper, Witch Doctor, Wraith King and
+Zeus). Any other hero gets a support build if it is a support, otherwise a core
+build (`default_support` and `default`). Put `pudge = []` in your own
+`coach.toml` to turn the reminder off for one hero. Prices come from OpenDota's
+item data; `coach/data/PATCH` names the patch the bundled data is current for
+(7.41f).
 
 ### Death-timer tips
 
