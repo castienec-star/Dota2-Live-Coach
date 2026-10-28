@@ -124,6 +124,19 @@ min_respawn = 10
 [reminders.item_ready]
 enabled = true
 
+[reminders.worth_buying]
+# While you save for a big item, suggest a cheap one that helps any hero, e.g.
+# "Buy a Magic Wand now, you'll get your Black King Bar later." Said when the
+# next item on your build is at least "far" gold away. Each item is suggested
+# at most once a match, and never one you already own.
+# "stats" means Bracer, Wraith Band or Null Talisman, by your hero's main attribute.
+enabled = true
+items = ["Magic Wand", "stats"]
+far = 1500
+until_minute = 25
+# Seconds between two suggestions.
+cooldown = 180
+
 [reminders.power_window]
 # Says when the stretches the pre-game briefing found begin: when your lineup
 # is strongest and when the enemy's is. "lead" = seconds early.

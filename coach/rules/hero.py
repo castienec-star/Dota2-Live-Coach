@@ -182,6 +182,68 @@ class ItemReady(HeroRule):
         self._announced.clear()
 
 
+# Cheap items that help any hero, by primary attribute ("stats" in the config).
+STAT_ITEMS = {"str": "item_bracer", "agi": "item_wraith_band", "int": "item_null_talisman"}
+
+
+class WorthBuying(ItemReady):
+    """Suggests a cheap item while you save up for a big one.
+
+    Said when the next item on your build is still at least "far" gold away
+    and you can afford one of "items" you don't own yet. Each item is
+    suggested at most once a match, and nothing after "until_minute".
+    """
+
+    name = "worth_buying"
+
+    def __init__(
+        self,
+        builds: dict[str, list[ItemInfo]],
+        heroes: HeroIndex | None = None,
+        items: list[ItemInfo | str] | None = None,
+        far: int = 1500,
+        until_minute: int = 25,
+        cooldown: int = 180,
+    ) -> None:
+        super().__init__(builds, heroes)
+        self.cooldown = cooldown
+        self.items = items or []
+        self.far = far
+        self.until_clock = until_minute * 60
+        self._all_items: dict[str, ItemInfo] | None = None
+
+    def candidates(self, hero: str) -> list[ItemInfo]:
+        found = []
+        for item in self.items:
+            if item == "stats":
+                info = self.heroes.by_key(hero) if self.heroes else None
+                key = STAT_ITEMS.get(info.primary_attr) if info else None
+                if key is None:
+                    continue
+                if self._all_items is None:
+                    self._all_items = load_items()
+                item = self._all_items[key]
+            found.append(item)
+        return found
+
+    def evaluate(self, snap: Snapshot) -> str | None:
+        if not 0 <= snap.clock_time < self.until_clock:
+            return None
+        if self._last is not None and snap.clock_time - self._last < self.cooldown:
+            return None  # checked here so an item isn't used up while it can't be said
+        target = self.next_item(snap)
+        if target is None or target.cost - snap.gold < self.far:
+            return None
+        hero = (snap.hero_name or "").removeprefix("npc_dota_hero_")
+        for item in self.candidates(hero):
+            if item.key in self._announced or snap.has_item(item.key) or item.cost > snap.gold:
+                continue
+            self._announced.add(item.key)
+            article = "an" if item.name[0] in "AEIOU" else "a"
+            return f"Buy {article} {item.name} now, you'll get your {target.name} later."
+        return None
+
+
 class WandCharges(HeroRule):
     """Said once each time you get hurt while holding a charged wand."""
 
@@ -246,15 +308,19 @@ RULES = {
 }
 
 
+def _find(items: dict[str, ItemInfo], name: str, where: str) -> ItemInfo:
+    info = lookup(items, name)
+    if info is None:
+        raise ValueError(f"Unknown item {name!r} in {where}")
+    return info
+
+
 def parse_builds(raw: dict[str, list[str]], items: dict[str, ItemInfo]) -> dict[str, list[ItemInfo]]:
     builds = {}
     for hero, names in raw.items():
         found = []
         for name in names:
-            info = lookup(items, name)
-            if info is None:
-                raise ValueError(f"Unknown item {name!r} in the build for {hero}")
-            found.append(info)
+            found.append(_find(items, name, f"the build for {hero}"))
         builds[hero.lower()] = found
     return builds
 
@@ -269,4 +335,10 @@ def build(settings: dict[str, dict], builds: dict[str, list[str]]) -> list[HeroR
     item_options = settings.get("item_ready", {})
     if item_options.get("enabled", True) and builds:
         rules.append(ItemReady(parse_builds(builds, load_items()), HeroIndex()))
+    worth = dict(settings.get("worth_buying", {}))
+    if worth.pop("enabled", True) and builds:
+        items = load_items()
+        names = worth.pop("items", ["Magic Wand", "stats"])
+        cheap = [name if name == "stats" else _find(items, name, "worth_buying") for name in names]
+        rules.append(WorthBuying(parse_builds(builds, items), HeroIndex(), cheap, **worth))
     return rules
