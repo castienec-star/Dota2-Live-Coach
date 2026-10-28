@@ -155,6 +155,31 @@ min_score = 0.5
 # Item builds, per hero (the name without npc_dota_hero_). The coach says
 # "You have gold for ..." for the first item on the list you don't own yet.
 # Use names like "Black King Bar" or GSI keys like "black_king_bar".
-# A "default" list is used for heroes without their own.
+# Heroes without their own list use "default_support" if they are a support,
+# otherwise "default". An empty list (pudge = []) turns the reminder off for
+# that hero.
+#
+# These are simple, forgiving builds for heroes popular from Herald to Ancient.
+# Don't list an item and then its upgrade (Dragon Lance, then Hurricane Pike):
+# the coach cannot tell the first one was built into the second.
+# Some keys differ from the hero's name: Wraith King is skeleton_king and Zeus
+# is zuus.
 [builds]
+default = ["Power Treads", "Black King Bar", "Satanic"]
+default_support = ["Arcane Boots", "Glimmer Cape", "Force Staff", "Aghanim's Scepter"]
+axe = ["Phase Boots", "Blink Dagger", "Blade Mail", "Black King Bar", "Assault Cuirass"]
+bristleback = ["Phase Boots", "Vanguard", "Black King Bar", "Assault Cuirass", "Heart of Tarrasque"]
+drow_ranger = ["Power Treads", "Hurricane Pike", "Manta Style", "Black King Bar", "Daedalus"]
+juggernaut = ["Phase Boots", "Battle Fury", "Manta Style", "Black King Bar", "Butterfly"]
+legion_commander = ["Phase Boots", "Blade Mail", "Blink Dagger", "Black King Bar", "Assault Cuirass"]
+lion = ["Tranquil Boots", "Blink Dagger", "Aether Lens", "Glimmer Cape", "Aghanim's Scepter"]
 luna = ["Power Treads", "Mask of Madness", "Manta Style", "Black King Bar", "Butterfly"]
+ogre_magi = ["Arcane Boots", "Hand of Midas", "Aghanim's Scepter", "Glimmer Cape", "Force Staff"]
+phantom_assassin = ["Power Treads", "Battle Fury", "Desolator", "Black King Bar", "Abyssal Blade"]
+pudge = ["Tranquil Boots", "Blink Dagger", "Aghanim's Shard", "Spirit Vessel", "Heart of Tarrasque"]
+skeleton_king = ["Phase Boots", "Armlet of Mordiggian", "Blink Dagger", "Black King Bar", "Assault Cuirass"]
+slark = ["Power Treads", "Diffusal Blade", "Black King Bar", "Eye of Skadi", "Abyssal Blade"]
+sniper = ["Power Treads", "Maelstrom", "Hurricane Pike", "Black King Bar", "Daedalus"]
+viper = ["Power Treads", "Hurricane Pike", "Black King Bar", "Eye of Skadi", "Butterfly"]
+witch_doctor = ["Arcane Boots", "Glimmer Cape", "Aghanim's Scepter", "Force Staff", "Aether Lens"]
+zuus = ["Arcane Boots", "Kaya", "Aghanim's Scepter", "Aether Lens", "Octarine Core"]

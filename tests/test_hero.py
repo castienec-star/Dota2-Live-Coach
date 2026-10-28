@@ -116,6 +116,38 @@ def test_item_ready_uses_default_build():
     assert rule.builds["default"][0].name == "Blink Dagger"
 
 
+def test_support_without_build_uses_support_default(payload):
+    from coach.heroes import HeroIndex
+
+    builds = parse_builds({"default": ["Battle Fury"], "default_support": ["Glimmer Cape"]}, load_items())
+    rule = ItemReady(builds, HeroIndex())
+    assert rule.build_for("crystal_maiden")[0].name == "Glimmer Cape"
+    assert rule.build_for("antimage")[0].name == "Battle Fury"
+    # Without hero roles every hero falls back to "default".
+    assert ItemReady(builds).build_for("crystal_maiden")[0].name == "Battle Fury"
+
+
+def test_empty_hero_build_turns_reminder_off(payload):
+    from coach.heroes import HeroIndex
+
+    builds = parse_builds({"default": ["Battle Fury"], "pudge": []}, load_items())
+    assert ItemReady(builds, HeroIndex()).build_for("pudge") == []
+
+
+def test_default_builds_name_real_heroes_and_items(tmp_path):
+    from coach import config
+    from coach.heroes import HeroIndex
+
+    cfg = config.load(app_dir=tmp_path)
+    keys = {h.key for h in HeroIndex().heroes.values()}
+    assert {"default", "default_support"} <= set(cfg.builds)
+    for hero, names in cfg.builds.items():
+        assert hero in keys | {"default", "default_support"}, f"no hero called {hero!r}"
+        assert len(names) == len(set(names)), f"repeated item in the build for {hero}"
+    # Fails loudly if a patch removes an item a build names.
+    parse_builds(cfg.builds, load_items())
+
+
 def test_unknown_item_is_an_error():
     with pytest.raises(ValueError):
         parse_builds({"luna": ["Not An Item"]}, load_items())

@@ -6,6 +6,7 @@ shows you. These rules only point at it at the right moment.
 
 from __future__ import annotations
 
+from ..heroes import HeroIndex
 from ..items import ItemInfo, load_items, lookup
 from ..state import MatchState, Snapshot
 
@@ -139,18 +140,34 @@ class SkillPoint(HeroRule):
 
 
 class ItemReady(HeroRule):
-    """Says when you can afford the next item on your build list for this hero."""
+    """Says when you can afford the next item on your build list for this hero.
+
+    Heroes without their own build use "default_support" if they are a support
+    (and not also a carry) by OpenDota's hero roles, otherwise "default".
+    """
 
     name = "item_ready"
 
-    def __init__(self, builds: dict[str, list[ItemInfo]]) -> None:
+    def __init__(self, builds: dict[str, list[ItemInfo]], heroes: HeroIndex | None = None) -> None:
         super().__init__(0)
         self.builds = builds
+        self.heroes = heroes
         self._announced: set[str] = set()
+
+    def is_support(self, hero: str) -> bool:
+        info = self.heroes.by_key(hero) if self.heroes else None
+        return info is not None and "Support" in info.roles and "Carry" not in info.roles
+
+    def build_for(self, hero: str) -> list[ItemInfo]:
+        if hero in self.builds:
+            return self.builds[hero]
+        if "default_support" in self.builds and self.is_support(hero):
+            return self.builds["default_support"]
+        return self.builds.get("default", [])
 
     def next_item(self, snap: Snapshot) -> ItemInfo | None:
         hero = (snap.hero_name or "").removeprefix("npc_dota_hero_")
-        build = self.builds.get(hero) or self.builds.get("default") or []
+        build = self.build_for(hero)
         return next((i for i in build if not snap.has_item(i.key)), None)
 
     def evaluate(self, snap: Snapshot) -> str | None:
@@ -251,5 +268,5 @@ def build(settings: dict[str, dict], builds: dict[str, list[str]]) -> list[HeroR
             rules.append(cls(**options))
     item_options = settings.get("item_ready", {})
     if item_options.get("enabled", True) and builds:
-        rules.append(ItemReady(parse_builds(builds, load_items())))
+        rules.append(ItemReady(parse_builds(builds, load_items()), HeroIndex()))
     return rules
