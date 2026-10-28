@@ -184,8 +184,8 @@ It uses:
 ### Ask the coach out loud
 
 Hands free, no window or key: say **"hey coach"**, wait for the beep, then
-ask. For now the coach answers four questions from your own hero's data and
-the game clock:
+ask. For now the coach answers five questions from your own hero's data,
+the game clock and the enemy heroes you told it:
 
 - "How am I doing?" / "Am I ahead?": from 8 minutes on, whether you are
   ahead, even or behind for this point of the match, comparing your gold,
@@ -195,8 +195,18 @@ the game clock:
   from OpenDota if `opendota` is on in `[pregame]`. See
   [docs/strategy/ahead-or-behind.md](docs/strategy/ahead-or-behind.md).
 
-- "What's my next item?" / "What should I buy?": the next item on your build
-  and how much gold you still need.
+- "What should I buy?": one item for right now, from how your game is going
+  and the enemy heroes you named at the start of the game (or typed). A
+  counter comes first, picked for your position: Monkey King Bar against
+  Phantom Assassin, Dust or Sentries against invisible heroes, Black King
+  Bar, Pipe or Glimmer Cape against a lot of magic damage, and so on. When
+  you are behind and nothing needs countering, a defensive item; otherwise
+  the next item on your build. For example: "You're behind for 20 minutes.
+  Get Black King Bar next, 1200 more gold: Lina and Lion do a lot of magic
+  damage." See
+  [docs/strategy/situational-items.md](docs/strategy/situational-items.md).
+- "What's my next item?": the next item on your build and how much gold you
+  still need.
 - "Can I buy back?": the buyback cost against your gold, or its cooldown.
 - "When is the next rune?": the next power rune, gold runes and wisdom
   shrines.

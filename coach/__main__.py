@@ -141,6 +141,7 @@ def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
         pending=interview.pending if interview else None,
         position=position_of(cfg, coach),
         benchmarks=benchmarks,
+        enemies=(lambda: coach.pregame.enemies) if coach.pregame is not None else None,
     )
     if interview is not None and listening is not None:
         # Only ask when the coach can hear the answers. It goes before the

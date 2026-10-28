@@ -11,7 +11,8 @@ BUILDS = {"antimage": ["Power Treads", "Battle Fury", "Manta Style"]}
     "text, expected",
     [
         ("What's my next item?", "next_item"),
-        ("What should I buy?", "next_item"),
+        ("What should I buy?", "what_to_buy"),
+        ("What's next on my build?", "next_item"),
         ("Should I buy back?", "buyback"),
         ("can I buyback", "buyback"),
         ("When is the next rune?", "rune"),
@@ -39,7 +40,7 @@ def test_next_item_says_how_much_gold_is_missing(snap):
 
 def test_next_item_when_affordable(snap):
     snap.gold = 10000
-    assert Answers({}, BUILDS).answer("what do I buy", snap) == "Buy Manta Style now, you have the gold."
+    assert Answers({}, BUILDS).answer("next item", snap) == "Buy Manta Style now, you have the gold."
 
 
 def test_next_item_after_the_build_is_done(snap):
