@@ -81,6 +81,11 @@ CLAUDE.md).
 
 ## Ideas to look at later
 
+- Voice questions (issue #9): next, the ahead/behind verdict from public hero
+  benchmarks, then situational items against the known enemy lineup. More
+  questions that fit the current answers: "when should I stack?", "how many
+  last hits should I have?" (once item 3 has targets).
+
 - Skill build reminders per hero (for example "max your first spell"),
   from public data.
 - Spoken item timing goals per hero ("aim for Battle Fury by 15 minutes").

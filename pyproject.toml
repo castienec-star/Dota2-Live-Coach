@@ -15,6 +15,8 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "pytest-aiohttp>=1.0"]
+# Hands-free questions ("hey coach, what's my next item?"), all on this PC.
+voice = ["faster-whisper>=1.0", "sounddevice>=0.4.6", "vosk>=0.3.45"]
 
 [build-system]
 requires = ["setuptools>=68"]
