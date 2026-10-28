@@ -1,7 +1,8 @@
 # Ahead, even or behind
 
-Backs the "How am I doing?" voice answer (`coach/benchmarks.py`, issue #9
-step 2).
+Backs the "How am I doing?" voice answer and the unasked check at 15:00 and
+25:00 (`coach/benchmarks.py`, `coach/rules/game_check.py`, issue #9 step 2).
+Castien asked for the unasked check on 2026-10-28.
 
 ## Where the numbers come from
 

@@ -19,7 +19,7 @@ import threading
 import time
 from collections.abc import Callable, Iterable, Iterator
 
-from .benchmarks import EARLIEST, METRICS, Benchmarks
+from .benchmarks import EARLIEST, Benchmarks, is_support, spoken
 from .heroes import HeroIndex
 from .items import load_items
 from .lineup import Question
@@ -110,37 +110,15 @@ class Answers:
         return f"Next is {target.name}. You need {target.cost - snap.gold} more gold."
 
     def how_am_i_doing(self, snap: Snapshot) -> str:
-        hero = self.heroes.by_key(snap.hero_name)
-        position = self.position(snap) if self.position else 0
-        if position:
-            support = position in (4, 5)
-        else:
-            support = hero is not None and "Support" in hero.roles and "Carry" not in hero.roles
         if (snap.clock_time or 0) < EARLIEST:
             return "It's too early to tell. Ask me again after 8 minutes."
+        hero = self.heroes.by_key(snap.hero_name)
+        support = is_support(hero, self.position(snap) if self.position else 0)
         verdict = self.benchmarks.verdict(snap, support)
         if verdict is None:
             name = hero.name if hero else "this hero"
             return f"I don't have numbers for {name} yet."
-        minutes = f"{verdict.minute} minutes"
-        if verdict.kind == "ahead":
-            return (
-                f"You're ahead for {minutes}. Use it: group with your team "
-                "and take a tower, or Roshan after a won fight."
-            )
-        if verdict.kind == "even":
-            return f"You're about even for {minutes}. Keep farming and fight together with your team."
-        name = METRICS[verdict.weakest]
-        low = f"{name} {'are' if name.endswith('s') else 'is'} low"
-        if support:
-            return (
-                f"You're behind for {minutes}, your {low}. Stay near your cores, "
-                "soak experience from fights, and buy Glimmer Cape or Force Staff to stay alive."
-            )
-        return (
-            f"You're behind for {minutes}, your {low}. Farm the safe side of the map "
-            "near your towers, skip risky fights, and buy a Black King Bar or a defensive item."
-        )
+        return spoken(verdict, support)
 
     def buyback(self, snap: Snapshot) -> str:
         if snap.buyback_cost <= 0:

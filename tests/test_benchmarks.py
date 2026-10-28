@@ -9,7 +9,9 @@ from coach.benchmarks import (
 )
 from coach.heroes import HeroIndex
 from coach.opendota import OpenDota
-from coach.state import Snapshot
+from coach.rules import game_check
+from coach.rules.game_check import GameCheck
+from coach.state import MatchState, Snapshot
 from coach.voice import Answers, intent
 
 
@@ -137,3 +139,44 @@ def test_spoken_verdict_for_a_support_by_position():
 def test_spoken_verdict_without_numbers():
     am = Snapshot(clock_time=900, hero_name="npc_dota_hero_antimage", gpm=500, xpm=500)
     assert Answers({}, {}).answer("how am I doing", am) == "I don't have numbers for Anti-Mage yet."
+
+
+def run_check(rule, snap):
+    state = MatchState()
+    state.current = snap
+    return rule.check(state)
+
+
+def test_game_check_speaks_once_at_each_minute():
+    rule = GameCheck(Benchmarks(), minutes=[15, 25])
+    assert run_check(rule, jugg(clock=899)) == []
+    assert run_check(rule, jugg(clock=900, gpm=620, xpm=700, last_hits=110))[0].startswith(
+        "You're ahead for 15 minutes."
+    )
+    assert run_check(rule, jugg(clock=905)) == []
+    assert run_check(rule, jugg(clock=1500, gpm=350, xpm=400, last_hits=80))[0].startswith(
+        "You're behind for 25 minutes"
+    )
+    rule.reset()
+    assert run_check(rule, jugg(clock=1510)) != []
+
+
+def test_game_check_skips_a_missed_minute_and_unknown_heroes():
+    rule = GameCheck(Benchmarks(), minutes=[15, 25])
+    assert run_check(rule, jugg(clock=1000)) == []  # started the coach at 16:40
+    am = Snapshot(clock_time=1500, hero_name="npc_dota_hero_antimage", gpm=500, xpm=500)
+    assert run_check(rule, am) == []
+
+
+def test_game_check_uses_the_support_verdict_by_position():
+    rule = GameCheck(Benchmarks(), minutes=[20], position=lambda snap: 5)
+    lion = Snapshot(clock_time=1200, hero_name="npc_dota_hero_lion", gpm=150, xpm=300, last_hits=5)
+    assert "Glimmer Cape" in run_check(rule, lion)[0]
+
+
+def test_game_check_from_config():
+    assert game_check.build({"game_check": {"enabled": False}}, Benchmarks()) == []
+    (rule,) = game_check.build({"game_check": {"minutes": [10]}}, Benchmarks())
+    assert rule.times == [600]
+    (rule,) = game_check.build({}, Benchmarks())
+    assert rule.times == [900, 1500]

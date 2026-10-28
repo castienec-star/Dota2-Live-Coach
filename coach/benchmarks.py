@@ -17,6 +17,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
+from .heroes import HeroInfo
 from .state import Snapshot
 
 BENCHMARKS_FILE = Path(__file__).resolve().parent / "data" / "benchmarks.json"
@@ -143,3 +144,34 @@ class Benchmarks:
         score = sum(shares.values()) / len(shares)
         kind = "behind" if score < BEHIND else "ahead" if score >= AHEAD else "even"
         return Verdict(kind, score, min(shares, key=shares.get), clock // 60)
+
+
+def is_support(hero: HeroInfo | None, position: int = 0) -> bool:
+    """Positions 4 and 5; while the position isn't known, a hero that is a
+    support and not also a carry by OpenDota's hero roles."""
+    if position:
+        return position in (4, 5)
+    return hero is not None and "Support" in hero.roles and "Carry" not in hero.roles
+
+
+def spoken(verdict: Verdict, support: bool) -> str:
+    """The verdict as one or two short sentences, with what to do about it."""
+    minutes = f"{verdict.minute} minutes"
+    if verdict.kind == "ahead":
+        return (
+            f"You're ahead for {minutes}. Use it: group with your team "
+            "and take a tower, or Roshan after a won fight."
+        )
+    if verdict.kind == "even":
+        return f"You're about even for {minutes}. Keep farming and fight together with your team."
+    name = METRICS[verdict.weakest]
+    low = f"{name} {'are' if name.endswith('s') else 'is'} low"
+    if support:
+        return (
+            f"You're behind for {minutes}, your {low}. Stay near your cores, "
+            "soak experience from fights, and buy Glimmer Cape or Force Staff to stay alive."
+        )
+    return (
+        f"You're behind for {minutes}, your {low}. Farm the safe side of the map "
+        "near your towers, skip risky fights, and buy a Black King Bar or a defensive item."
+    )
