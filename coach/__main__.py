@@ -12,6 +12,7 @@ from aiohttp import web
 
 from . import config as config_mod
 from . import pregame as pregame_mod
+from . import voice
 from .gsi_server import Coach, make_app
 from .install import find_dota, install
 from .recorder import MatchRecorder
@@ -77,6 +78,14 @@ def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
     if coach.pregame is not None and sys.stdin is not None and sys.stdin.isatty():
         threading.Thread(target=read_typed_picks, args=(coach,), daemon=True).start()
         logging.info('Type the enemy picks any time, e.g.  vs am cm lion pudge sf')
+    voice.start(
+        cfg.listen,
+        coach.state,
+        speaker.say,
+        lambda: speaker.busy,
+        cfg.reminders,
+        cfg.builds,
+    )
     logging.info("Listening for Dota 2 on %s", cfg.url)
     try:
         web.run_app(make_app(coach), host=cfg.host, port=cfg.port, print=None, access_log=None)

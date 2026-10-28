@@ -14,6 +14,8 @@ The coach only tells you things you could already see or work out yourself.
   other players' profiles.
 - It does not look at your screen, with one exception you have to turn on
   yourself: reading the draft from the top bar (see below).
+- If you turn on voice questions, your microphone is only heard by speech
+  models running on your PC. Nothing is recorded or sent anywhere.
 
 ## Setup (Windows)
 
@@ -186,6 +188,31 @@ py -m coach draft-test "C:\path\to\screenshot.png" --teach d2="vengeful spirit"
 ```
 
 The coach keeps that portrait and recognises the hero from then on.
+
+### Ask the coach out loud
+
+Hands free, no window or key: say **"hey coach"**, wait for the beep, then
+ask. For now the coach answers three questions from your own hero's data and
+the game clock:
+
+- "What's my next item?" / "What should I buy?": the next item on your build
+  and how much gold you still need.
+- "Can I buy back?": the buyback cost against your gold, or its cooldown.
+- "When is the next rune?": the next power rune, gold runes and wisdom
+  shrines.
+
+Anything else gets "I can't help with that yet". It is off by default and
+needs two free speech models that run on your PC (downloaded once, about
+200 MB):
+
+```
+py -m pip install -e ".[voice]"
+```
+
+Then set `enabled = true` under `[listen]` in your `coach.toml`. A headset
+helps so game sound and Discord don't wake the coach; it never listens while
+it is talking itself. Change the wake word, the microphone, or use the
+lighter `tiny.en` model there too.
 
 Test the voice with `py -m coach say`. Pick another installed voice, change
 the speed, or retime and turn off reminders in the `[voice]` and

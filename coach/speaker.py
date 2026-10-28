@@ -67,12 +67,18 @@ class Speaker:
         self.max_delay = max_delay
         self._queue: queue.Queue[tuple[float, str] | None] = queue.Queue()
         self._factory = backend_factory
+        self._speaking = threading.Event()
         # The speech engine must be created on the thread that uses it.
         self._thread = threading.Thread(target=self._run, name="speaker", daemon=True)
         self._thread.start()
 
     def say(self, text: str) -> None:
         self._queue.put((time.monotonic(), text))
+
+    @property
+    def busy(self) -> bool:
+        """True while a line is being spoken or waits to be."""
+        return self._speaking.is_set() or not self._queue.empty()
 
     def close(self, timeout: float = 5.0) -> None:
         self._queue.put(None)
@@ -85,7 +91,10 @@ class Speaker:
             if time.monotonic() - queued_at > self.max_delay:
                 log.info("Skipped late line: %s", text)
                 continue
+            self._speaking.set()
             try:
                 backend.speak(text)
             except Exception:
                 log.exception("Could not speak %r", text)
+            finally:
+                self._speaking.clear()

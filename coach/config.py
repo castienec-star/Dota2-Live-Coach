@@ -34,6 +34,7 @@ class Config:
     reminders: dict = field(default_factory=dict)
     builds: dict = field(default_factory=dict)
     pregame: dict = field(default_factory=dict)
+    listen: dict = field(default_factory=dict)
     app_dir: Path = Path()
 
     @property
@@ -100,5 +101,6 @@ def load(user_file: Path | None = None, app_dir: Path | None = None) -> Config:
         reminders=raw.get("reminders", {}),
         builds=raw.get("builds", {}),
         pregame=raw.get("pregame", {}),
+        listen=raw.get("listen", {}),
         app_dir=app_dir,
     )

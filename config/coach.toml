@@ -26,6 +26,24 @@ rate = 1
 # Lines that wait longer than this many seconds to be spoken are skipped.
 max_delay = 4
 
+[listen]
+# Ask the coach questions out loud: say the wake word, wait for the beep, then
+# ask, e.g. "what's my next item?", "can I buy back?", "when is the next rune?".
+# Needs:  pip install -e ".[voice]"  (the speech models download once, about
+# 200 MB). Everything runs on this PC; nothing is recorded or sent anywhere.
+# A headset helps, so game sound and Discord don't wake the coach.
+enabled = false
+wake_word = "hey coach"
+# faster-whisper model: "tiny.en" is lighter on the CPU, "small.en" understands more.
+model = "base.en"
+# Microphone loudness that counts as talking (raise it if noise keeps it listening).
+speech_level = 500
+# Longest question, in seconds, and seconds to wait before listening again.
+max_seconds = 5
+cooldown = 3
+# Microphone name or number; empty = Windows default.
+device = ""
+
 # Clock reminders. Times are game-clock seconds (6:00 = 360); "lead" is how many
 # seconds early to speak. Defaults follow patch 7.41; timings change between
 # patches, so adjust them here.

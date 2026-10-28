@@ -67,3 +67,13 @@ def test_sapi_backend_starts_on_windows():
     t.start()
     t.join(30)
     assert errors == []
+
+
+def test_busy_while_speaking():
+    backend = Recorder(delay=0.3)
+    speaker = Speaker(lambda: backend)
+    assert not speaker.busy
+    speaker.say("one")
+    assert speaker.busy
+    speaker.close()
+    assert not speaker.busy
