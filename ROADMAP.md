@@ -6,7 +6,7 @@ items freely: this list is how Castien steers the work. See VISION.md for why.
 
 Every item must keep the README's fair-play rule: Valve Game State
 Integration and public post-game data only, audio only, no memory or screen
-reading (except the existing opt-in draft reader).
+reading at all. What GSI doesn't give, the coach asks the player.
 
 Patch data (heroes, items, camps, runes, builds) is not a roadmap item: it is
 refreshed only when Dota's live patch is newer than `coach/data/PATCH` (see
@@ -90,8 +90,8 @@ CLAUDE.md).
   benchmarks, then situational items against the known enemy lineup. More
   questions that fit the current answers: "when should I stack?", "how many
   last hits should I have?" (once item 4 has targets).
-- Pick the "worth buying now" item from the known enemy lineup (draft reader
-  or briefing): Magic Wand against spell spammers, Infused Raindrops against
+- Pick the "worth buying now" item from the known enemy lineup (the
+  start-of-game answers or typed picks, issue #16): Magic Wand against spell spammers, Infused Raindrops against
   magic nukers, Wind Lace or boots when the build has none yet.
 
 - Skill build reminders per hero (for example "max your first spell"),
@@ -102,6 +102,11 @@ CLAUDE.md).
 - Translations of the spoken lines.
 - Upgrade-aware builds: know that Dragon Lance went into Hurricane Pike (from
   dotaconstants' item components) so builds can list both steps.
+- Per-position builds and reminders (issue #11, next step): the start-of-game
+  answers now give the player's position; use it to pick `[builds.pos4]`
+  style lists and support-only reminders (wards, stacks, pulls).
+- Learn the player's usual position per hero from their answers, so after a
+  few games the coach only confirms it ("Pudge, position 4 again?").
 - Check the default builds against OpenDota's public per-bracket item data
   (Herald to Ancient) once the coach's build tooling can reach it.
 
@@ -118,9 +123,6 @@ These are not built until Castien decides. Recommendations in italics.
   install. *Recommend before any public sale.*
 - **Auto-update and hosting** for patch data and builds. *Recommend GitHub
   Releases first: free, no server.*
-- **Draft reader in the paid product.** It reads the screen, which Valve has
-  not approved. *Recommend keeping it opt-in and labelled, or dropping it so
-  the "can't get you banned" promise is absolute.*
 - **OpenDota for a commercial product.** Confirm the API terms and whether to
   buy the premium tier. *Recommend asking OpenDota before launch.*
 - **Claude tips in the paid product.** Our own key would need a server and
@@ -137,6 +139,6 @@ These are not built until Castien decides. Recommendations in italics.
   player cannot see. GSI does not give it and looking it up would break the
   rule.
 - Overlays or anything drawn over the game.
-- Reading the minimap or any part of the screen beyond the opt-in top-bar
-  draft reader.
+- Reading the minimap or any part of the screen. The top-bar draft reader
+  was removed (Castien, 2026-10-28, issue #11): the coach asks instead.
 - Sending keys or clicks to the game.

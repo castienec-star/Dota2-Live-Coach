@@ -1,4 +1,4 @@
-"""Command line entry point: py -m coach [run|install|replay|say|draft-test]."""
+"""Command line entry point: py -m coach [run|install|replay|say]."""
 
 from __future__ import annotations
 
@@ -15,6 +15,7 @@ from . import pregame as pregame_mod
 from . import voice
 from .gsi_server import Coach, make_app
 from .install import find_dota, install
+from .lineup import Interview
 from .recorder import MatchRecorder
 from .replay import replay
 from .rules import Engine, death_tip, hero, timers, windows
@@ -34,10 +35,8 @@ def make_coach(
     recorder: MatchRecorder | None = None,
     summary_interval: float | None = None,
     tips: bool = True,
-    capture: bool = False,
 ) -> Coach:
-    """tips turns on the features that call a model; capture lets the pre-game
-    briefing read the top bar, when coach.toml also turns that on."""
+    """tips turns on the features that call a model."""
     if summary_interval is None:
         summary_interval = cfg.summary_interval
     coach = Coach(cfg.token, recorder, summary_interval)
@@ -56,7 +55,6 @@ def make_coach(
             power_windows[0] if power_windows else None,
             cfg.app_dir,
             cfg.record_dir,
-            capture=capture,
         )
         if coach.pregame is not None:
             coach.listeners.append(coach.pregame)
@@ -71,21 +69,41 @@ def read_typed_picks(coach: Coach) -> None:
             print(reply, flush=True)
 
 
+def make_interview(cfg: config_mod.Config, coach: Coach) -> Interview | None:
+    """The start-of-game questions (position, teammates, enemies), if turned on."""
+    if coach.pregame is None or not cfg.listen.get("start_questions", True):
+        return None
+    positions = cfg.pregame.get("positions", {})
+    return Interview(
+        coach.pregame.index,
+        coach.pregame,
+        position=int(cfg.pregame.get("position", 0)),
+        hero_positions={k: int(v) for k, v in positions.items()},
+    )
+
+
 def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
     recorder = MatchRecorder(cfg.record_dir) if cfg.record else None
     speaker = make_speaker(cfg)
-    coach = make_coach(cfg, speaker, recorder, capture=True)
+    coach = make_coach(cfg, speaker, recorder)
     if coach.pregame is not None and sys.stdin is not None and sys.stdin.isatty():
         threading.Thread(target=read_typed_picks, args=(coach,), daemon=True).start()
         logging.info('Type the enemy picks any time, e.g.  vs am cm lion pudge sf')
-    voice.start(
+    interview = make_interview(cfg, coach)
+    listening = voice.start(
         cfg.listen,
         coach.state,
         speaker.say,
         lambda: speaker.busy,
         cfg.reminders,
         cfg.builds,
+        pending=interview.pending if interview else None,
     )
+    if interview is not None and listening is not None:
+        # Only ask when the coach can hear the answers. It goes before the
+        # briefing so the briefing knows to wait for the answers.
+        coach.listeners.insert(coach.listeners.index(coach.pregame), interview)
+        coach.pregame.waiting = lambda: interview.busy
     logging.info("Listening for Dota 2 on %s", cfg.url)
     try:
         web.run_app(make_app(coach), host=cfg.host, port=cfg.port, print=None, access_log=None)
@@ -130,62 +148,6 @@ def cmd_say(cfg: config_mod.Config, args: argparse.Namespace) -> int:
     return 0
 
 
-def cmd_draft_test(cfg: config_mod.Config, args: argparse.Namespace) -> int:
-    """Read the heroes from a saved screenshot, to check the top bar settings."""
-    from PIL import ImageDraw
-
-    from .capture import (
-        Layout,
-        PortraitMatcher,
-        load_references,
-        load_screenshot,
-        load_taught,
-        read_top_bar,
-        teach,
-    )
-    from .heroes import HeroIndex
-
-    index = HeroIndex()
-    heroes = index.heroes
-    settings = cfg.pregame.get("capture", {})
-    layout = Layout.from_settings(settings)
-    image, size = load_screenshot(args.screenshot)
-    cache_dir = cfg.app_dir / "hero_images"
-    slots = layout.slots(*size)
-    for lesson in args.teach:
-        slot, _, name = lesson.partition("=")
-        slot = slot.strip().lower()
-        hero = index.find(name)
-        if len(slot) != 2 or slot[0] not in "rd" or slot[1] not in "12345" or hero is None:
-            print(f'Could not use --teach {lesson!r}; write it like  d2="vengeful spirit"')
-            return 1
-        box = slots[(0 if slot[0] == "r" else 5) + int(slot[1]) - 1]
-        path = teach(hero, image.crop(box), cache_dir)
-        print(f"Learned {hero.name} from slot {slot} ({path.name})")
-    print("Loading hero pictures (downloaded once)...")
-    matcher = PortraitMatcher(load_references(heroes, cache_dir), load_taught(heroes, cache_dir))
-    min_score = float(settings.get("min_score", 0.5))
-    results = read_top_bar(image, size, layout, matcher, min_score)
-    marked = image.copy()
-    draw = ImageDraw.Draw(marked)
-    for i, ((hero_id, score), box) in enumerate(zip(results, slots)):
-        team = "Radiant" if i < 5 else "Dire"
-        name = heroes[hero_id].name if hero_id in heroes else "?"
-        others = ", ".join(
-            f"{heroes[h].name} {s:.2f}" for h, s in matcher.candidates(image.crop(box))[1:]
-        )
-        print(f"{team} {i % 5 + 1}: {name:<20} match {score:.2f}   next: {others}")
-        draw.rectangle(box, outline=(255, 0, 255), width=2)
-    strip = marked.crop((0, 0, size[0], min(size[1], layout.strip_height(size[1]) * 3)))
-    out = cfg.app_dir / "draft-test.png"
-    out.parent.mkdir(parents=True, exist_ok=True)
-    strip.save(out)
-    print(f"Saved the portrait boxes to {out}")
-    if any(hero_id is None for hero_id, _ in results):
-        print('Wrong or "?" hero? Teach it, e.g.  --teach d2="vengeful spirit"  (r1-r5, d1-d5)')
-    return 0
-
-
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="coach", description="Dota 2 Live Coach")
     parser.add_argument("--config", type=Path, help="path to a coach.toml")
@@ -198,15 +160,6 @@ def main(argv: list[str] | None = None) -> int:
     p_replay.add_argument("--speed", type=float, default=0.0, help="1.0 = real time")
     p_say = sub.add_parser("say", help="test the voice")
     p_say.add_argument("text", nargs="?", default="Power rune in 15 seconds.")
-    p_draft = sub.add_parser("draft-test", help="read the top bar heroes from a screenshot")
-    p_draft.add_argument("screenshot", type=Path)
-    p_draft.add_argument(
-        "--teach",
-        action="append",
-        default=[],
-        metavar="SLOT=HERO",
-        help='learn a portrait from the screenshot, e.g. d2="vengeful spirit"',
-    )
     args = parser.parse_args(argv)
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s", datefmt="%H:%M:%S")
@@ -216,7 +169,6 @@ def main(argv: list[str] | None = None) -> int:
         "install": cmd_install,
         "replay": cmd_replay,
         "say": cmd_say,
-        "draft-test": cmd_draft_test,
     }
     return commands[args.command or "run"](cfg, args)
 

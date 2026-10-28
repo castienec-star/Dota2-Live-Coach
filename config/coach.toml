@@ -34,6 +34,9 @@ max_delay = 4
 # A headset helps, so game sound and Discord don't wake the coach.
 # Without those packages the coach just skips listening. Set false to turn it off.
 enabled = true
+# Before the horn, ask your position, your teammates and the enemy heroes
+# (no wake word needed: answer after the beep, or say "skip").
+start_questions = true
 wake_word = "hey coach"
 # faster-whisper model: "tiny.en" is lighter on the CPU, "small.en" understands more.
 model = "base.en"
@@ -163,26 +166,12 @@ learn = true
 # Also read your own public match history on OpenDota (needs "Expose Public
 # Match Data" on in Dota's settings). Other players are never looked up.
 my_history = true
+# Your position, 1 (safe lane carry) to 5 (hard support). 0 = ask each game.
+position = 0
 
-[pregame.capture]
-# Read the draft from the top bar of the screen. Off by default: when on, the
-# coach captures one thin strip at the top of your main monitor just before
-# the horn (once more if heroes are missing), reads the ten hero portraits,
-# and throws the picture away. Dota must run in borderless window mode.
-# You can always type picks instead:  vs am cm lion pudge sf
-enabled = false
-# Seconds after the countdown starts before the capture.
-delay = 2
-# Where the portraits are, as fractions of screen height. Check them with
-#   py -m coach draft-test <screenshot.png>
-top = 0.0046
-height = 0.0316
-width = 0.0428
-step = 0.0576
-gap = 0.1018
-# How alike a portrait and a hero picture must be (0 to 1). A hero below 0.75
-# also has to be clearly ahead of the next best guess.
-min_score = 0.5
+[pregame.positions]
+# Heroes you always play in one position, so the coach doesn't ask, e.g.
+# pudge = 4
 
 # Item builds, per hero (the name without npc_dota_hero_). The coach says
 # "You have gold for ..." for the first item on the list you don't own yet.

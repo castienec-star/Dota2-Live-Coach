@@ -5,5 +5,5 @@
   `coach/data/PATCH`, then update that file in the same PR. Never add data
   refreshes to ROADMAP.md.
 - Keep the README's fair-play rule: Valve Game State Integration and public
-  post-game data only, audio only, no memory or screen reading (except the
-  opt-in top-bar draft reader).
+  post-game data only, audio only, no memory or screen reading, ever. What
+  GSI doesn't give (position, the other heroes), the coach asks the player.

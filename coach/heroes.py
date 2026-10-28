@@ -57,7 +57,6 @@ class HeroInfo:
     primary_attr: str
     attack_type: str
     roles: tuple[str, ...]
-    img: str = ""  # portrait path on Valve's CDN
 
 
 def load_heroes(path: Path = HEROES_FILE) -> dict[int, HeroInfo]:
@@ -71,7 +70,6 @@ def load_heroes(path: Path = HEROES_FILE) -> dict[int, HeroInfo]:
             primary_attr=v["primary_attr"],
             attack_type=v["attack_type"],
             roles=tuple(v["roles"]),
-            img=v.get("img", ""),
         )
         for k, v in data["heroes"].items()
     }

@@ -94,12 +94,11 @@ Rough order. Items marked (decision) need Castien before anyone builds them.
   could not see, or automates play, risks bans. We stay well inside them.
 - **Valve's art and names.** Hero portraits, names and icons are Valve's
   intellectual property. Using them in a paid app should be checked against
-  Valve's Dota 2 content terms before launch (the optional draft reader
-  downloads Valve's official hero pictures at run time). Do not put Valve art
-  in marketing material without checking.
-- **The draft reader** captures the screen, which Valve has not approved. It
-  must stay opt-in and clearly labelled "at your own risk", or be removed
-  from the paid product. Typed picks always work without it.
+  Valve's Dota 2 content terms before launch. Do not put Valve art in
+  marketing material without checking.
+- **No screen reading.** The draft reader was removed (Castien, 2026-10-28):
+  the coach asks the player for their position and the heroes by voice, so
+  the "can't get you banned" promise holds without exceptions.
 - **OpenDota API.** The free tier needs no key but is limited (50,000 calls a
   month at the time of their 2018 announcement, plus a per-minute limit) and
   is meant for fair use. With many paying users each calling it from their
@@ -122,8 +121,7 @@ Rough order. Items marked (decision) need Castien before anyone builds them.
    Is there a free tier (for example clock reminders free, coaching paid)?
 2. **Where to sell.** Own site with a payment provider, or a store such as
    Steam (likely hard for a tool), itch.io or Microsoft Store?
-3. **Draft reader.** Keep it in the paid product as opt-in, or drop screen
-   reading entirely so the "can't get you banned" promise is absolute?
+3. ~~**Draft reader.**~~ Decided 2026-10-28: dropped; the coach asks by voice.
 4. **AI tips.** Built-in and Ollama only, or also offer Claude tips through a
    server we pay for (needs accounts and costs per tip)?
 5. **Languages.** English first? Russian, Spanish and Portuguese speaking

@@ -1,9 +1,9 @@
 """The spoken briefing before the horn.
 
 When the match reaches the pre-game countdown, the coach works out the draft
-(from the top bar if you turned that on, or from picks you typed), analyses
-it, adds what it has learned about how you play, and speaks a short briefing.
-The timings it finds are handed to the in-game reminders.
+(from what you told it out loud or typed), analyses it, adds what it has
+learned about how you play, and speaks a short briefing. The timings it finds
+are handed to the in-game reminders. It never looks at your screen.
 """
 
 from __future__ import annotations
@@ -17,6 +17,7 @@ from pathlib import Path
 from . import llm
 from .draft import Analysis, Draft, analyse
 from .heroes import HeroIndex, HeroInfo
+from .lineup import POSITIONS
 from .opendota import OpenDota, account_id
 from .profile import Profile
 from .rules.windows import PowerWindows
@@ -32,14 +33,15 @@ weakness, the enemy hero or threat to watch, and when to fight. If facts about \
 the player's own habits are given, add one personal tip from them. Use only the \
 facts given: do not invent heroes, items or numbers. No lists, headings or emoji."""
 
-# Reads the ten top-bar heroes: Radiant left to right, then Dire. None = unknown.
-Reader = Callable[[], "list[int | None] | None"]
 
-
-def facts(snap: Snapshot, draft: Draft, analysis: Analysis, personal: list[str]) -> str:
+def facts(
+    snap: Snapshot, draft: Draft, analysis: Analysis, personal: list[str], position: int = 0
+) -> str:
     lines = []
     if draft.me:
         lines.append(f"Player's hero: {draft.me.name}")
+    if position in POSITIONS:
+        lines.append(f"Player's position: {position} ({POSITIONS[position]})")
     allies = [h.name for h in draft.allies if h != draft.me]
     if allies:
         lines.append("Allies: " + ", ".join(allies))
@@ -77,23 +79,25 @@ class Pregame:
         stats: OpenDota | None = None,
         profile: Profile | None = None,
         ask: llm.Ask | None = None,
-        reader: Reader | None = None,
         my_history: bool = True,
-        capture_delay: float = 2.0,
-        retry_delay: float = 5.0,
+        waiting: Callable[[], bool] | None = None,
+        wait_limit: float = 45.0,
     ) -> None:
+        """waiting() is true while the start-of-game questions are still being
+        asked; the briefing waits for them, up to wait_limit seconds."""
         self.say = say
         self.index = index
         self.windows = windows
         self.stats = stats
         self.profile = profile
         self.ask = ask
-        self.reader = reader
         self.my_history = my_history
-        self.capture_delay = capture_delay
-        self.retry_delay = retry_delay
-        self.typed_allies: list[HeroInfo] = []
-        self.typed_enemies: list[HeroInfo] = []
+        self.waiting = waiting
+        self.wait_limit = wait_limit
+        # What the player told the coach this match, out loud or typed.
+        self.allies: list[HeroInfo] = []
+        self.enemies: list[HeroInfo] = []
+        self.position = 0  # 1 to 5, 0 = not known
         self.state: MatchState | None = None
         self._match = 0  # bumped on each new match, to drop a stale briefing
         self._briefed = False
@@ -104,64 +108,63 @@ class Pregame:
         if state.new_match:
             self._match += 1
             self._briefed = False
-            self.typed_allies, self.typed_enemies = [], []
+            self.allies, self.enemies, self.position = [], [], 0
         cur = state.current
         if cur.game_state == PRE_GAME and not self._briefed:
             self._briefed = True
             self._pool.submit(self._brief, cur, self._match, True)
 
     def typed(self, line: str) -> str:
-        """Picks typed in the coach window: "vs am cm lion" or "with luna pudge"."""
+        """Typed in the coach window: "vs am cm lion", "with luna pudge" or "pos 4"."""
         words = line.strip().split(maxsplit=1)
         if not words:
             return ""
         command, rest = words[0].lower(), words[1] if len(words) > 1 else ""
         if command == "clear":
-            self.typed_allies, self.typed_enemies = [], []
+            self.allies, self.enemies = [], []
             return "Typed picks cleared."
+        if command == "pos":
+            position = int(rest) if rest.strip() in ("1", "2", "3", "4", "5") else 0
+            if not position:
+                return "Type your position as a number, e.g.  pos 4"
+            self.heard(position=position)
+            return f"Position {position}: {POSITIONS[position]}"
         if command not in ("vs", "with"):
             return 'Type "vs" or "with" and hero names, e.g.  vs am cm lion pudge sf'
         heroes, unknown = self.index.parse(rest)
         if command == "vs":
-            self.typed_enemies = heroes
+            self.heard(enemies=heroes)
         else:
-            self.typed_allies = heroes
+            self.heard(allies=heroes)
         reply = f"{'Enemies' if command == 'vs' else 'Allies'}: " + (
             ", ".join(h.name for h in heroes) or "none"
         )
         if unknown:
             reply += f"  (not recognised: {', '.join(unknown)})"
-        # Picks typed during the countdown get a fresh briefing.
-        state = self.state
-        if state is not None and state.current.game_state == PRE_GAME and self._briefed:
-            self._pool.submit(self._brief, state.current, self._match, False)
         return reply
 
-    def draft(self, snap: Snapshot) -> Draft:
-        me = self.index.by_key(snap.hero_name)
-        allies, enemies = [], []
-        if self.reader is not None:
-            allies, enemies = self._read_top_bar(snap, me)
-        return Draft(self.typed_allies or allies, self.typed_enemies or enemies, me)
+    def heard(
+        self,
+        position: int | None = None,
+        allies: list[HeroInfo] | None = None,
+        enemies: list[HeroInfo] | None = None,
+    ) -> None:
+        """What the player said or typed; picks given during the countdown,
+        after the briefing, get a fresh one."""
+        if position is not None:
+            self.position = position
+        if allies is not None:
+            self.allies = list(allies)
+        if enemies is not None:
+            self.enemies = list(enemies)
+        state = self.state
+        changed = allies is not None or enemies is not None
+        if changed and state is not None and state.current.game_state == PRE_GAME and self._briefed:
+            if not (self.waiting and self.waiting()):
+                self._pool.submit(self._brief, state.current, self._match, False)
 
-    def _read_top_bar(self, snap: Snapshot, me: HeroInfo | None) -> tuple[list, list]:
-        try:
-            ids = self.reader() or []
-        except Exception as exc:  # a failed capture must never stop the coach
-            log.warning("Could not read the top bar: %s", exc)
-            return [], []
-        heroes = [self.index.heroes.get(i) if i is not None else None for i in ids]
-        radiant = [h for h in heroes[:5] if h]
-        dire = [h for h in heroes[5:10] if h]
-        log.info(
-            "Top bar: Radiant %s | Dire %s",
-            ", ".join(h.name for h in radiant) or "-",
-            ", ".join(h.name for h in dire) or "-",
-        )
-        allies, enemies = (dire, radiant) if snap.team == "dire" else (radiant, dire)
-        if me is not None and me in enemies and me not in allies:
-            allies, enemies = enemies, allies
-        return allies, enemies
+    def draft(self, snap: Snapshot) -> Draft:
+        return Draft(self.allies, self.enemies, self.index.by_key(snap.hero_name))
 
     def personal(self, snap: Snapshot, me: HeroInfo | None) -> list[str]:
         lines = []
@@ -182,24 +185,18 @@ class Pregame:
         return lines
 
     def _brief(self, snap: Snapshot, match: int, first: bool) -> None:
-        if first and self.reader is not None:
-            time.sleep(self.capture_delay)  # let the top bar finish loading
-            draft = self.draft(snap)
-            # Heroes may still be loading in: one more look if some are missing.
-            if len(draft.allies) + len(draft.enemies) < 10 and not (
-                self.typed_allies and self.typed_enemies
-            ):
-                time.sleep(self.retry_delay)
-                retry = self.draft(snap)
-                if len(retry.allies) + len(retry.enemies) > len(draft.allies) + len(draft.enemies):
-                    draft = retry
-        else:
-            draft = self.draft(snap)
+        if first and self.waiting is not None:
+            # Let the player finish answering the start-of-game questions.
+            deadline = time.monotonic() + self.wait_limit
+            while self.waiting() and time.monotonic() < deadline and match == self._match:
+                time.sleep(0.5)
+        draft = self.draft(snap)
         analysis = analyse(draft, self.stats)
         if self.windows is not None:
             self.windows.set(analysis.windows)
         personal = self.personal(snap, draft.me)
-        text = self.ask(facts(snap, draft.with_me(), analysis, personal)) if self.ask else None
+        prompt = facts(snap, draft.with_me(), analysis, personal, self.position)
+        text = self.ask(prompt) if self.ask else None
         text = text or builtin_briefing(analysis, personal)
         state = self.state
         # Say it only for this match and before the game is well under way.
@@ -216,7 +213,6 @@ def build(
     windows: PowerWindows | None,
     app_dir: Path,
     record_dir: Path,
-    capture: bool = True,
 ) -> Pregame | None:
     options = dict(settings)
     if not options.get("enabled", True):
@@ -239,12 +235,6 @@ def build(
         raise ValueError(f"pregame provider must be ollama or builtin, not {provider!r}")
     stats = OpenDota(app_dir / "opendota") if options.get("opendota", True) else None
     profile = Profile(record_dir, app_dir / "profile.json") if options.get("learn", True) else None
-    capture_settings = options.get("capture", {})
-    reader = None
-    if capture and capture_settings.get("enabled", False):
-        from .capture import make_reader
-
-        reader = make_reader(capture_settings, index.heroes, app_dir / "hero_images")
     return Pregame(
         say,
         index,
@@ -252,7 +242,5 @@ def build(
         stats,
         profile,
         ask,
-        reader,
         my_history=bool(options.get("my_history", True)),
-        capture_delay=float(capture_settings.get("delay", 2)),
     )

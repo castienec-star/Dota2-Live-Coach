@@ -140,3 +140,40 @@ def test_loop_ignores_an_empty_transcript():
 
 def test_start_does_nothing_when_turned_off():
     assert start({"enabled": False}, None, print, lambda: False, {}, {}) is None
+
+
+def test_loop_asks_pending_questions_without_the_wake_word():
+    from coach.lineup import Question
+
+    answers, said, chimes = [], [], []
+    questions = [Question("Who are the enemy heroes?", lambda text: answers.append(text) or "Got it.")]
+    loop = VoiceLoop(
+        wake=lambda f: False,
+        transcribe=lambda audio: "Pudge and Sniper.",
+        answer=lambda text: "answer",
+        say=said.append,
+        chime=lambda: chimes.append(1),
+        cooldown=0,
+        wake_word="hey coach",
+        pending=lambda: questions.pop() if questions else None,
+    )
+    loop.run([frame(0), frame(2000)] + [frame(0)] * 20)
+    assert said == ["Who are the enemy heroes?", "Got it."]
+    assert answers == ["Pudge and Sniper"]
+    assert chimes == [1]
+
+
+def test_loop_passes_silence_to_a_question():
+    from coach.lineup import Question
+
+    answers = []
+    questions = [Question("Position?", lambda text: answers.append(text))]
+    loop = VoiceLoop(
+        wake=lambda f: False,
+        transcribe=lambda audio: "never called",
+        answer=lambda text: "answer",
+        say=lambda line: None,
+        pending=lambda: questions.pop() if questions else None,
+    )
+    loop.run([frame(0)] * 200)
+    assert answers == [""]
