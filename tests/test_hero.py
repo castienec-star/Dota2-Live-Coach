@@ -9,6 +9,7 @@ from coach.rules.hero import (
     SkillPoint,
     WandCharges,
     WardReminder,
+    WorthBuying,
     build,
     parse_builds,
 )
@@ -159,6 +160,60 @@ def test_lookup_accepts_names_and_keys():
     assert lookup(items, "black_king_bar").cost == lookup(items, "item_black_king_bar").cost
 
 
+def worth_buying(build, items=("Magic Wand", "stats"), **options):
+    from coach.heroes import HeroIndex
+
+    all_items = load_items()
+    cheap = [i if i == "stats" else lookup(all_items, i) for i in items]
+    return WorthBuying(parse_builds({"antimage": build}, all_items), HeroIndex(), cheap, **options)
+
+
+def test_worth_buying_while_saving_for_a_big_item(payload):
+    payload["items"]["slot2"] = {"name": "empty"}  # no wand
+    said = run(worth_buying(["Black King Bar"]), payload, [{"player.gold": 600}])
+    assert said == ["Buy a Magic Wand now, you'll get your Black King Bar later."]
+
+
+def test_worth_buying_skips_owned_items_and_uses_hero_attribute(payload):
+    # The sample hero already has a Magic Wand; Anti-Mage is agility.
+    said = run(worth_buying(["Black King Bar"]), payload, [{"player.gold": 600}])
+    assert said == ["Buy a Wraith Band now, you'll get your Black King Bar later."]
+
+
+def test_worth_buying_once_per_item_with_cooldown(payload):
+    payload["items"]["slot2"] = {"name": "empty"}
+    said = run(worth_buying(["Black King Bar"]), payload, [
+        {"player.gold": 600},
+        {"player.gold": 600, "dt": 60},  # Magic Wand not bought, still in cooldown
+        {"player.gold": 600, "dt": 200},
+        {"player.gold": 600, "dt": 200},
+    ])
+    assert said == [
+        "Buy a Magic Wand now, you'll get your Black King Bar later.",
+        "Buy a Wraith Band now, you'll get your Black King Bar later.",
+    ]
+
+
+def test_worth_buying_quiet_when_big_item_is_close_or_cheap_one_unaffordable(payload):
+    payload["items"]["slot2"] = {"name": "empty"}
+    rule = worth_buying(["Black King Bar"])
+    assert run(rule, payload, [{"player.gold": 3000}]) == []  # BKB is 1050 away
+    assert run(rule, payload, [{"player.gold": 300}]) == []  # can't afford a wand
+
+
+def test_worth_buying_quiet_late_or_without_a_build(payload):
+    payload["items"]["slot2"] = {"name": "empty"}
+    payload["map"]["clock_time"] = 26 * 60
+    assert run(worth_buying(["Black King Bar"]), payload, [{"player.gold": 600}]) == []
+    payload["map"]["clock_time"] = 600
+    assert run(worth_buying([]), payload, [{"player.gold": 600}]) == []
+
+
+def test_worth_buying_unknown_item_is_an_error():
+    with pytest.raises(ValueError):
+        build({"worth_buying": {"items": ["Not An Item"]}}, {"default": ["blink"]})
+
+
 def test_wand_once_per_time_hurt(payload):
     # Sample wand has 14 charges; 412/1380 hp is about 30%.
     said = run(WandCharges(), payload, [
@@ -193,4 +248,6 @@ def test_default_config_builds(tmp_path):
 
     cfg = config.load(app_dir=tmp_path)
     rules = build(cfg.reminders, cfg.builds)
-    assert {r.name for r in rules} >= {"low_health", "buyback", "skill_point", "wand", "ward", "item_ready"}
+    assert {r.name for r in rules} >= {
+        "low_health", "buyback", "skill_point", "wand", "ward", "item_ready", "worth_buying",
+    }
