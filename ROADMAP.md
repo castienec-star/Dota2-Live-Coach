@@ -86,8 +86,11 @@ CLAUDE.md).
 
 ## Ideas to look at later
 
-- Voice questions (issue #9): next, the ahead/behind verdict from public hero
-  benchmarks, then situational items against the known enemy lineup. More
+- Voice questions (issue #9): the ahead/behind verdict ("how am I doing?")
+  is done in the `agent/ahead-or-behind` PR. Next, situational items from
+  the verdict and the known enemy lineup. Then say the verdict unasked once
+  around 15 and 25 minutes, and tune the time ramp in
+  `docs/strategy/ahead-or-behind.md` from real recordings. More
   questions that fit the current answers: "when should I stack?", "how many
   last hits should I have?" (once item 4 has targets).
 - Pick the "worth buying now" item from the known enemy lineup (the

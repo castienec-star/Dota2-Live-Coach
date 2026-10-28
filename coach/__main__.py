@@ -13,9 +13,12 @@ from aiohttp import web
 from . import config as config_mod
 from . import pregame as pregame_mod
 from . import voice
+from .benchmarks import Benchmarks
 from .gsi_server import Coach, make_app
+from .heroes import load_heroes
 from .install import find_dota, install
 from .lineup import Interview, configured_position
+from .opendota import OpenDota
 from .recorder import MatchRecorder
 from .replay import replay
 from .rules import (
@@ -105,6 +108,15 @@ def make_interview(cfg: config_mod.Config, coach: Coach) -> Interview | None:
     )
 
 
+def make_benchmarks(cfg: config_mod.Config) -> Benchmarks:
+    """Bundled hero benchmarks, plus OpenDota for other heroes if it is on."""
+    if not cfg.pregame.get("opendota", True):
+        return Benchmarks()
+    stats = OpenDota(cfg.app_dir / "opendota")
+    hero_ids = {h.key: h.id for h in load_heroes().values()}
+    return Benchmarks(fetch=stats.benchmarks, hero_ids=hero_ids)
+
+
 def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
     recorder = MatchRecorder(cfg.record_dir) if cfg.record else None
     speaker = make_speaker(cfg)
@@ -122,6 +134,7 @@ def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
         cfg.builds,
         pending=interview.pending if interview else None,
         position=position_of(cfg, coach),
+        benchmarks=make_benchmarks(cfg),
     )
     if interview is not None and listening is not None:
         # Only ask when the coach can hear the answers. It goes before the

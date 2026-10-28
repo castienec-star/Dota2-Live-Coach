@@ -1,8 +1,8 @@
 """Public match statistics from OpenDota, cached on disk.
 
 Only two kinds of data are read: aggregate numbers for a hero (how it does
-against other heroes and by game length, the same kind of numbers Dota Plus
-shows) and your own account's public match history. Other players' profiles
+against other heroes and by game length, and the GPM and last hits public
+matches reach on it: the same kind of numbers Dota Plus shows) and your own account's public match history. Other players' profiles
 are never looked up.
 """
 
@@ -16,6 +16,8 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 from typing import Any
+
+from .benchmarks import Curve, parse_api
 
 log = logging.getLogger(__name__)
 
@@ -95,6 +97,10 @@ class OpenDota:
             for r in rows
             if isinstance(r, dict) and "duration_bin" in r
         }
+
+    def benchmarks(self, hero_id: int) -> dict[str, Curve] | None:
+        """Public per-hero percentiles of GPM, XPM and last hits per minute."""
+        return parse_api(self.get(f"/benchmarks?hero_id={hero_id}", max_age=30 * 86400))
 
     def player_heroes(self, account: int) -> dict[int, tuple[int, int]]:
         """{hero id: (games, wins)} from your own public match history."""

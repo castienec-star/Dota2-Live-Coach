@@ -19,6 +19,7 @@ import threading
 import time
 from collections.abc import Callable, Iterable, Iterator
 
+from .benchmarks import EARLIEST, METRICS, Benchmarks
 from .heroes import HeroIndex
 from .items import load_items
 from .lineup import Question
@@ -31,11 +32,20 @@ log = logging.getLogger(__name__)
 RATE = 16000  # samples per second, 16-bit mono: what both speech models expect
 FRAME = 1280  # samples per microphone read (80 ms)
 
-UNKNOWN = "I can't help with that yet. Ask me about your next item, buyback or runes."
+UNKNOWN = (
+    "I can't help with that yet. Ask me how you're doing, or about your next item, buyback or runes."
+)
 
 # First match wins, so the narrower questions come first.
 INTENTS: list[tuple[str, re.Pattern[str]]] = [
     ("buyback", re.compile(r"\bbuy ?backs?\b")),
+    (
+        "how_am_i_doing",
+        re.compile(
+            r"\b(ahead|behind|winning|losing|how am i doing|how'?m i doing|how'?s my game"
+            r"|how is my game|how'?s it going|am i doing (ok|okay|well|good|bad|badly))\b"
+        ),
+    ),
     ("rune", re.compile(r"\b(runes?|shrines?|bounty|bounties|wisdom)\b")),
     ("next_item", re.compile(r"\b(items?|buy|build|purchase|get next|shop)\b")),
 ]
@@ -74,10 +84,14 @@ class Answers:
         reminders: dict[str, dict],
         builds: dict[str, list[str]],
         position: PositionOf | None = None,
+        benchmarks: Benchmarks | None = None,
     ) -> None:
         settings = {name: reminders.get(name, {}) for name, _ in self.RUNES}
         self.timers = {r.name: r for r in timers.build(settings) if r.name in dict(self.RUNES)}
-        self.items = ItemReady(parse_builds(builds, load_items()), HeroIndex(), position) if builds else None
+        self.heroes = HeroIndex()
+        self.items = ItemReady(parse_builds(builds, load_items()), self.heroes, position) if builds else None
+        self.position = position
+        self.benchmarks = benchmarks if benchmarks is not None else Benchmarks()
 
     def answer(self, text: str, snap: Snapshot) -> str:
         kind = intent(text)
@@ -94,6 +108,39 @@ class Answers:
         if snap.gold >= target.cost:
             return f"Buy {target.name} now, you have the gold."
         return f"Next is {target.name}. You need {target.cost - snap.gold} more gold."
+
+    def how_am_i_doing(self, snap: Snapshot) -> str:
+        hero = self.heroes.by_key(snap.hero_name)
+        position = self.position(snap) if self.position else 0
+        if position:
+            support = position in (4, 5)
+        else:
+            support = hero is not None and "Support" in hero.roles and "Carry" not in hero.roles
+        if (snap.clock_time or 0) < EARLIEST:
+            return "It's too early to tell. Ask me again after 8 minutes."
+        verdict = self.benchmarks.verdict(snap, support)
+        if verdict is None:
+            name = hero.name if hero else "this hero"
+            return f"I don't have numbers for {name} yet."
+        minutes = f"{verdict.minute} minutes"
+        if verdict.kind == "ahead":
+            return (
+                f"You're ahead for {minutes}. Use it: group with your team "
+                "and take a tower, or Roshan after a won fight."
+            )
+        if verdict.kind == "even":
+            return f"You're about even for {minutes}. Keep farming and fight together with your team."
+        name = METRICS[verdict.weakest]
+        low = f"{name} {'are' if name.endswith('s') else 'is'} low"
+        if support:
+            return (
+                f"You're behind for {minutes}, your {low}. Stay near your cores, "
+                "soak experience from fights, and buy Glimmer Cape or Force Staff to stay alive."
+            )
+        return (
+            f"You're behind for {minutes}, your {low}. Farm the safe side of the map "
+            "near your towers, skip risky fights, and buy a Black King Bar or a defensive item."
+        )
 
     def buyback(self, snap: Snapshot) -> str:
         if snap.buyback_cost <= 0:
@@ -338,6 +385,7 @@ def start(
     builds: dict[str, list[str]],
     pending: Callable[[], Question | None] | None = None,
     position: PositionOf | None = None,
+    benchmarks: Benchmarks | None = None,
 ) -> threading.Thread | None:
     """Start listening on a background thread, if [listen] is on and installed."""
     if not settings.get("enabled", False):
@@ -352,7 +400,7 @@ def start(
     except Exception as exc:
         log.warning("Voice questions unavailable (%s)", exc)
         return None
-    answers = Answers(reminders, builds, position)
+    answers = Answers(reminders, builds, position, benchmarks)
     loop = VoiceLoop(
         wake,
         transcribe,

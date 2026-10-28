@@ -183,8 +183,16 @@ It uses:
 ### Ask the coach out loud
 
 Hands free, no window or key: say **"hey coach"**, wait for the beep, then
-ask. For now the coach answers three questions from your own hero's data and
+ask. For now the coach answers four questions from your own hero's data and
 the game clock:
+
+- "How am I doing?" / "Am I ahead?": from 8 minutes on, whether you are
+  ahead, even or behind for this point of the match, comparing your gold,
+  experience and last hits per minute with public OpenDota numbers for your
+  hero (supports only by experience), and what to do about it. Numbers for
+  popular low-bracket heroes come with the coach; other heroes are read once
+  from OpenDota if `opendota` is on in `[pregame]`. See
+  [docs/strategy/ahead-or-behind.md](docs/strategy/ahead-or-behind.md).
 
 - "What's my next item?" / "What should I buy?": the next item on your build
   and how much gold you still need.
