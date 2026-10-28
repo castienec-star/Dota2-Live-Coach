@@ -21,6 +21,7 @@ from collections.abc import Callable, Iterable, Iterator
 
 from .heroes import HeroIndex
 from .items import load_items
+from .lineup import Question
 from .rules import timers
 from .rules.hero import ItemReady, parse_builds
 from .state import MatchState, Snapshot
@@ -172,7 +173,9 @@ class VoiceLoop:
     The parts are passed in so the loop can be tested without a microphone:
     wake(frame) says whether the wake word just ended, transcribe(audio)
     returns text, busy() is true while the coach is talking (so it never wakes
-    itself up), and chime() tells the player it is listening.
+    itself up), and chime() tells the player it is listening. pending()
+    returns a question the coach wants to ask the player (no wake word
+    needed), such as the start-of-game questions.
     """
 
     def __init__(
@@ -187,6 +190,7 @@ class VoiceLoop:
         cooldown: float = 3.0,
         wake_word: str = "",
         clock: Callable[[], float] = time.monotonic,
+        pending: Callable[[], Question | None] = lambda: None,
     ) -> None:
         self.wake = wake
         self.transcribe = transcribe
@@ -198,6 +202,11 @@ class VoiceLoop:
         self.cooldown = cooldown
         self.wake_word = wake_word.lower()
         self.clock = clock
+        self.pending = pending
+        # Answers can be a list of five heroes: give them more time.
+        self.answer_endpointer = Endpointer(
+            self.endpointer.level, wait=5.0, silence=1.0, max_seconds=max(10.0, self.endpointer.max_seconds)
+        )
         self._ready_at = 0.0
 
     def run(self, frames: Iterable[bytes]) -> None:
@@ -206,21 +215,49 @@ class VoiceLoop:
             # Keep feeding the detector so it never hears a stale half-word,
             # but ignore it while the coach talks or just after a question.
             woke = self.wake(frame)
-            if not woke or self.busy() or self.clock() < self._ready_at:
+            if self.busy() or self.clock() < self._ready_at:
                 continue
-            self.chime()
-            self.ask(self.endpointer.collect(stream))
+            question = self.pending()
+            if question is not None:
+                self.put(question, stream)
+                continue  # the next question follows straight on
+            if woke:
+                self.chime()
+                self.ask(self.endpointer.collect(stream))
+            else:
+                continue
             self._ready_at = self.clock() + self.cooldown
 
-    def ask(self, audio: bytes) -> None:
-        if not audio:
-            return
-        text = self.transcribe(audio)
+    def put(self, question: Question, stream: Iterator[bytes]) -> None:
+        """Ask the player a question, then listen for the answer."""
+        self.say(question.text)
+        while self.busy():  # wait until the question has been spoken
+            if next(stream, None) is None:
+                return
+        self.chime()
+        audio = self.answer_endpointer.collect(stream)
+        text = self._clean(self.transcribe(audio)) if audio else ""
+        if text:
+            log.info("You answered: %s", text)
+        try:
+            reply = question.answer(text)
+        except Exception:  # a bad answer must never stop the listening
+            log.exception("Could not use the answer %r", text)
+            reply = None
+        if reply:
+            self.say(reply)
+
+    def _clean(self, text: str) -> str:
         if self.wake_word:
             # Whisper writes "Hey, coach." as often as "hey coach".
             pattern = r"\W*".join(map(re.escape, self.wake_word.split()))
             text = re.sub(pattern, "", text, flags=re.IGNORECASE)
-        text = text.strip(" .,!?")
+        return text.strip(" .,!?")
+
+    def ask(self, audio: bytes) -> None:
+        if not audio:
+            return
+        text = self._clean(self.transcribe(audio))
         if not text:
             return
         log.info("You asked: %s", text)
@@ -294,6 +331,7 @@ def start(
     busy: Callable[[], bool],
     reminders: dict[str, dict],
     builds: dict[str, list[str]],
+    pending: Callable[[], Question | None] | None = None,
 ) -> threading.Thread | None:
     """Start listening on a background thread, if [listen] is on and installed."""
     if not settings.get("enabled", False):
@@ -322,6 +360,7 @@ def start(
         ),
         cooldown=float(settings.get("cooldown", 3)),
         wake_word=wake_word,
+        pending=pending or (lambda: None),
     )
 
     def run() -> None:

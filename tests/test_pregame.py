@@ -1,12 +1,9 @@
 import copy
 import json
 
-import numpy as np
 import pytest
-from PIL import Image
 
 from coach import config as config_mod
-from coach.capture import REF_CROPS, Layout, PortraitMatcher, read_top_bar
 from coach.draft import Window
 from coach.heroes import HeroIndex
 from coach.pregame import Pregame, build, builtin_briefing
@@ -81,49 +78,6 @@ def test_profile_empty_without_recordings(tmp_path):
     assert profile.describe("luna") == []
 
 
-def noise(seed, size=(64, 36)):
-    rng = np.random.default_rng(seed)
-    return Image.fromarray(rng.integers(0, 255, (size[1], size[0], 3), dtype=np.uint8))
-
-
-def on_screen(ref, box):
-    """How a portrait looks in a top bar box: the middle of it, resized."""
-    w, h = ref.size
-    part = REF_CROPS[0]
-    inner = ref.crop((round(part[0] * w), round(part[1] * h), round(part[2] * w), round(part[3] * h)))
-    return inner.resize((box[2] - box[0], box[3] - box[1]))
-
-
-def test_layout_matches_the_measured_screenshot():
-    # Box positions measured on Castien's 1917x1076 screenshot.
-    slots = Layout().slots(1917, 1076)
-    assert slots[0] == (555, 5, 601, 39)
-    assert slots[5][0] == 1068
-
-
-def test_layout_slots_are_mirrored():
-    slots = Layout().slots(1920, 1080)
-    assert len(slots) == 10
-    radiant, dire = slots[:5], slots[5:]
-    for r, d in zip(radiant, reversed(dire)):
-        assert 1920 - r[2] == pytest.approx(d[0], abs=1)
-    assert all(a[2] <= b[0] for a, b in zip(slots, slots[1:]))
-
-
-def test_read_top_bar_finds_heroes():
-    refs = {hero_id: noise(hero_id, (256, 144)) for hero_id in range(1, 30)}
-    matcher = PortraitMatcher(refs)
-    layout = Layout()
-    size = (1920, 1080)
-    strip = Image.new("RGB", (1920, layout.strip_height(1080)))
-    picks = [1, 2, 3, 4, 5, 6, 7, 8, 9, None]
-    for hero_id, box in zip(picks, layout.slots(*size)):
-        if hero_id is not None:
-            strip.paste(on_screen(refs[hero_id], box), box[:2])
-    results = read_top_bar(strip, size, layout, matcher)
-    assert [hero_id for hero_id, _ in results] == picks
-
-
 def tick(state, engine, payload, clock):
     payload["map"]["clock_time"] = clock
     state.update(payload)
@@ -186,45 +140,56 @@ def ids(*names):
     return [INDEX.find(n).id for n in names]
 
 
-def test_briefing_reads_the_top_bar_and_asks_the_model(payload):
+def test_briefing_uses_the_picks_and_asks_the_model(payload):
     prompts, said = [], []
     windows = PowerWindows()
-    reader = lambda: ids(*ALLIES) + ids(*ENEMIES)
     pregame = Pregame(
         said.append, INDEX, windows, FakeStats(), None,
-        ask=lambda p: prompts.append(p) or "Fight early, they scale.", reader=reader,
-        capture_delay=0, retry_delay=0,
+        ask=lambda p: prompts.append(p) or "Fight early, they scale.",
     )
-    start_pregame(pregame, payload)
+    start_pregame(pregame, payload, typed=["with " + " ".join(ALLIES), "vs " + " ".join(ENEMIES), "pos 1"])
     assert said == ["Fight early, they scale."]
     prompt = prompts[0]
     assert "Player's hero: Luna" in prompt
+    assert "Player's position: 1 (safe lane carry)" in prompt
+    assert "Allies: Lion, Earthshaker, Crystal Maiden, Tidehunter" in prompt
     assert "Enemies: Anti-Mage, Phantom Assassin, Shadow Fiend, Invoker, Pudge" in prompt
     assert "Your lineup is strongest from about 10 to 20 minutes." in prompt
     assert "Your public match history on Luna: 10 games, 60 percent won." in prompt
     assert windows._windows[0] == Window(10, 20, True)
 
 
-def test_dire_player_gets_the_right_side(payload):
+def test_briefing_waits_for_the_start_questions(payload):
     prompts = []
-    reader = lambda: ids(*ENEMIES) + ids(*ALLIES)
+    waiting = [True]
     pregame = Pregame(
-        lambda line: None, INDEX, ask=lambda p: prompts.append(p) or "ok", reader=reader,
-        capture_delay=0, retry_delay=0,
+        lambda line: None, INDEX, ask=lambda p: prompts.append(p) or "ok",
+        waiting=lambda: waiting[0], wait_limit=5,
     )
-    start_pregame(pregame, payload, team="dire")
-    assert "Allies: Lion, Earthshaker, Crystal Maiden, Tidehunter" in prompts[0]
+    state = MatchState()
+    payload["hero"]["name"] = "npc_dota_hero_luna"
+    payload["map"]["game_state"] = PRE_GAME
+    state.update(payload)
+    pregame(state)
+    pregame.heard(enemies=[INDEX.find("am")], position=5)  # answered while it waits
+    waiting[0] = False
+    pregame.close()
+    assert len(prompts) == 1
+    assert "Enemies: Anti-Mage" in prompts[0]
+    assert "Player's position: 5 (hard support)" in prompts[0]
 
 
-def test_typed_picks_win_over_the_screen(payload):
+def test_picks_after_the_briefing_get_a_fresh_one(payload):
     prompts = []
-    reader = lambda: [None] * 10
-    pregame = Pregame(
-        lambda line: None, INDEX, ask=lambda p: prompts.append(p) or "ok", reader=reader,
-        capture_delay=0, retry_delay=0,
-    )
-    start_pregame(pregame, payload, typed=["vs am pudge"])
-    assert "Enemies: Anti-Mage, Pudge" in prompts[0]
+    pregame = Pregame(lambda line: None, INDEX, ask=lambda p: prompts.append(p) or "ok")
+    state = MatchState()
+    payload["map"]["game_state"] = PRE_GAME
+    state.update(payload)
+    pregame(state)
+    pregame.heard(enemies=[INDEX.find("pudge")])
+    pregame.close()
+    assert len(prompts) == 2
+    assert "Enemies: Pudge" in prompts[1]
 
 
 def test_typed_reply_names_unknown_words():
@@ -237,7 +202,14 @@ def test_typed_help_and_clear():
     assert pregame.typed("hello").startswith('Type "vs"')
     pregame.typed("with luna")
     assert pregame.typed("clear") == "Typed picks cleared."
-    assert pregame.typed_allies == []
+    assert pregame.allies == []
+
+
+def test_typed_position():
+    pregame = Pregame(lambda line: None, INDEX)
+    assert pregame.typed("pos 4") == "Position 4: soft support"
+    assert pregame.position == 4
+    assert pregame.typed("pos 9").startswith("Type your position")
 
 
 def test_builtin_briefing_when_no_model(payload):
@@ -245,17 +217,6 @@ def test_builtin_briefing_when_no_model(payload):
     pregame = Pregame(said.append, INDEX, ask=lambda p: None)
     start_pregame(pregame, payload, typed=["with " + " ".join(ALLIES), "vs " + " ".join(ENEMIES)])
     assert said and "Your team has lots of stuns and disables." in said[0]
-
-
-def test_capture_failure_does_not_stop_the_briefing(payload):
-    said = []
-
-    def broken():
-        raise OSError("no screen")
-
-    pregame = Pregame(said.append, INDEX, reader=broken, capture_delay=0, retry_delay=0)
-    start_pregame(pregame, payload)
-    assert len(said) == 1
 
 
 def test_briefing_only_once_per_match(payload):
@@ -277,56 +238,15 @@ def test_builtin_briefing_has_a_default():
     assert builtin_briefing(Analysis(), []) == "Good luck. Play safe in lane and watch the minimap."
 
 
-def test_defaults_keep_screen_capture_off(tmp_path):
+def test_defaults_ask_instead_of_reading_the_screen(tmp_path):
     cfg = config_mod.load(app_dir=tmp_path)
     assert cfg.pregame["enabled"] is True
-    assert cfg.pregame["capture"]["enabled"] is False
-    pregame = build(cfg.pregame, lambda line: None, None, tmp_path, tmp_path)
-    assert pregame.reader is None
+    assert "capture" not in cfg.pregame
+    assert cfg.pregame["position"] == 0
+    assert cfg.listen["start_questions"] is True
+    assert build(cfg.pregame, lambda line: None, None, tmp_path, tmp_path) is not None
 
 
 def test_build_rejects_unknown_provider(tmp_path):
     with pytest.raises(ValueError):
         build({"provider": "gpt"}, lambda line: None, None, tmp_path, tmp_path)
-
-
-def test_draft_test_command(tmp_path, monkeypatch, capsys):
-    from coach import __main__ as cli
-    from coach import capture
-
-    refs = {hero_id: noise(hero_id, (256, 144)) for hero_id in (1, 2)}
-    monkeypatch.setattr(capture, "load_references", lambda heroes, cache_dir: refs)
-    layout = Layout()
-    shot = Image.new("RGB", (1920, 1080))
-    box = layout.slots(1920, 1080)[0]
-    shot.paste(on_screen(refs[2], box), box[:2])
-    path = tmp_path / "shot.png"
-    shot.save(path)
-    monkeypatch.setenv("APPDATA", str(tmp_path))
-    assert cli.main(["draft-test", str(path)]) == 0
-    out = capsys.readouterr().out
-    assert "Radiant 1: Axe" in out
-    assert (tmp_path / "Dota2LiveCoach" / "draft-test.png").is_file()
-
-
-def test_teach_a_portrait(tmp_path, monkeypatch, capsys):
-    from coach import __main__ as cli
-    from coach import capture
-
-    refs = {hero_id: noise(hero_id, (256, 144)) for hero_id in (1, 2)}
-    monkeypatch.setattr(capture, "load_references", lambda heroes, cache_dir: refs)
-    layout = Layout()
-    shot = Image.new("RGB", (1920, 1080))
-    box = layout.slots(1920, 1080)[6]
-    # New art that looks nothing like the official picture.
-    shot.paste(noise(99, (box[2] - box[0], box[3] - box[1])), box[:2])
-    path = tmp_path / "shot.png"
-    shot.save(path)
-    monkeypatch.setenv("APPDATA", str(tmp_path))
-    assert cli.main(["draft-test", str(path)]) == 0
-    assert "Dire 2: ?" in capsys.readouterr().out
-    assert cli.main(["draft-test", str(path), "--teach", "d2=vengeful spirit"]) == 0
-    out = capsys.readouterr().out
-    assert "Learned Vengeful Spirit from slot d2" in out
-    assert "Dire 2: Vengeful Spirit" in out
-    assert cli.main(["draft-test", str(path), "--teach", "x9=nobody"]) == 1

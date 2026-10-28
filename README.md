@@ -12,8 +12,8 @@ The coach only tells you things you could already see or work out yourself.
 - Output is audio only. Nothing is drawn over the game.
 - It never reads game memory, edits game files, sends input, or looks up
   other players' profiles.
-- It does not look at your screen, with one exception you have to turn on
-  yourself: reading the draft from the top bar (see below).
+- It never looks at your screen. What it can't get from GSI (your position,
+  the other heroes in the match), it asks you out loud or lets you type.
 - Voice questions (on by default, once installed): your microphone is only heard by speech
   models running on your PC. Nothing is recorded or sent anywhere.
 
@@ -145,10 +145,22 @@ team's strongest stretch starts now...").
 
 It uses:
 
-- **The draft**: the heroes you can see. Type them in the coach window at any
-  time during the draft, e.g. `vs am cm lion pudge sf` for enemies and
-  `with luna tide` for allies (`clear` starts over). Short names like `am`,
-  `cm` and `qop` work. Your own hero is always known.
+- **The draft and your position**, which you tell the coach. Once picks are
+  done (strategy time, or right after the horn if you started the coach
+  late), it asks out loud, with no wake word needed: "What position are you
+  playing, one to five?", "Who's on your team?" and "Who are the enemy
+  heroes?". Answer after the beep, all in one go ("Anti-Mage, Crystal Maiden,
+  Lion, Pudge, Shadow Fiend") or a few at a time, or say "skip". Short names
+  like "storm", "QoP" or "WR" work. It reads back what it understood
+  ("Enemies: ... Right?"); fix a mistake with "no, Lina not Lion". The
+  briefing waits for your answers.
+
+  No microphone? Type in the coach window at any time: `vs am cm lion pudge sf`
+  for enemies, `with luna tide` for allies, `pos 4` for your position
+  (`clear` starts over). To never be asked your position, set `position`
+  under `[pregame]`, or per hero under `[pregame.positions]` (e.g.
+  `pudge = 4`). To turn the questions off, set `start_questions = false`
+  under `[listen]`. Your own hero is always known.
 - **Public hero statistics** from [OpenDota](https://www.opendota.com): how
   each hero does against the others and by game length, like Dota Plus shows.
   They are saved on your PC and refreshed weekly.
@@ -159,36 +171,6 @@ It uses:
   personal the briefing gets.
 - **Ollama** turns those facts into the spoken briefing. Without it, a written
   briefing from the same facts is used.
-
-**Reading the draft from the screen (optional, off by default).** Set
-`enabled = true` under `[pregame.capture]` in your `coach.toml`. The coach
-then takes one picture of a thin strip at the very top of your main monitor
-just before the horn (once more if heroes are missing), matches the ten hero
-portraits against Valve's official hero pictures, and throws the picture
-away. Dota must run in borderless window mode. This never touches the game
-itself, but Valve has not approved screen-reading tools, so use it at your
-own risk. Typed picks always win over what the screen showed.
-
-To check that the portraits line up on your screen, take a screenshot in a
-game (F12 in Steam saves one) and run:
-
-```
-py -m coach draft-test "C:\path\to\screenshot.png"
-```
-
-It prints the ten heroes it reads and saves the boxes it looked in to
-`%APPDATA%\Dota2LiveCoach\draft-test.png`. Adjust `top`, `height`, `width`,
-`step` and `gap` in `[pregame.capture]` until the boxes sit on the portraits.
-
-If a hero comes out wrong or as `?` (new hero art or a persona can look
-different from Valve's picture), teach it from the same screenshot. Slots are
-`r1`-`r5` for Radiant and `d1`-`d5` for Dire, left to right:
-
-```
-py -m coach draft-test "C:\path\to\screenshot.png" --teach d2="vengeful spirit"
-```
-
-The coach keeps that portrait and recognises the hero from then on.
 
 ### Ask the coach out loud
 
