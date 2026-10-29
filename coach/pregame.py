@@ -15,6 +15,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from . import llm
+from .grounding import Grounding
 from .draft import Analysis, Draft, analyse
 from .heroes import HeroIndex, HeroInfo
 from .lineup import POSITIONS
@@ -30,9 +31,16 @@ You are a Dota 2 coach talking to a player through their headset in the last \
 seconds before the game starts. Turn the facts below into one spoken briefing \
 of at most {words} words of plain English: your team's main strength, its main \
 weakness, the enemy hero or threat to watch, and when to fight. If facts about \
-the player's own habits are given, add one personal tip from them. Use only the \
-facts given: do not invent heroes, items or numbers. No lists, headings or emoji."""
+the player's own habits are given, add one personal tip from them. No lists, \
+headings or emoji.
 
+Strict rules, because the player will hear any mistake:
+- Name only heroes listed in the facts. Never name any other hero.
+- If allies or enemies are "not known", say nothing about teammates or enemies.
+- Use only numbers that appear in the facts. Never make up a time to fight or push.
+- Dota has no junglers. Don't give anyone a role the facts don't give.
+- The game hasn't started: never say something already happened in it.
+- Don't invent strengths, weaknesses, items or habits that the facts don't state."""
 
 def facts(
     snap: Snapshot, draft: Draft, analysis: Analysis, personal: list[str], position: int = 0
@@ -43,10 +51,8 @@ def facts(
     if position in POSITIONS:
         lines.append(f"Player's position: {position} ({POSITIONS[position]})")
     allies = [h.name for h in draft.allies if h != draft.me]
-    if allies:
-        lines.append("Allies: " + ", ".join(allies))
-    if draft.enemies:
-        lines.append("Enemies: " + ", ".join(h.name for h in draft.enemies))
+    lines.append("Allies: " + (", ".join(allies) if allies else "not known"))
+    lines.append("Enemies: " + (", ".join(h.name for h in draft.enemies) if draft.enemies else "not known"))
     if analysis.strengths:
         lines.append("Team strengths: " + "; ".join(analysis.strengths))
     if analysis.weaknesses:
@@ -102,6 +108,7 @@ class Pregame:
         self._match = 0  # bumped on each new match, to drop a stale briefing
         self._briefed = False
         self._pool = ThreadPoolExecutor(max_workers=1, thread_name_prefix="pregame")
+        self._grounding = Grounding(index)
 
     def __call__(self, state: MatchState) -> None:
         self.state = state
@@ -195,13 +202,38 @@ class Pregame:
         if self.windows is not None:
             self.windows.set(analysis.windows)
         personal = self.personal(snap, draft.me)
-        prompt = facts(snap, draft.with_me(), analysis, personal, self.position)
-        text = self.ask(prompt) if self.ask else None
+        text = self._model_briefing(snap, draft, analysis, personal)
         text = text or builtin_briefing(analysis, personal)
         state = self.state
         # Say it only for this match and before the game is well under way.
         if match == self._match and (state is None or (state.current.clock_time or 0) < 30):
             self.say(text)
+
+    def _model_briefing(
+        self, snap: Snapshot, draft: Draft, analysis: Analysis, personal: list[str]
+    ) -> str | None:
+        """The model's briefing, or None when it has nothing real to work
+        from or says something the facts don't back."""
+        if self.ask is None:
+            return None
+        if not (draft.allies or draft.enemies or personal):
+            log.info("Briefing: picks not known yet, so the written briefing is used")
+            return None
+        prompt = facts(snap, draft.with_me(), analysis, personal, self.position)
+        text = self.ask(prompt)
+        if not text:
+            return None
+        problem = self._grounding.problem(
+            text,
+            prompt,
+            [draft.me, *draft.allies, *draft.enemies],
+            allies_known=bool([h for h in draft.allies if h != draft.me]),
+            enemies_known=bool(draft.enemies),
+        )
+        if problem:
+            log.info("Briefing from the model dropped (it %s): %s", problem, text)
+            return None
+        return text
 
     def close(self) -> None:
         self._pool.shutdown(wait=True)
@@ -228,6 +260,7 @@ def build(
             SYSTEM_PROMPT.format(words=words),
             num_predict=words * 2,
             label="Briefing",
+            temperature=0.2,
         )
     elif provider == "builtin":
         ask = None

@@ -17,7 +17,7 @@ from .benchmarks import Benchmarks
 from .gsi_server import Coach, make_app
 from .heroes import load_heroes
 from .install import find_dota, install
-from .lineup import Interview, configured_position
+from .lineup import Interview, TypedQuestions, configured_position
 from .opendota import OpenDota
 from .recorder import MatchRecorder
 from .replay import replay
@@ -105,9 +105,13 @@ def make_coach(
     return coach
 
 
-def read_typed_picks(coach: Coach) -> None:
-    """Lets you type the draft in the coach window: "vs am cm lion pudge sf"."""
+def read_typed_picks(coach: Coach, questions: TypedQuestions | None = None) -> None:
+    """Lets you type the draft in the coach window: "vs am cm lion pudge sf",
+    or the answer to a start-of-game question shown there."""
     for line in sys.stdin:
+        command = line.strip().split(maxsplit=1)[0].lower() if line.strip() else ""
+        if command not in ("vs", "with", "pos", "clear") and questions and questions.answer(line):
+            continue
         reply = coach.pregame.typed(line)
         if reply:
             print(reply, flush=True)
@@ -131,9 +135,7 @@ def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
     speaker = make_speaker(cfg)
     benchmarks = make_benchmarks(cfg)
     coach = make_coach(cfg, speaker, recorder, benchmarks=benchmarks)
-    if coach.pregame is not None and sys.stdin is not None and sys.stdin.isatty():
-        threading.Thread(target=read_typed_picks, args=(coach,), daemon=True).start()
-        logging.info('Type the enemy picks any time, e.g.  vs am cm lion pudge sf')
+    typing = coach.pregame is not None and sys.stdin is not None and sys.stdin.isatty()
     interview = make_interview(cfg, coach)
     listening = voice.start(
         cfg.listen,
@@ -147,11 +149,21 @@ def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
         benchmarks=benchmarks,
         enemies=lambda: coach.pregame.enemies if coach.pregame is not None else [],
     )
-    if interview is not None and listening is not None:
-        # Only ask when the coach can hear the answers. It goes before the
-        # briefing so the briefing knows to wait for the answers.
-        coach.listeners.insert(coach.listeners.index(coach.pregame), interview)
+    questions = None
+    if interview is not None and listening is None and typing:
+        # The coach can't hear you: ask the same questions in this window.
+        questions = TypedQuestions(interview, speaker.say, lambda text: print(text, flush=True))
+        logging.info("Voice is off, so the start-of-game questions will be asked here")
+    if interview is not None and (listening is not None or questions is not None):
+        # They go before the briefing so the briefing knows to wait for the answers.
+        at = coach.listeners.index(coach.pregame)
+        coach.listeners[at:at] = [interview] + ([questions] if questions else [])
         coach.pregame.waiting = lambda: interview.busy
+    elif interview is not None:
+        logging.warning("Nobody will be asked the picks: voice is off and there is no coach window to type in")
+    if typing:
+        threading.Thread(target=read_typed_picks, args=(coach, questions), daemon=True).start()
+        logging.info('Type the enemy picks any time, e.g.  vs am cm lion pudge sf')
     logging.info("Listening for Dota 2 on %s", cfg.url)
     try:
         web.run_app(make_app(coach), host=cfg.host, port=cfg.port, print=None, access_log=None)

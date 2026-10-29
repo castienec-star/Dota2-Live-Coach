@@ -159,6 +159,33 @@ def test_briefing_uses_the_picks_and_asks_the_model(payload):
     assert windows._windows[0] == Window(10, 20, True)
 
 
+def test_briefing_with_an_invented_hero_is_not_spoken(payload, caplog):
+    caplog.set_level("INFO")
+    said = []
+    pregame = Pregame(
+        said.append, INDEX, ask=lambda p: "Watch their Drow Ranger, she has been farming.",
+    )
+    start_pregame(pregame, payload, typed=["vs " + " ".join(ENEMIES)])
+    assert said and "Drow Ranger" not in said[0]
+    assert "names Drow Ranger" in caplog.text
+
+
+def test_no_model_briefing_without_picks(payload):
+    prompts, said = [], []
+    pregame = Pregame(said.append, INDEX, ask=lambda p: prompts.append(p) or "Our jungler wins.")
+    start_pregame(pregame, payload)
+    assert prompts == []
+    assert said == ["Good luck. Play safe in lane and watch the minimap."]
+
+
+def test_unknown_picks_are_marked_in_the_facts(payload):
+    prompts = []
+    pregame = Pregame(lambda line: None, INDEX, ask=lambda p: prompts.append(p) or "ok")
+    start_pregame(pregame, payload, typed=["vs pudge"])
+    assert "Allies: not known" in prompts[0]
+    assert "Enemies: Pudge" in prompts[0]
+
+
 def test_briefing_waits_for_the_start_questions(payload):
     prompts = []
     waiting = [True]
@@ -188,8 +215,9 @@ def test_picks_after_the_briefing_get_a_fresh_one(payload):
     pregame(state)
     pregame.heard(enemies=[INDEX.find("pudge")])
     pregame.close()
-    assert len(prompts) == 2
-    assert "Enemies: Pudge" in prompts[1]
+    # The first briefing knew no picks, so it didn't ask the model.
+    assert len(prompts) == 1
+    assert "Enemies: Pudge" in prompts[0]
 
 
 def test_typed_reply_names_unknown_words():

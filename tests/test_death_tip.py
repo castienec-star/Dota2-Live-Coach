@@ -76,6 +76,22 @@ def test_failed_request_falls_back_to_builtin_tip(payload):
     assert said == ["Built-in tip."]
 
 
+@pytest.mark.parametrize(
+    "tip, spoken",
+    [
+        ("Their Phantom Assassin is farming, stay away.", "Built-in tip."),
+        ("Wait for your jungler next time.", "Built-in tip."),
+        ("Buy two Observer Wards and play near your towers.", "Buy two Observer Wards and play near your towers."),
+    ],
+)
+def test_model_tip_must_stick_to_own_data(payload, tip, spoken):
+    rule, said = make(lambda p: tip)
+    state = MatchState()
+    die(payload, state, Engine([rule], lambda line: None))
+    rule.close()
+    assert said == [spoken]
+
+
 def test_builtin_provider_needs_no_model(payload):
     rule, said = make(None)
     state = MatchState()

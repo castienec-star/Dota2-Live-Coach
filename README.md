@@ -164,7 +164,10 @@ It uses:
   ("Enemies: ... Right?"); fix a mistake with "no, Lina not Lion". The
   briefing waits for your answers.
 
-  No microphone? Type in the coach window at any time: `vs am cm lion pudge sf`
+  If the coach can't listen (no microphone, or the voice packages aren't
+  installed), it asks the same questions in the coach window instead and
+  tells you so out loud: type the answer and press Enter (Enter alone skips).
+  Or type in the coach window at any time: `vs am cm lion pudge sf`
   for enemies, `with luna tide` for allies, `pos 4` for your position
   (`clear` starts over). To never be asked your position, set `position`
   under `[pregame]`, or per hero under `[pregame.positions]` (e.g.
@@ -179,7 +182,14 @@ It uses:
   Dota. This is how it learns your playstyle: the more you play, the more
   personal the briefing gets.
 - **Ollama** turns those facts into the spoken briefing. Without it, a written
-  briefing from the same facts is used.
+  briefing from the same facts is used. Small models like to make things up,
+  so the coach checks what the model wrote before speaking it: a briefing
+  that names a hero you didn't tell it about, uses a number that isn't in the
+  facts, mentions a "jungler", or talks about teammates or enemies it knows
+  nothing about is dropped (the coach window says why) and the written
+  briefing is spoken instead. Until it knows at least some picks or has
+  learned from your games, it doesn't ask the model at all. Death tips get the
+  same hero check.
 
 ### Ask the coach out loud
 
