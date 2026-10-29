@@ -6,7 +6,7 @@ from coach import item_advisor
 from coach.benchmarks import Verdict
 from coach.game_questions import Notes
 from coach.heroes import HeroIndex
-from coach.item_advisor import ItemAdvisor, candidates, describe, grounded, parse, schema
+from coach.item_advisor import ItemAdvisor, candidates, describe, parse, schema
 from coach.items import load_items
 from coach.state import Item, Snapshot
 from coach.voice import Answers
@@ -88,12 +88,14 @@ def test_parse(snap, reply, expected):
     assert (None if parsed is None else (parsed[0].item.key, parsed[1])) == expected
 
 
-def test_grounded():
+def test_reason_must_stick_to_the_facts():
+    advisor = ItemAdvisor(None)
     lineup = enemies("lina", "lion")
-    assert grounded("Lina and Lion stun you a lot", lineup)
-    assert not grounded("Pudge keeps hooking you", lineup)
-    assert not grounded("you need 30 percent more damage", lineup)
-    assert not grounded("word " * 20, lineup)
+    assert advisor.problem("Lina and Lion stun you a lot", lineup, None, None) is None
+    assert advisor.problem("Pudge keeps hooking you", lineup, None, None)
+    assert advisor.problem("you need 30 percent more damage", lineup, None, None)
+    assert advisor.problem("word " * 20, lineup, None, None)
+    assert advisor.problem("their team has a lot of magic", [], None, None)
 
 
 def test_model_choice_is_spoken_with_its_reason(snap):

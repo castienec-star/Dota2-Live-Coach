@@ -4,7 +4,7 @@ import time
 
 import pytest
 
-from coach.speaker import PrintBackend, Speaker, make_backend
+from coach.speaker import HIGH, LOW, NORMAL, URGENT, PrintBackend, Speaker, make_backend
 
 
 class Recorder:
@@ -77,3 +77,25 @@ def test_busy_while_speaking():
     assert speaker.busy
     speaker.close()
     assert not speaker.busy
+
+
+def test_most_important_waiting_line_goes_first():
+    backend = Recorder(delay=0.2)
+    speaker = Speaker(lambda: backend, max_delay=5)
+    speaker.say("briefing", priority=LOW)
+    time.sleep(0.05)  # the briefing is being spoken now
+    speaker.say("item reminder", priority=NORMAL)
+    speaker.say("rune", priority=HIGH)
+    speaker.say("low health", priority=URGENT)
+    speaker.close()
+    assert backend.spoken == ["briefing", "low health", "rune", "item reminder"]
+
+
+def test_each_line_can_wait_its_own_time():
+    backend = Recorder(delay=0.3)
+    speaker = Speaker(lambda: backend, max_delay=0.1)
+    speaker.say("first")
+    speaker.say("rune call, late")
+    speaker.say("answer the player waits for", max_delay=5)
+    speaker.close()
+    assert backend.spoken == ["first", "answer the player waits for"]

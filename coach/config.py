@@ -31,6 +31,7 @@ class Config:
     voice_name: str = ""
     voice_rate: int = 0
     voice_max_delay: float = 4.0
+    voice_max_lines: int = 2
     reminders: dict = field(default_factory=dict)
     builds: dict = field(default_factory=dict)
     pregame: dict = field(default_factory=dict)
@@ -99,6 +100,7 @@ def load(user_file: Path | None = None, app_dir: Path | None = None) -> Config:
         voice_name=voice.get("name", ""),
         voice_rate=int(voice.get("rate", 0)),
         voice_max_delay=float(voice.get("max_delay", 4)),
+        voice_max_lines=int(voice.get("max_lines", 2)),
         reminders=raw.get("reminders", {}),
         builds=raw.get("builds", {}),
         pregame=raw.get("pregame", {}),

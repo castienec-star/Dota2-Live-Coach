@@ -151,3 +151,26 @@ def test_coach_reads_the_notes_once_questions_are_on(tmp_path):
 
     coach.questions = Questions()
     assert notes().lane == "won"
+
+
+def test_model_tip_may_name_the_trouble_hero(payload):
+    # The grounding check must not drop a tip about the hero the player named.
+    from coach.rules import Engine
+    from coach.rules.death_tip import DeathTip
+    from coach.state import MatchState
+
+    notes = Notes(trouble=HEROES.by_key("npc_dota_hero_pudge"))
+    tip = "Find Pudge on the minimap before you walk into the trees."
+    said = []
+    rule = DeathTip(said.append, lambda prompt: tip, fallback=lambda snap: "Built-in tip.", notes=lambda: notes)
+    state, engine = MatchState(), Engine([rule], lambda line: None)
+    payload["hero"]["alive"] = True
+    state.update(payload)
+    engine(state)
+    payload["hero"]["alive"] = False
+    payload["hero"]["respawn_seconds"] = 25
+    payload["map"]["clock_time"] += 1
+    state.update(payload)
+    engine(state)
+    rule.close()
+    assert said == [tip]

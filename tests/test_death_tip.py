@@ -77,6 +77,38 @@ def test_failed_request_falls_back_to_builtin_tip(payload):
     assert said == ["Built-in tip."]
 
 
+@pytest.mark.parametrize(
+    "tip, spoken",
+    [
+        ("Their Phantom Assassin is farming, stay away.", "Built-in tip."),
+        ("Wait for your jungler next time.", "Built-in tip."),
+        ("Buy two Observer Wards and play near your towers.", "Buy two Observer Wards and play near your towers."),
+    ],
+)
+def test_model_tip_must_stick_to_own_data(payload, tip, spoken):
+    rule, said = make(lambda p: tip)
+    state = MatchState()
+    die(payload, state, Engine([rule], lambda line: None))
+    rule.close()
+    assert said == [spoken]
+
+
+def test_model_tip_may_name_a_hero_from_the_prompt(payload, monkeypatch):
+    # What the player told the coach (e.g. the hero giving them trouble) is
+    # in the prompt, so a tip naming that hero sticks to the facts.
+    from coach.rules import death_tip
+
+    monkeypatch.setattr(
+        death_tip, "describe", lambda *a, **k: "Hero: luna\nThe player told you: Pudge gives them the most trouble"
+    )
+    tip = "Find Pudge on the minimap before you walk into the trees."
+    rule, said = make(lambda p: tip)
+    state = MatchState()
+    die(payload, state, Engine([rule], lambda line: None))
+    rule.close()
+    assert said == [tip]
+
+
 def test_builtin_provider_needs_no_model(payload):
     rule, said = make(None)
     state = MatchState()

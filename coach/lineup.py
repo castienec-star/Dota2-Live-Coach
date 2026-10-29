@@ -251,3 +251,53 @@ class Interview:
     def _finish(self, reply: str | None = None) -> str | None:
         self._next()
         return reply
+
+
+class TypedQuestions:
+    """The start-of-game questions in the coach window, for when the coach
+    can't hear you (no microphone, or the voice packages aren't installed).
+
+    Add it as a GSI listener right after the Interview: it prints each
+    question when it comes up, and says once a match, out loud, to answer in
+    the window. Pass each typed line to answer().
+    """
+
+    def __init__(
+        self,
+        interview: Interview,
+        say: Callable[[str], None],
+        show: Callable[[str], None] = print,
+    ) -> None:
+        self.interview = interview
+        self.say = say
+        self.show = show
+        self._lock = threading.Lock()
+        self._shown: Question | None = None
+        self._told = False
+
+    def __call__(self, state: MatchState) -> None:
+        if state.new_match:
+            self._told = False
+        self._show_next()
+
+    def answer(self, line: str) -> bool:
+        """Answers the waiting question; False when none is waiting."""
+        question = self.interview.pending()
+        if question is None:
+            return False
+        reply = question.answer(line.strip())
+        if reply:
+            self.show(reply)
+        self._show_next()
+        return True
+
+    def _show_next(self) -> None:
+        with self._lock:
+            question = self.interview.pending()
+            if question is None or question is self._shown:
+                return
+            self._shown = question
+            if not self._told:
+                self._told = True
+                self.say("Type your position, your team and the enemy heroes in the coach window.")
+        self.show(f"Coach asks: {question.text}  (type the answer and press Enter; Enter alone skips)")

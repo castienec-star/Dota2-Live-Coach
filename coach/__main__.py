@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import functools
 import logging
 import subprocess
 import sys
@@ -14,13 +15,14 @@ from aiohttp import web
 
 from . import config as config_mod
 from . import game_questions, item_advisor
+from . import health as health_mod
 from . import pregame as pregame_mod
 from . import voice
 from .benchmarks import Benchmarks
 from .gsi_server import Coach, make_app
 from .heroes import HeroIndex, load_heroes
 from .install import find_dota, install
-from .lineup import Interview, Question, configured_position
+from .lineup import Interview, Question, TypedQuestions, configured_position
 from .opendota import OpenDota
 from .recorder import MatchRecorder
 from .replay import replay
@@ -35,7 +37,7 @@ from .rules import (
     timers,
     windows,
 )
-from .speaker import Speaker, make_backend
+from .speaker import HIGH, LOW, Speaker, make_backend
 from .state import Snapshot
 
 
@@ -49,6 +51,12 @@ def make_speaker(cfg: config_mod.Config) -> Speaker:
         lambda: make_backend(cfg.voice_backend, cfg.voice_name, cfg.voice_rate),
         cfg.voice_max_delay,
     )
+
+
+def reply_say(speaker: Speaker) -> Callable[[str], None]:
+    """For answers and questions to the player: they are waiting for them,
+    so they go first and may wait longer than a rune call."""
+    return functools.partial(speaker.say, priority=HIGH, max_delay=15)
 
 
 def position_of(cfg: config_mod.Config, coach: Coach) -> PositionOf:
@@ -84,6 +92,8 @@ def make_coach(
         summary_interval = cfg.summary_interval
     coach = Coach(cfg.token, recorder, summary_interval)
     position = position_of(cfg, coach)
+    # A death tip has its own deadline too: the respawn.
+    tip_say = functools.partial(speaker.say, priority=HIGH, max_delay=10)
     reminders, positions = split_positions(cfg.reminders)
     power_windows = windows.build(reminders)
     rules = (
@@ -98,13 +108,14 @@ def make_coach(
             lambda: coach.pregame.enemies if coach.pregame is not None else [],
             notes_of(coach),
         )
-        + (death_tip.build(reminders, speaker.say, position, notes_of(coach)) if tips else [])
+        + (death_tip.build(reminders, tip_say, position, notes_of(coach)) if tips else [])
     )
-    coach.listeners.append(Engine(for_positions(rules, positions, position), speaker.say))
+    coach.listeners.append(Engine(for_positions(rules, positions, position), speaker.say, cfg.voice_max_lines, prioritized=True))
     if tips:
         coach.pregame = pregame_mod.build(
             cfg.pregame,
-            speaker.say,
+            # Long, and only useful before the game: any reminder goes first.
+            functools.partial(speaker.say, priority=LOW, max_delay=20),
             power_windows[0] if power_windows else None,
             cfg.app_dir,
             cfg.record_dir,
@@ -114,9 +125,13 @@ def make_coach(
     return coach
 
 
-def read_typed_picks(coach: Coach) -> None:
-    """Lets you type the draft in the coach window: "vs am cm lion pudge sf"."""
+def read_typed_picks(coach: Coach, questions: TypedQuestions | None = None) -> None:
+    """Lets you type the draft in the coach window: "vs am cm lion pudge sf",
+    or the answer to a start-of-game question shown there."""
     for line in sys.stdin:
+        command = line.strip().split(maxsplit=1)[0].lower() if line.strip() else ""
+        if command not in ("vs", "with", "pos", "clear") and questions and questions.answer(line):
+            continue
         reply = coach.pregame.typed(line)
         if reply:
             print(reply, flush=True)
@@ -171,15 +186,13 @@ def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
     speaker = make_speaker(cfg)
     benchmarks = make_benchmarks(cfg)
     coach = make_coach(cfg, speaker, recorder, benchmarks=benchmarks)
-    if coach.pregame is not None and sys.stdin is not None and sys.stdin.isatty():
-        threading.Thread(target=read_typed_picks, args=(coach,), daemon=True).start()
-        logging.info('Type the enemy picks any time, e.g.  vs am cm lion pudge sf')
+    typing = coach.pregame is not None and sys.stdin is not None and sys.stdin.isatty()
     interview = make_interview(cfg, coach)
     questions = make_game_questions(cfg, coach)
     listening = voice.start(
         cfg.listen,
         coach.state,
-        speaker.say,
+        reply_say(speaker),
         lambda: speaker.busy,
         split_positions(cfg.reminders)[0],
         cfg.builds,
@@ -190,17 +203,30 @@ def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
         notes=notes_of(coach),
         advisor=item_advisor.build(cfg.items),
     )
-    if interview is not None and listening is not None:
-        # Only ask when the coach can hear the answers. It goes before the
-        # briefing so the briefing knows to wait for the answers.
-        coach.listeners.insert(coach.listeners.index(coach.pregame), interview)
+    typed = None
+    if interview is not None and listening is None and typing:
+        # The coach can't hear you: ask the same questions in this window.
+        typed = TypedQuestions(interview, speaker.say, lambda text: print(text, flush=True))
+        logging.info("Voice is off, so the start-of-game questions will be asked here")
+    if interview is not None and (listening is not None or typed is not None):
+        # They go before the briefing so the briefing knows to wait for the answers.
+        at = coach.listeners.index(coach.pregame)
+        coach.listeners[at:at] = [interview] + ([typed] if typed else [])
         coach.pregame.waiting = lambda: interview.busy
+    elif interview is not None:
+        logging.warning("Nobody will be asked the picks: voice is off and there is no coach window to type in")
     if questions is not None and listening is not None:
         coach.listeners.append(questions)
         coach.questions = questions
+    if typing:
+        threading.Thread(target=read_typed_picks, args=(coach, typed), daemon=True).start()
+        logging.info('Type the enemy picks any time, e.g.  vs am cm lion pudge sf')
     logging.info("Listening for Dota 2 on %s", cfg.url)
+    app = make_app(coach)
+    coach.health = health_mod.Health(cfg)
+    health_mod.watch(app, coach.health, speaker.say)
     try:
-        web.run_app(make_app(coach), host=cfg.host, port=cfg.port, print=None, access_log=None)
+        web.run_app(app, host=cfg.host, port=cfg.port, print=None, access_log=None)
     finally:
         if recorder is not None:
             recorder.close()

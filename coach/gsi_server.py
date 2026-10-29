@@ -34,6 +34,7 @@ class Coach:
         self.listeners: list[Listener] = []
         self.pregame = None  # the pre-game briefing, which also takes typed picks
         self.questions = None  # the in-match questions, whose answers other advice uses
+        self.health = None  # notices when Dota isn't sending updates (coach/health.py)
         self._last_summary = 0.0
 
     def handle(self, payload: dict[str, Any]) -> Snapshot:
@@ -73,7 +74,11 @@ async def _receive(request: web.Request) -> web.Response:
         return web.Response(status=400, text="expected a JSON object")
     if not coach.authorized(payload):
         log.warning("Rejected an update with a wrong or missing token")
+        if coach.health is not None:
+            coach.health.rejected()
         return web.Response(status=401)
+    if coach.health is not None:
+        coach.health.accepted()
     coach.handle(payload)
     return web.Response(text="ok")
 

@@ -23,7 +23,8 @@ from collections.abc import Callable
 from . import llm, situational
 from .benchmarks import Verdict
 from .game_questions import Notes
-from .heroes import HeroInfo, load_heroes
+from .grounding import Grounding
+from .heroes import HeroInfo
 from .items import ItemInfo
 from .lineup import POSITIONS
 from .situational import Pick
@@ -152,28 +153,6 @@ def parse(reply: str | None, picks: list[Pick]) -> tuple[Pick, str] | None:
     return chosen, why.strip() if isinstance(why, str) else ""
 
 
-_HERO_NAMES = None
-
-
-def _hero_names() -> list[str]:
-    global _HERO_NAMES
-    if _HERO_NAMES is None:
-        _HERO_NAMES = [h.name.lower() for h in load_heroes().values()]
-    return _HERO_NAMES
-
-
-def grounded(why: str, allowed: list[HeroInfo]) -> bool:
-    """False for a reason with numbers in it (small models invent them), one
-    naming a hero nobody told the coach about, or a long one."""
-    lower = why.lower()
-    if not why or re.search(r"\d", why) or len(why.split()) > MAX_WORDS:
-        return False
-    names = {h.name.lower() for h in allowed}
-    return not any(
-        re.search(rf"\b{re.escape(n)}\b", lower) for n in _hero_names() if n not in names
-    )
-
-
 class ItemAdvisor:
     """Asks the model to choose among the rules' candidates, with the rules'
     pick as the fallback."""
@@ -181,6 +160,7 @@ class ItemAdvisor:
     def __init__(self, ask: Callable[[str, dict], str | None] | None) -> None:
         self.ask = ask
         self._cache: dict[tuple, Pick | None] = {}
+        self._grounding: Grounding | None = None  # loaded on the first model reply
 
     def choose(
         self,
@@ -227,11 +207,23 @@ class ItemAdvisor:
             return picks[0]
         chosen, why = parsed
         why = why.rstrip(" .!")
-        allowed = enemies + [h for h in (notes.trouble if notes else None, hero) if h is not None]
-        if why and not grounded(why, allowed):
-            log.info("Item advice: dropped the reason %r", why)
+        if why and (problem := self.problem(why, enemies, notes, hero)):
+            log.info("Item advice: dropped the reason (it %s): %s", problem, why)
             why = ""
         return Pick(chosen.item, why or chosen.reason)
+
+
+    def problem(
+        self, why: str, enemies: list[HeroInfo], notes: Notes | None, hero: HeroInfo | None
+    ) -> str | None:
+        """Why a reason can't be spoken: too long, any number (small models
+        invent them), or a hero nobody told the coach about."""
+        if len(why.split()) > MAX_WORDS:
+            return "is too long"
+        if self._grounding is None:
+            self._grounding = Grounding()
+        trouble = notes.trouble if notes else None
+        return self._grounding.problem(why, "", [hero, trouble, *enemies], enemies_known=bool(enemies))
 
 
 def ollama_asker(model: str, url: str, timeout: float) -> Callable[[str, dict], str | None]:
