@@ -33,6 +33,7 @@ class Coach:
         self.state = MatchState()
         self.listeners: list[Listener] = []
         self.pregame = None  # the pre-game briefing, which also takes typed picks
+        self.questions = None  # the in-match questions, whose answers other advice uses
         self._last_summary = 0.0
 
     def handle(self, payload: dict[str, Any]) -> Snapshot:

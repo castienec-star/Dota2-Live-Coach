@@ -2,8 +2,10 @@
 enemy heroes you told the coach about.
 
 The enemy lineup only comes from you (the start-of-game questions or typed
-picks); the coach never looks it up. Only hero names are used, never enemy
-items, positions or net worth. See docs/strategy/situational-items.md for
+picks), and so do the in-match answers (how your lane went, who gives you
+trouble, whether their carry farms freely, who wins fights); the coach never
+looks anything up. Only hero names are used, never enemy items, positions or
+net worth. See docs/strategy/situational-items.md for
 where each rule comes from.
 """
 
@@ -12,6 +14,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from .benchmarks import Verdict
+from .game_questions import Notes
 from .heroes import HeroInfo
 from .items import ItemInfo
 from .state import Snapshot
@@ -127,9 +130,28 @@ def _names(heroes: list[HeroInfo]) -> str:
     return " and ".join(names)
 
 
-def against(enemies: list[HeroInfo], role_name: str, snap: Snapshot, items: dict[str, ItemInfo]) -> Pick | None:
+def _wanted(threat: Threat, role_name: str, snap: Snapshot, items: dict[str, ItemInfo]) -> str | None:
+    key = threat.items.get(role_name)
+    if key is None or owns(snap, key) or key not in items:
+        return None
+    return key
+
+
+def against(
+    enemies: list[HeroInfo],
+    role_name: str,
+    snap: Snapshot,
+    items: dict[str, ItemInfo],
+    trouble: HeroInfo | None = None,
+) -> Pick | None:
     """The first threat in the enemy lineup with an item for your role that
-    you don't own yet."""
+    you don't own yet. The hero giving you the most trouble comes first, and
+    one is enough for any threat."""
+    if trouble is not None:
+        for threat in THREATS:
+            key = _wanted(threat, role_name, snap, items)
+            if trouble.key in threat.heroes and key is not None:
+                return Pick(items[key], f"{trouble.name} {_singular(threat.reason)}")
     for threat in THREATS:
         found = [h for h in enemies if h.key in threat.heroes]
         key = threat.items.get(role_name)
@@ -147,6 +169,32 @@ def _singular(reason: str) -> str:
     return f"{verb} {rest}"
 
 
+def struggling(verdict: Verdict | None, notes: Notes | None) -> str | None:
+    """Why you should buy to stay alive, or None. "" when the verdict says
+    you're behind. Your own numbers beat what you said earlier, so when they
+    say you're ahead, the answers don't count; how your lane went only counts
+    while there is no verdict."""
+    if verdict is not None and verdict.kind == "behind":
+        return ""
+    if notes is None or (verdict is not None and verdict.kind == "ahead"):
+        return None
+    if notes.fights == "lost":
+        return "your team is losing fights"
+    if notes.carry_free:
+        return "their carry is farming freely"
+    if notes.lane == "lost" and verdict is None:
+        return "your lane was hard"
+    return None
+
+
+def defensive(snap: Snapshot, role_name: str, items: dict[str, ItemInfo], reason: str = "") -> Pick | None:
+    """The first defensive item for your role you don't own yet."""
+    for key in DEFENSIVE[role_name]:
+        if not owns(snap, key) and key in items:
+            return Pick(items[key], reason)
+    return None
+
+
 def recommend(
     snap: Snapshot,
     verdict: Verdict | None,
@@ -154,16 +202,18 @@ def recommend(
     role_name: str,
     items: dict[str, ItemInfo],
     next_item: ItemInfo | None,
+    notes: Notes | None = None,
 ) -> Pick | None:
-    """What to buy now. A threat from the enemy lineup comes first; when you
-    are behind, a defensive item; otherwise the next item on your build."""
-    pick = against(enemies, role_name, snap, items)
+    """What to buy now. A threat from the enemy lineup comes first (the
+    trouble hero before the others); when you are behind or told the coach
+    the game is going badly, a defensive item; otherwise the next item on
+    your build."""
+    pick = against(enemies, role_name, snap, items, notes.trouble if notes else None)
     if pick is not None:
         return pick
-    if verdict is not None and verdict.kind == "behind":
-        for key in DEFENSIVE[role_name]:
-            if not owns(snap, key) and key in items:
-                return Pick(items[key], "")
+    reason = struggling(verdict, notes)
+    if reason is not None and (pick := defensive(snap, role_name, items, reason)) is not None:
+        return pick
     return Pick(next_item, "") if next_item is not None else None
 
 

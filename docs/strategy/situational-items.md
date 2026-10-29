@@ -32,7 +32,12 @@ well-timed counter is worth more than the next greedy item.
    lineup has one; the specific counters need only one hero. Owning an
    upgrade counts (Mjollnir or Gleipnir covers Maelstrom, Hurricane Pike
    covers Force Staff, Ethereal Blade covers Ghost Scepter).
-2. **Behind and nothing to counter**: a defensive item. Cores Black King Bar
+   The hero the player said gives them the most trouble (in-match
+   questions, [game-state-questions.md](game-state-questions.md)) is checked
+   first, and one is enough for any threat.
+2. **Behind and nothing to counter**: a defensive item. "Behind" also covers
+   the player saying their team is losing fights, their carry is farming
+   freely or (with no verdict yet) their lane was lost. Cores Black King Bar
    (offlaners then Blade Mail), supports Glimmer Cape then Force Staff. Same
    advice as the "you're behind" verdict in
    [ahead-or-behind.md](ahead-or-behind.md).

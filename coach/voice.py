@@ -22,6 +22,7 @@ from collections.abc import Callable, Iterable, Iterator
 
 from . import situational
 from .benchmarks import EARLIEST, Benchmarks, is_support, spoken
+from .game_questions import Notes
 from .heroes import HeroIndex, HeroInfo
 from .items import load_items
 from .lineup import Question
@@ -95,6 +96,7 @@ class Answers:
         position: PositionOf | None = None,
         benchmarks: Benchmarks | None = None,
         enemies: Callable[[], list[HeroInfo]] | None = None,
+        notes: Callable[[], Notes | None] | None = None,
     ) -> None:
         settings = {name: reminders.get(name, {}) for name, _ in self.RUNES}
         self.timers = {r.name: r for r in timers.build(settings) if r.name in dict(self.RUNES)}
@@ -104,6 +106,7 @@ class Answers:
         self.position = position
         self.benchmarks = benchmarks if benchmarks is not None else Benchmarks()
         self.enemies = enemies or list
+        self.notes = notes or (lambda: None)
 
     def answer(self, text: str, snap: Snapshot) -> str:
         kind = intent(text)
@@ -133,6 +136,7 @@ class Answers:
             situational.role(position, support),
             self.all_items,
             next_item,
+            self.notes(),
         )
         return situational.spoken(pick, verdict, snap)
 
@@ -392,6 +396,7 @@ def start(
     position: PositionOf | None = None,
     benchmarks: Benchmarks | None = None,
     enemies: Callable[[], list[HeroInfo]] | None = None,
+    notes: Callable[[], Notes | None] | None = None,
 ) -> threading.Thread | None:
     """Start listening on a background thread, if [listen] is on and installed."""
     if not settings.get("enabled", False):
@@ -406,7 +411,7 @@ def start(
     except Exception as exc:
         log.warning("Voice questions unavailable (%s)", exc)
         return None
-    answers = Answers(reminders, builds, position, benchmarks, enemies)
+    answers = Answers(reminders, builds, position, benchmarks, enemies, notes)
     loop = VoiceLoop(
         wake,
         transcribe,

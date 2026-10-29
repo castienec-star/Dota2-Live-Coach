@@ -5,7 +5,8 @@ went, which enemy keeps killing you or whether your team wins fights. Now
 and then it simply asks, at a calm moment: while you wait to respawn, or
 when your hero is healthy and hasn't been hit for a while. Never in a fight,
 at most one question every few minutes, each question once a match. If you
-don't answer, it drops the question. Answers only last for the match. See
+don't answer, it drops the question. Answers only last for the match, and
+"what should I buy?", the 15/25 minute check and death tips use them. See
 docs/strategy/game-state-questions.md.
 """
 
@@ -52,6 +53,20 @@ class Notes:
     trouble: HeroInfo | None = None  # the enemy giving them the most trouble
     carry_free: bool | None = None  # is the enemy carry farming freely?
     fights: str | None = None  # "won", "even" or "lost": team fights so far
+
+    def told(self) -> list[str]:
+        """The answers as short phrases, for the death tip prompt."""
+        lines = []
+        if self.lane is not None:
+            lines.append(f"their lane was {self.lane}")
+        if self.trouble is not None:
+            lines.append(f"{self.trouble.name} gives them the most trouble")
+        if self.carry_free is not None:
+            lines.append(f"the enemy carry is {'' if self.carry_free else 'not '}farming freely")
+        if self.fights is not None:
+            fights = {"won": "winning", "even": "about even", "lost": "losing"}[self.fights]
+            lines.append(f"their team is {fights} in fights")
+        return lines
 
 
 @dataclass(frozen=True)
