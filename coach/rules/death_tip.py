@@ -19,7 +19,9 @@ from concurrent.futures import ThreadPoolExecutor
 from .. import llm
 from ..game_questions import Notes
 from ..items import ItemInfo, load_items
+from ..lineup import POSITIONS
 from ..state import MatchState, Snapshot
+from . import PositionOf
 
 log = logging.getLogger(__name__)
 
@@ -28,12 +30,29 @@ You are a Dota 2 coach talking to a player through their headset while they wait
 to respawn. Give exactly one practical tip for their next life, in at most 20 \
 words of plain spoken English: no lists, no emoji, no numbers read as digits \
 unless short. Base it only on the player's own data below and what they told \
-you. Do not guess where enemies are or what they are doing."""
+you. Do not guess where enemies are or what they are doing. Fit the tip to the \
+game phase given: last hits, denies and lane tips only in the laning phase; \
+after that, talk about farming the map, fighting with the team, objectives, \
+items or buyback. Reply with the tip only, without quotes."""
+
+# After the laning phase a tip about denies or the lane is out of date.
+LANING_ONLY = ("deny", "denies", "denying", "your lane", "in lane", "the lane")
+
+
+def phase(snap: Snapshot) -> str:
+    minutes = max(snap.clock_time or 0, 0) / 60
+    if minutes < 10:
+        return "laning phase"
+    if minutes < 30:
+        return "mid game"
+    return "late game"
 
 Ask = llm.Ask
 
 
-def describe(snap: Snapshot, items: dict[str, ItemInfo], notes: Notes | None = None) -> str:
+def describe(
+    snap: Snapshot, items: dict[str, ItemInfo], position: int = 0, notes: Notes | None = None
+) -> str:
     """The player's own state, and what they told the coach, as the tip prompt sees it."""
     minutes, seconds = divmod(max(snap.clock_time or 0, 0), 60)
     hero = (snap.hero_name or "unknown").removeprefix("npc_dota_hero_").replace("_", " ")
@@ -43,16 +62,29 @@ def describe(snap: Snapshot, items: dict[str, ItemInfo], notes: Notes | None = N
         if snap.buyback_cooldown > 0
         else ("affordable" if snap.gold >= snap.buyback_cost else "not affordable")
     )
-    told = notes.told() if notes is not None else []
-    return "\n".join([
+    lines = [
         f"Hero: {hero}, level {snap.level}",
-        f"Game time: {minutes}:{seconds:02d}",
+        f"Game time: {minutes}:{seconds:02d} ({phase(snap)})",
         f"Kills/deaths/assists: {snap.kills}/{snap.deaths}/{snap.assists}",
         f"Last hits/denies: {snap.last_hits}/{snap.denies}",
         f"Gold: {snap.gold}; buyback costs {snap.buyback_cost} ({buyback})",
         f"Respawn in: {snap.respawn_seconds} seconds",
         f"Items: {', '.join(owned) if owned else 'none'}",
-    ] + ([f"The player told you: {'; '.join(told)}"] if told else []))
+    ]
+    if position in POSITIONS:
+        lines.insert(1, f"Position: {position} ({POSITIONS[position]})")
+    told = notes.told() if notes is not None else []
+    if told:
+        lines.append(f"The player told you: {'; '.join(told)}")
+    return "\n".join(lines)
+
+
+def fits(tip: str, snap: Snapshot) -> bool:
+    """False for a laning tip after the laning phase, which small models still give."""
+    if phase(snap) == "laning phase":
+        return True
+    lower = tip.lower()
+    return not any(word in lower for word in LANING_ONLY)
 
 
 def claude_asker(model: str, effort: str, timeout: float) -> Ask:
@@ -108,8 +140,7 @@ def claude_asker(model: str, effort: str, timeout: float) -> Ask:
             return None
         if response.stop_reason == "refusal":
             return None
-        text = " ".join(b.text for b in response.content if b.type == "text").strip()
-        return text or None
+        return llm.clean(" ".join(b.text for b in response.content if b.type == "text"))
 
     return ask
 
@@ -171,6 +202,7 @@ class DeathTip:
         min_respawn: int = 10,
         items: dict[str, ItemInfo] | None = None,
         fallback: Callable[[Snapshot], str] | None = None,
+        position: PositionOf | None = None,
         notes: Callable[[], Notes | None] | None = None,
     ) -> None:
         self.say = say
@@ -178,6 +210,7 @@ class DeathTip:
         self.notes = notes or (lambda: None)
         self.fallback = fallback or BuiltinTips(self.notes)
         self.min_respawn = min_respawn
+        self.position = position
         self.items = items if items is not None else load_items()
         self._pool = ThreadPoolExecutor(max_workers=1, thread_name_prefix="death-tip")
         self._death = 0  # bumped on each death and new match, to drop stale tips
@@ -191,7 +224,11 @@ class DeathTip:
         return []
 
     def _tip(self, state: MatchState, snap: Snapshot, death: int, deadline: float) -> None:
-        tip = self.ask(describe(snap, self.items, self.notes())) if self.ask else None
+        position = self.position(snap) if self.position else 0
+        tip = self.ask(describe(snap, self.items, position, self.notes())) if self.ask else None
+        if tip and not fits(tip, snap):
+            log.info("Dropped an out-of-date tip: %s", tip)
+            tip = None
         tip = tip or self.fallback(snap)
         # Only speak while still in the same death, with time left to hear it.
         if (
@@ -212,6 +249,7 @@ class DeathTip:
 def build(
     settings: dict,
     say: Callable[[str], None],
+    position: PositionOf | None = None,
     notes: Callable[[], Notes | None] | None = None,
 ) -> list[DeathTip]:
     options = dict(settings.get("death_tip", {}))
@@ -231,4 +269,4 @@ def build(
         ask = None
     else:
         raise ValueError(f"death_tip provider must be ollama, claude or builtin, not {provider!r}")
-    return [DeathTip(say, ask, notes=notes, **options)]
+    return [DeathTip(say, ask, position=position, notes=notes, **options)]

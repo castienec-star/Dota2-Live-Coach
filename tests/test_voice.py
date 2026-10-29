@@ -143,6 +143,18 @@ def test_start_does_nothing_when_turned_off():
     assert start({"enabled": False}, None, print, lambda: False, {}, {}) is None
 
 
+def test_start_says_out_loud_when_the_voice_packages_are_missing(monkeypatch):
+    import coach.voice as voice
+
+    def missing(*args):
+        raise ImportError("vosk")
+
+    monkeypatch.setattr(voice, "VoskWakeWord", missing)
+    said = []
+    assert start({"enabled": True}, None, said.append, lambda: False, {}, {}) is None
+    assert said == ["Voice questions are off. Run update dot bat to turn them on."]
+
+
 def test_loop_asks_pending_questions_without_the_wake_word():
     from coach.lineup import Question
 

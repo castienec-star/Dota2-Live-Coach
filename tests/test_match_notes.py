@@ -133,12 +133,12 @@ def test_builtin_tip_for_losing_fights(snap):
 
 def test_prompt_has_what_the_player_told(snap):
     notes = Notes(lane="lost", trouble=hero("pudge"), carry_free=True, fights="even")
-    text = describe(snap, ITEMS, notes)
+    text = describe(snap, ITEMS, notes=notes)
     assert text.endswith(
         "The player told you: their lane was lost; Pudge gives them the most trouble; "
         "the enemy carry is farming freely; their team is about even in fights"
     )
-    assert "told" not in describe(snap, ITEMS, Notes())
+    assert "told" not in describe(snap, ITEMS, notes=Notes())
 
 
 def test_coach_reads_the_notes_once_questions_are_on(tmp_path):
