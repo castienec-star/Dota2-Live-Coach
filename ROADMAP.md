@@ -60,7 +60,7 @@ CLAUDE.md).
 10. [ ] **Don't talk over itself.** Give reminders a priority (low health
     beats runes) and drop low-priority lines when several land at once.
     *Why:* a coach that chatters gets turned off.
-11. [ ] **GSI health check on start.** If no GSI update arrives within a
+11. [x] **GSI health check on start.** If no GSI update arrives within a
     minute of starting, say and print what to check (launch option, config
     file path, firewall), then detect when Dota connects. *Why:* "it does
     nothing" is the top support problem for a paid app.

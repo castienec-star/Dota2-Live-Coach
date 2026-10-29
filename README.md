@@ -75,6 +75,12 @@ Start a match (a bot match works). The console logs your hero's state every
 10 seconds, and each match is recorded to
 `%APPDATA%\Dota2LiveCoach\recordings\` as a `.jsonl` file.
 
+If Dota sends nothing for a minute after the coach starts, the coach says so
+and prints what to check: whether the GSI config file is there and up to date
+(if not, run `py -m coach install` again), the `-gamestateintegration` launch
+option, restarting Dota after installing, and the port. When Dota connects
+after that, it tells you.
+
 ## Voice reminders
 
 Once the horn sounds, the coach speaks clock reminders through Windows'
