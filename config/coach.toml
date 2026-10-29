@@ -23,8 +23,12 @@ backend = "sapi"
 name = ""
 # Speaking speed, from -10 (slow) to 10 (fast). 0 is Windows' normal speed.
 rate = 1
-# Lines that wait longer than this many seconds to be spoken are skipped.
+# Reminders that wait longer than this many seconds to be spoken are skipped.
+# Answers to your questions and death tips may wait a little longer.
 max_delay = 4
+# When more reminders are due at once, only this many are said, most important
+# first: low health, buyback and wand, then runes and stacks, then the rest.
+max_lines = 2
 
 [listen]
 # Ask the coach questions out loud: say the wake word, wait for the beep, then

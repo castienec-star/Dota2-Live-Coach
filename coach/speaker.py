@@ -1,18 +1,26 @@
 """Speaks coaching lines one at a time on a background thread.
 
 Lines that wait too long in the queue are dropped: a rune call that arrives
-late is worse than none.
+late is worse than none. Waiting lines are spoken most important first, so a
+low health warning never waits behind a briefing or a tip.
 """
 
 from __future__ import annotations
 
+import heapq
+import itertools
 import logging
-import queue
 import threading
 import time
 from typing import Protocol
 
 log = logging.getLogger(__name__)
+
+# How important a line is. Higher is spoken first when several are waiting.
+LOW = 0  # the pre-game briefing
+NORMAL = 1  # item, skill point and ward reminders, the game check
+HIGH = 2  # rune and stack calls, answers to the player, death tips
+URGENT = 3  # low health, buyback, use your wand
 
 
 class Backend(Protocol):
@@ -65,34 +73,57 @@ def make_backend(name: str, voice: str = "", rate: int = 0) -> Backend:
 class Speaker:
     def __init__(self, backend_factory=PrintBackend, max_delay: float = 4.0) -> None:
         self.max_delay = max_delay
-        self._queue: queue.Queue[tuple[float, str] | None] = queue.Queue()
+        # (-priority, order, queued at, max delay, text); None closes.
+        self._queue: list[tuple[int, int, float, float, str]] = []
+        self._order = itertools.count()
+        self._ready = threading.Condition()
+        self._closed = False
         self._factory = backend_factory
         self._speaking = threading.Event()
         # The speech engine must be created on the thread that uses it.
         self._thread = threading.Thread(target=self._run, name="speaker", daemon=True)
         self._thread.start()
 
-    def say(self, text: str) -> None:
-        self._queue.put((time.monotonic(), text))
+    def say(self, text: str, priority: int = NORMAL, max_delay: float | None = None) -> None:
+        """Queue a line. max_delay (default: the speaker's) is how long it may
+        wait before it is too late to say."""
+        delay = self.max_delay if max_delay is None else max_delay
+        with self._ready:
+            heapq.heappush(self._queue, (-priority, next(self._order), time.monotonic(), delay, text))
+            self._ready.notify()
 
     @property
     def busy(self) -> bool:
         """True while a line is being spoken or waits to be."""
-        return self._speaking.is_set() or not self._queue.empty()
+        with self._ready:
+            return self._speaking.is_set() or bool(self._queue)
 
     def close(self, timeout: float = 5.0) -> None:
-        self._queue.put(None)
+        with self._ready:
+            self._closed = True
+            self._ready.notify()
         self._thread.join(timeout)
+
+    def _next(self) -> tuple[float, float, str] | None:
+        """The most important waiting line; None once closed and empty."""
+        with self._ready:
+            while not self._queue and not self._closed:
+                self._ready.wait()
+            if not self._queue:
+                return None
+            _, _, queued_at, delay, text = heapq.heappop(self._queue)
+            # Set while holding the lock so busy never reads empty in between.
+            self._speaking.set()
+            return queued_at, delay, text
 
     def _run(self) -> None:
         backend = self._factory()
-        while (item := self._queue.get()) is not None:
-            queued_at, text = item
-            if time.monotonic() - queued_at > self.max_delay:
-                log.info("Skipped late line: %s", text)
-                continue
-            self._speaking.set()
+        while (item := self._next()) is not None:
+            queued_at, delay, text = item
             try:
+                if time.monotonic() - queued_at > delay:
+                    log.info("Skipped late line: %s", text)
+                    continue
                 backend.speak(text)
             except Exception:
                 log.exception("Could not speak %r", text)

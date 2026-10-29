@@ -2,10 +2,14 @@
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Callable
 from typing import Protocol
 
+from ..speaker import HIGH, NORMAL, URGENT
 from ..state import MatchState, Snapshot
+
+log = logging.getLogger(__name__)
 
 # The player's position, 1 (safe lane carry) to 5 (hard support); 0 = not known.
 PositionOf = Callable[[Snapshot], int]
@@ -17,12 +21,38 @@ class Rule(Protocol):
     def reset(self) -> None: ...
 
 
-class Engine:
-    """Runs every rule on each update and passes what they say to the speaker."""
+# How important each rule's lines are (see coach/speaker.py); others are NORMAL.
+PRIORITY = {
+    "low_health": URGENT,
+    "buyback": URGENT,
+    "wand": URGENT,
+    "power_rune": HIGH,
+    "bounty_rune": HIGH,
+    "wisdom_shrine": HIGH,
+    "water_rune": HIGH,
+    "stack": HIGH,
+}
 
-    def __init__(self, rules: list[Rule], say: Callable[[str], None]) -> None:
+
+class Engine:
+    """Runs every rule on each update and passes what they say to the speaker.
+
+    When more than max_lines rules speak at the same update, only the most
+    important ones are said: a coach that chatters gets turned off. With
+    prioritized, say is called as say(text, priority), as Speaker.say takes it.
+    """
+
+    def __init__(
+        self,
+        rules: list[Rule],
+        say: Callable[..., None],
+        max_lines: int = 2,
+        prioritized: bool = False,
+    ) -> None:
         self.rules = rules
         self.say = say
+        self.max_lines = max_lines
+        self.prioritized = prioritized
 
     def __call__(self, state: MatchState) -> None:
         if state.new_match:
@@ -30,10 +60,24 @@ class Engine:
                 rule.reset()
         if not state.current.in_game or state.current.paused:
             return
-        lines = [line for rule in self.rules for line in rule.check(state)]
-        if lines:
-            # Reminders due at the same second become one spoken line.
-            self.say(" ".join(lines))
+        found = [
+            (PRIORITY.get(getattr(rule, "name", ""), NORMAL), line)
+            for rule in self.rules
+            for line in rule.check(state)
+        ]
+        if not found:
+            return
+        # Most important first; equal ones keep the rules' order.
+        found.sort(key=lambda p: -p[0])
+        kept, dropped = found[: self.max_lines], found[self.max_lines :]
+        for _, line in dropped:
+            log.info("Dropped so as not to talk too much: %s", line)
+        # Reminders due at the same second become one spoken line.
+        text = " ".join(line for _, line in kept)
+        if self.prioritized:
+            self.say(text, kept[0][0])
+        else:
+            self.say(text)
 
 
 class ForPositions:

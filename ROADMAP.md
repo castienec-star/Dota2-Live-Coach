@@ -57,7 +57,7 @@ CLAUDE.md).
    sets how talkative the coach is. Beginner: all reminders, longer lines.
    Experienced: only gold, stacks, power rune and buyback. *Why:* the same
    app must suit a Herald and an Ancient without editing ten settings.
-10. [ ] **Don't talk over itself.** Give reminders a priority (low health
+10. [x] **Don't talk over itself.** Give reminders a priority (low health
     beats runes) and drop low-priority lines when several land at once.
     *Why:* a coach that chatters gets turned off.
 11. [ ] **GSI health check on start.** If no GSI update arrives within a

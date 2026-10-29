@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import functools
 import logging
 import subprocess
 import sys
@@ -35,7 +36,7 @@ from .rules import (
     timers,
     windows,
 )
-from .speaker import Speaker, make_backend
+from .speaker import HIGH, LOW, Speaker, make_backend
 from .state import Snapshot
 
 
@@ -44,6 +45,12 @@ def make_speaker(cfg: config_mod.Config) -> Speaker:
         lambda: make_backend(cfg.voice_backend, cfg.voice_name, cfg.voice_rate),
         cfg.voice_max_delay,
     )
+
+
+def reply_say(speaker: Speaker) -> Callable[[str], None]:
+    """For answers and questions to the player: they are waiting for them,
+    so they go first and may wait longer than a rune call."""
+    return functools.partial(speaker.say, priority=HIGH, max_delay=15)
 
 
 def position_of(cfg: config_mod.Config, coach: Coach) -> PositionOf:
@@ -79,6 +86,8 @@ def make_coach(
         summary_interval = cfg.summary_interval
     coach = Coach(cfg.token, recorder, summary_interval)
     position = position_of(cfg, coach)
+    # A death tip has its own deadline too: the respawn.
+    tip_say = functools.partial(speaker.say, priority=HIGH, max_delay=10)
     reminders, positions = split_positions(cfg.reminders)
     power_windows = windows.build(reminders)
     rules = (
@@ -92,13 +101,14 @@ def make_coach(
             # The enemy heroes the player told the coach; pregame is made below.
             lambda: coach.pregame.enemies if coach.pregame is not None else [],
         )
-        + (death_tip.build(reminders, speaker.say, position) if tips else [])
+        + (death_tip.build(reminders, tip_say, position) if tips else [])
     )
-    coach.listeners.append(Engine(for_positions(rules, positions, position), speaker.say))
+    coach.listeners.append(Engine(for_positions(rules, positions, position), speaker.say, cfg.voice_max_lines, prioritized=True))
     if tips:
         coach.pregame = pregame_mod.build(
             cfg.pregame,
-            speaker.say,
+            # Long, and only useful before the game: any reminder goes first.
+            functools.partial(speaker.say, priority=LOW, max_delay=20),
             power_windows[0] if power_windows else None,
             cfg.app_dir,
             cfg.record_dir,
@@ -173,7 +183,7 @@ def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
     listening = voice.start(
         cfg.listen,
         coach.state,
-        speaker.say,
+        reply_say(speaker),
         lambda: speaker.busy,
         split_positions(cfg.reminders)[0],
         cfg.builds,
