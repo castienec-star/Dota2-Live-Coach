@@ -191,6 +191,13 @@ claude_model = "claude-opus-5-5"
 effort = "low"
 # Seconds to wait for the model while you wait for the answer.
 timeout = 4
+# Work the answer out in the background every "every" game seconds, so it is
+# ready when you ask, and say it unasked when the pick changes to something
+# that isn't simply your next build item (a counter, a defensive item), at
+# most once every "cooldown" game seconds.
+announce = true
+every = 15
+cooldown = 120
 
 # The spoken briefing in the countdown before the horn: your team's strengths
 # and weaknesses, counters, when to fight, and tips from your own past games.

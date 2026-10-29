@@ -189,6 +189,12 @@ def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
     typing = coach.pregame is not None and sys.stdin is not None and sys.stdin.isatty()
     interview = make_interview(cfg, coach)
     questions = make_game_questions(cfg, coach)
+    enemies = lambda: coach.pregame.enemies if coach.pregame is not None else []  # noqa: E731
+    advice = item_advisor.Advice(
+        item_advisor.build(cfg.items), cfg.builds, position_of(cfg, coach), benchmarks, enemies, notes_of(coach)
+    )
+    # Keeps "what should I buy?" ready, and says when the pick changes.
+    coach.listeners.append(Engine(item_advisor.watch(cfg.items, advice), speaker.say, prioritized=True))
     listening = voice.start(
         cfg.listen,
         coach.state,
@@ -199,9 +205,9 @@ def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
         pending=first_pending(interview, questions),
         position=position_of(cfg, coach),
         benchmarks=benchmarks,
-        enemies=lambda: coach.pregame.enemies if coach.pregame is not None else [],
+        enemies=enemies,
         notes=notes_of(coach),
-        advisor=item_advisor.build(cfg.items),
+        advice=advice,
     )
     typed = None
     if interview is not None and listening is None and typing:

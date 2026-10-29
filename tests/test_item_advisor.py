@@ -1,4 +1,5 @@
 import json
+from types import SimpleNamespace
 
 import pytest
 
@@ -6,7 +7,8 @@ from coach import item_advisor
 from coach.benchmarks import Verdict
 from coach.game_questions import Notes
 from coach.heroes import HeroIndex
-from coach.item_advisor import ItemAdvisor, candidates, describe, parse, schema
+from coach.item_advisor import Advice, ItemAdvisor, ItemWatch, candidates, describe, parse, schema, watch
+from coach.situational import Pick
 from coach.items import load_items
 from coach.state import Item, Snapshot
 from coach.voice import Answers
@@ -140,10 +142,9 @@ def test_one_candidate_needs_no_model(snap):
 
 def test_voice_answer_uses_the_advisor(snap):
     model = FakeModel('{"item": "item_manta", "why": "you out-farm them"}')
-    answers = Answers(
-        {}, {"antimage": ["Power Treads", "Battle Fury", "Manta Style"]},
-        enemies=lambda: enemies("lina", "lion"), advisor=ItemAdvisor(model),
-    )
+    builds = {"antimage": ["Power Treads", "Battle Fury", "Manta Style"]}
+    lineup = lambda: enemies("lina", "lion")  # noqa: E731
+    answers = Answers({}, builds, enemies=lineup, advice=Advice(ItemAdvisor(model), builds, enemies=lineup))
     snap.gold = 0
     answer = answers.answer("what should I buy?", snap)
     assert f"Get Manta Style next, {MANTA.cost} more gold: you out-farm them." in answer
@@ -157,3 +158,43 @@ def test_build_each_advisor(advisor):
 def test_build_rejects_unknown_advisor():
     with pytest.raises(ValueError):
         item_advisor.build({"advisor": "gpt"})
+
+
+BKB = ITEMS["item_black_king_bar"]
+
+
+def run_watch(item_watch, snap, seconds):
+    """Calls check like the engine does, waiting for each background job."""
+    said = []
+    for now in seconds:
+        snap.clock_time = now
+        said += item_watch.check(SimpleNamespace(current=snap))
+        if item_watch._job is not None:
+            item_watch._job.result()
+    return said
+
+
+def test_watch_says_a_new_counter_once(snap):
+    item_watch = ItemWatch(lambda s: (Pick(BKB, "Lina stuns you"), None, MANTA), every=10, cooldown=120)
+    snap.gold = 0
+    said = run_watch(item_watch, snap, [700, 710, 720, 730])
+    assert said == [f"Get Black King Bar next, {BKB.cost} more gold: Lina stuns you."]
+
+
+def test_watch_stays_quiet_about_the_next_build_item(snap):
+    item_watch = ItemWatch(lambda s: (Pick(MANTA, ""), None, MANTA), every=10)
+    assert run_watch(item_watch, snap, [700, 710, 720]) == []
+
+
+def test_watch_waits_for_the_cooldown_between_changes(snap):
+    picks = iter([Pick(BKB, "stuns")] * 2 + [Pick(ITEMS["item_monkey_king_bar"], "evasion")] * 20)
+    item_watch = ItemWatch(lambda s: (next(picks), None, MANTA), every=10, cooldown=120)
+    said = run_watch(item_watch, snap, range(700, 900, 10))
+    assert len(said) == 2
+    assert "Black King Bar" in said[0] and "Monkey King Bar" in said[1]
+
+
+def test_watch_can_be_turned_off():
+    advice = Advice(ItemAdvisor(None), {})
+    assert watch({"announce": False}, advice) == []
+    assert len(watch({}, advice)) == 1

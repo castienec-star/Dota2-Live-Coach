@@ -11,6 +11,11 @@ two hundred, and it can only ever answer with an item on the list.
 If the model is off, missing, slow or gives a bad answer, the rules' own pick
 is used, so the answer is never worse than without a model. The same
 question with nothing changed is answered from a cache.
+
+ItemWatch keeps that answer ready: every few seconds it asks the advisor in
+the background, so "what should I buy?" answers at once, and when the pick
+changes to something other than your next build item (a counter, a
+defensive item), it says so without being asked.
 """
 
 from __future__ import annotations
@@ -18,17 +23,21 @@ from __future__ import annotations
 import json
 import logging
 import re
+import threading
 from collections.abc import Callable
+from concurrent.futures import Future, ThreadPoolExecutor
 
 from . import llm, situational
-from .benchmarks import Verdict
+from .benchmarks import Benchmarks, Verdict, is_support
 from .game_questions import Notes
 from .grounding import Grounding
-from .heroes import HeroInfo
-from .items import ItemInfo
+from .heroes import HeroIndex, HeroInfo
+from .items import ItemInfo, load_items
 from .lineup import POSITIONS
+from .rules import PositionOf
+from .rules.hero import ItemReady, parse_builds
 from .situational import Pick
-from .state import Snapshot
+from .state import MatchState, Snapshot
 
 log = logging.getLogger(__name__)
 
@@ -161,6 +170,8 @@ class ItemAdvisor:
         self.ask = ask
         self._cache: dict[tuple, Pick | None] = {}
         self._grounding: Grounding | None = None  # loaded on the first model reply
+        # One model call at a time: the voice answer waits for the background one.
+        self._lock = threading.Lock()
 
     def choose(
         self,
@@ -186,11 +197,12 @@ class ItemAdvisor:
             told,
             verdict.kind if verdict else None,
         )
-        if key not in self._cache:
-            prompt = describe(snap, picks, verdict, enemies, items, hero, position, notes)
-            reply = self.ask(prompt, schema(picks))
-            self._cache[key] = self._pick(reply, picks, enemies, notes, hero)
-        return self._cache[key]
+        with self._lock:
+            if key not in self._cache:
+                prompt = describe(snap, picks, verdict, enemies, items, hero, position, notes)
+                reply = self.ask(prompt, schema(picks))
+                self._cache[key] = self._pick(reply, picks, enemies, notes, hero)
+            return self._cache[key]
 
     def _pick(
         self,
@@ -224,6 +236,107 @@ class ItemAdvisor:
             self._grounding = Grounding()
         trouble = notes.trouble if notes else None
         return self._grounding.problem(why, "", [hero, trouble, *enemies], enemies_known=bool(enemies))
+
+
+class Advice:
+    """Everything "what should I buy?" weighs, for one snapshot: your build,
+    position, the ahead/behind verdict, the enemy heroes and what you told
+    the coach."""
+
+    def __init__(
+        self,
+        advisor: ItemAdvisor,
+        builds: dict[str, list[str]],
+        position: PositionOf | None = None,
+        benchmarks: Benchmarks | None = None,
+        enemies: Callable[[], list[HeroInfo]] | None = None,
+        notes: Callable[[], Notes | None] | None = None,
+    ) -> None:
+        self.advisor = advisor
+        self.heroes = HeroIndex()
+        self.items = load_items()
+        self.build = ItemReady(parse_builds(builds, self.items), self.heroes, position) if builds else None
+        self.position = position
+        self.benchmarks = benchmarks if benchmarks is not None else Benchmarks()
+        self.enemies = enemies or list
+        self.notes = notes or (lambda: None)
+
+    def __call__(self, snap: Snapshot) -> tuple[Pick | None, Verdict | None, ItemInfo | None]:
+        """The pick, the verdict and the next item on your build."""
+        position = self.position(snap) if self.position else 0
+        hero = self.heroes.by_key(snap.hero_name)
+        support = is_support(hero, position)
+        verdict = self.benchmarks.verdict(snap, support)
+        next_item = self.build.next_item(snap) if self.build else None
+        pick = self.advisor.choose(
+            snap,
+            verdict,
+            self.enemies(),
+            situational.role(position, support),
+            self.items,
+            next_item,
+            self.notes(),
+            hero,
+            position,
+        )
+        return pick, verdict, next_item
+
+
+class ItemWatch:
+    """Asks for advice in the background every "every" game seconds, and says
+    a new pick when it isn't simply the next build item (the item reminder
+    covers those), at most once every "cooldown" game seconds."""
+
+    name = "item_advice"
+
+    def __init__(self, advice: Callable[[Snapshot], tuple], every: int = 15, cooldown: int = 120) -> None:
+        self.advice = advice
+        self.every = every
+        self.cooldown = cooldown
+        self._pool = ThreadPoolExecutor(max_workers=1, thread_name_prefix="item-advice")
+        self.reset()
+
+    def check(self, state: MatchState) -> list[str]:
+        snap = state.current
+        now = snap.clock_time
+        if now is None or snap.hero_name is None:
+            return []
+        lines = []
+        if self._job is not None and self._job.done():
+            lines = self._heard(self._job, snap, now)
+            self._job = None
+        if self._job is None and now - self._asked >= self.every:
+            self._asked = now
+            self._job = self._pool.submit(self.advice, snap)
+        return lines
+
+    def _heard(self, job: Future, snap: Snapshot, now: int) -> list[str]:
+        try:
+            pick, _, next_item = job.result()
+        except Exception:
+            log.exception("Item advice failed")
+            return []
+        if pick is None or pick.item.key == self._said:
+            return []
+        if next_item is not None and pick.item.key == next_item.key:
+            return []
+        if now - self._said_at < self.cooldown or situational.owns(snap, pick.item.key):
+            return []
+        self._said, self._said_at = pick.item.key, now
+        return [situational.spoken(pick, None, snap)]
+
+    def reset(self) -> None:
+        self._job: Future | None = None
+        self._asked = -(10**9)
+        self._said: str | None = None
+        self._said_at = -(10**9)
+
+
+def watch(settings: dict, advice: Advice) -> list[ItemWatch]:
+    """The background advisor and its unasked lines, if [items] announce is on."""
+    if not settings.get("announce", True):
+        return []
+    return [ItemWatch(advice, int(settings.get("every", 15)), int(settings.get("cooldown", 120)))]
 
 
 def ollama_asker(model: str, url: str, timeout: float) -> Callable[[str, dict], str | None]:
