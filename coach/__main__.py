@@ -15,6 +15,7 @@ from aiohttp import web
 
 from . import config as config_mod
 from . import game_questions
+from . import health as health_mod
 from . import pregame as pregame_mod
 from . import voice
 from .benchmarks import Benchmarks
@@ -220,8 +221,11 @@ def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
         threading.Thread(target=read_typed_picks, args=(coach, typed), daemon=True).start()
         logging.info('Type the enemy picks any time, e.g.  vs am cm lion pudge sf')
     logging.info("Listening for Dota 2 on %s", cfg.url)
+    app = make_app(coach)
+    coach.health = health_mod.Health(cfg)
+    health_mod.watch(app, coach.health, speaker.say)
     try:
-        web.run_app(make_app(coach), host=cfg.host, port=cfg.port, print=None, access_log=None)
+        web.run_app(app, host=cfg.host, port=cfg.port, print=None, access_log=None)
     finally:
         if recorder is not None:
             recorder.close()
