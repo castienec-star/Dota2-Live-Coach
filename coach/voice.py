@@ -122,7 +122,12 @@ class Answers:
     def next_item(self, snap: Snapshot) -> str:
         target = self.items.next_item(snap) if self.items else None
         if target is None:
-            return "Your build list is done. Buy what the game needs, like a Black King Bar or a defensive item."
+            # Still name an item: a counter, a defensive or a late-game one.
+            pick, _, _ = self.advice(snap)
+            line = situational.spoken(pick, None, snap)
+            if pick is not None and pick.reason == situational.BUILD_DONE:
+                return line  # it already says the build is done
+            return f"Your build list is done. {line}"
         if snap.gold >= target.cost:
             return f"Buy {target.name} now, you have the gold."
         return f"Next is {target.name}. You need {target.cost - snap.gold} more gold."

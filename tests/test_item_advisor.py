@@ -207,3 +207,40 @@ def test_watch_can_be_turned_off():
     advice = Advice(ItemAdvisor(None), {})
     assert watch({"announce": False}, advice) == []
     assert len(watch({}, advice)) == 1
+
+
+def test_candidates_after_the_build_is_done_add_a_late_item(snap):
+    keys = [p.item.key for p in candidates(snap, None, [], "core", ITEMS, None)]
+    assert keys == ["item_black_king_bar"]
+
+
+def test_no_wait_never_calls_the_model(snap):
+    model = FakeModel('{"item": "item_manta", "why": "you farm fast"}')
+    advisor = ItemAdvisor(model)
+    pick = advisor.choose(snap, BEHIND, enemies("lina", "lion"), "core", ITEMS, MANTA, wait=False)
+    assert pick.item.key == "item_black_king_bar"  # the rules' pick
+    assert model.calls == []
+    advisor.choose(snap, BEHIND, enemies("lina", "lion"), "core", ITEMS, MANTA)
+    pick = advisor.choose(snap, BEHIND, enemies("lina", "lion"), "core", ITEMS, MANTA, wait=False)
+    assert pick.item.key == "item_manta"  # the model's, once it is worked out
+    assert len(model.calls) == 1
+
+
+def test_typed_buy_answers_in_the_coach_window(tmp_path, payload, monkeypatch, capsys):
+    import io
+
+    from coach.__main__ import make_coach, read_typed_picks
+    from coach.config import load
+    from coach.speaker import Speaker
+
+    coach = make_coach(load(app_dir=tmp_path), Speaker(), tips=False)
+    monkeypatch.setattr("sys.stdin", io.StringIO("buy\n"))
+    read_typed_picks(coach)
+    assert capsys.readouterr().out.startswith("I can't see your hero yet.")
+
+    coach.state.update(payload)
+    monkeypatch.setattr("sys.stdin", io.StringIO("item\n"))
+    read_typed_picks(coach)
+    out = capsys.readouterr().out
+    assert out.startswith(("Buy ", "Get ", "You're"))
+    assert "Manta Style" in out or "Black King Bar" in out

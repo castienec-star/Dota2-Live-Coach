@@ -44,6 +44,15 @@ well-timed counter is worth more than the next greedy item.
 3. **Otherwise** (ahead or even): the next item on the player's build. Being
    ahead is the time to finish the farming or fighting item, not to buy
    another defensive one.
+4. **Build list done**: a late-game item for the role that the player
+   doesn't own yet, so the answer is never just "buy what the game needs"
+   (issue #27). Cores Black King Bar, Linken's Sphere, Aghanim's Scepter;
+   offlaners Black King Bar, Pipe of Insight, Crimson Guard, Shiva's Guard;
+   supports Glimmer Cape, Force Staff, Ghost Scepter, Aeon Disk. Spell
+   immunity and a spell block first because a low-bracket core who dies in
+   every late fight loses the game whatever damage item they buy; the save
+   and aura items for offlaners and supports for the same reason. Once all of
+   them are owned, the coach says to keep gold for buyback.
 
 The verdict (ahead, even or behind) comes first in the spoken answer when it
 is known (from 8:00, for heroes with benchmark numbers).
@@ -64,6 +73,14 @@ is known (from 8:00, for heroes with benchmark numbers).
 - Hero lists: each hero's own abilities (invisibility, evasion, illusions,
   heals, nukes, stuns) on Liquipedia, and OpenDota's hero roles (Nuker,
   Disabler, Carry) from the bundled `coach/data/heroes.json`.
+- Late-game items (step 4): Liquipedia
+  [Linken's Sphere](https://liquipedia.net/dota2/Linken%27s_Sphere) (blocks
+  a targeted spell), [Aghanim's Scepter](https://liquipedia.net/dota2/Aghanim%27s_Scepter),
+  [Crimson Guard](https://liquipedia.net/dota2/Crimson_Guard) and
+  [Shiva's Guard](https://liquipedia.net/dota2/Shiva%27s_Guard) (team auras),
+  [Aeon Disk](https://liquipedia.net/dota2/Aeon_Disk) (saves you from burst).
+  The list is general advice, not per hero; a per-hero list from OpenDota's
+  public item popularity is the next step of issue #27.
 
 ## Known limits
 
@@ -78,4 +95,7 @@ is known (from 8:00, for heroes with benchmark numbers).
 At 15:00 and 25:00 the coach says the verdict (see
 [ahead-or-behind.md](ahead-or-behind.md)); when the enemy lineup calls for a
 counter (step 1 above), it names that item and why, in place of the general
-item advice. Castien asked for this on 2026-10-28.
+item advice. Castien asked for this on 2026-10-28. Since 2026-10-29 it
+always names the same item as "What should I buy?" (steps 1-4, or the
+model's choice when it has already worked one out; the check never waits for
+the model).

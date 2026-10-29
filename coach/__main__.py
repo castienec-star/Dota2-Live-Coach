@@ -14,7 +14,7 @@ from pathlib import Path
 from aiohttp import web
 
 from . import config as config_mod
-from . import game_questions, item_advisor
+from . import game_questions, item_advisor, situational
 from . import health as health_mod
 from . import pregame as pregame_mod
 from . import voice
@@ -92,6 +92,19 @@ def make_coach(
         summary_interval = cfg.summary_interval
     coach = Coach(cfg.token, recorder, summary_interval)
     position = position_of(cfg, coach)
+    if benchmarks is None:
+        benchmarks = make_benchmarks(cfg) if tips else Benchmarks()
+    # The enemy heroes the player told the coach; pregame is made below.
+    enemies = lambda: coach.pregame.enemies if coach.pregame is not None else []  # noqa: E731
+    # "What should I buy?": the model picks only when tips are on.
+    coach.advice = item_advisor.Advice(
+        item_advisor.build(cfg.items) if tips else item_advisor.ItemAdvisor(None),
+        cfg.builds,
+        position,
+        benchmarks,
+        enemies,
+        notes_of(coach),
+    )
     # A death tip has its own deadline too: the respawn.
     tip_say = functools.partial(speaker.say, priority=HIGH, max_delay=10)
     reminders, positions = split_positions(cfg.reminders)
@@ -102,11 +115,12 @@ def make_coach(
         + power_windows
         + game_check.build(
             reminders,
-            benchmarks or (make_benchmarks(cfg) if tips else Benchmarks()),
+            benchmarks,
             position,
-            # The enemy heroes the player told the coach; pregame is made below.
-            lambda: coach.pregame.enemies if coach.pregame is not None else [],
+            enemies,
             notes_of(coach),
+            # Never waits for the model: its pick if ready, else the rules'.
+            lambda snap: coach.advice(snap, wait=False)[0],
         )
         + (death_tip.build(reminders, tip_say, position, notes_of(coach)) if tips else [])
     )
@@ -125,11 +139,28 @@ def make_coach(
     return coach
 
 
+# Typed in the coach window for "what should I buy?", e.g. without a microphone.
+BUY_COMMANDS = ("buy", "item", "items")
+
+
+def what_to_buy(coach: Coach) -> str:
+    """The same answer as asking "what should I buy?"."""
+    snap = coach.state.current
+    if snap.hero_name is None:
+        return "I can't see your hero yet. Ask me again once the game has started."
+    pick, verdict, _ = coach.advice(snap)
+    return situational.spoken(pick, verdict, snap)
+
+
 def read_typed_picks(coach: Coach, questions: TypedQuestions | None = None) -> None:
     """Lets you type the draft in the coach window: "vs am cm lion pudge sf",
-    or the answer to a start-of-game question shown there."""
+    "buy" for what to buy now, or the answer to a start-of-game question
+    shown there."""
     for line in sys.stdin:
         command = line.strip().split(maxsplit=1)[0].lower() if line.strip() else ""
+        if command in BUY_COMMANDS and coach.advice is not None:
+            print(what_to_buy(coach), flush=True)
+            continue
         if command not in ("vs", "with", "pos", "clear") and questions and questions.answer(line):
             continue
         reply = coach.pregame.typed(line)
@@ -192,9 +223,7 @@ def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
     interview = make_interview(cfg, coach)
     questions = make_game_questions(cfg, coach)
     enemies = lambda: coach.pregame.enemies if coach.pregame is not None else []  # noqa: E731
-    advice = item_advisor.Advice(
-        item_advisor.build(cfg.items), cfg.builds, position_of(cfg, coach), benchmarks, enemies, notes_of(coach)
-    )
+    advice = coach.advice
     # Keeps "what should I buy?" ready, and says when the pick changes.
     coach.listeners.append(Engine(item_advisor.watch(cfg.items, advice), speaker.say, prioritized=True))
     listening = voice.start(
@@ -229,6 +258,9 @@ def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
     if typing:
         threading.Thread(target=read_typed_picks, args=(coach, typed), daemon=True).start()
         logging.info('Type the enemy picks any time, e.g.  vs am cm lion pudge sf')
+        logging.info('Type "buy" any time to hear what to buy now')
+    if listening is None:
+        logging.info("Voice is off: item advice still comes unasked, at 15 and 25 minutes and when the pick changes")
     logging.info("Listening for Dota 2 on %s", cfg.url)
     app = make_app(coach)
     coach.health = health_mod.Health(cfg)

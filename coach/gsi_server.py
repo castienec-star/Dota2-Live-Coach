@@ -35,6 +35,7 @@ class Coach:
         self.pregame = None  # the pre-game briefing, which also takes typed picks
         self.questions = None  # the in-match questions, whose answers other advice uses
         self.health = None  # notices when Dota isn't sending updates (coach/health.py)
+        self.advice = None  # what to buy now (coach/item_advisor.py)
         self._last_summary = 0.0
 
     def handle(self, payload: dict[str, Any]) -> Snapshot:

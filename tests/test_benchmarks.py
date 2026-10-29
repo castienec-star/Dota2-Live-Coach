@@ -8,9 +8,11 @@ from coach.benchmarks import (
     share_below,
 )
 from coach.heroes import HeroIndex
+from coach.items import load_items
 from coach.opendota import OpenDota
 from coach.rules import game_check
 from coach.rules.game_check import GameCheck
+from coach.situational import Pick
 from coach.state import MatchState, Snapshot
 from coach.voice import Answers, intent
 
@@ -196,5 +198,21 @@ def test_game_check_names_a_counter_from_the_enemy_lineup():
 def test_game_check_without_a_counter_keeps_the_general_advice():
     lineup = [HeroIndex().by_key("lina")]
     rule = GameCheck(Benchmarks(), minutes=[25], enemies=lambda: lineup)
+    (line,) = run_check(rule, jugg(clock=1500, gpm=350, xpm=400, last_hits=80))
+    assert line.endswith("buy a Black King Bar or a defensive item.")
+
+
+def test_game_check_with_advice_always_names_an_item():
+    manta = load_items()["item_manta"]
+    rule = GameCheck(Benchmarks(), minutes=[15], advice=lambda snap: Pick(manta, ""))
+    snap = jugg(clock=900, gpm=620, xpm=700, last_hits=110)
+    snap.gold = 1000
+    (line,) = run_check(rule, snap)
+    assert line.startswith("You're ahead for 15 minutes.")
+    assert line.endswith(f"Get Manta Style next, {manta.cost - 1000} more gold.")
+
+
+def test_game_check_with_advice_but_nothing_to_buy_keeps_the_verdict():
+    rule = GameCheck(Benchmarks(), minutes=[25], advice=lambda snap: None)
     (line,) = run_check(rule, jugg(clock=1500, gpm=350, xpm=400, last_hits=80))
     assert line.endswith("buy a Black King Bar or a defensive item.")

@@ -3,7 +3,7 @@ import pytest
 from coach.benchmarks import Verdict
 from coach.heroes import HeroIndex
 from coach.items import load_items
-from coach.situational import THREATS, against, recommend, role, spoken
+from coach.situational import BUILD_DONE, LATE, THREATS, against, recommend, role, spoken
 from coach.state import Item, Snapshot
 from coach.voice import Answers, intent
 
@@ -90,6 +90,39 @@ def test_ahead_or_even_without_a_threat_follows_the_build(snap):
     for kind in ("ahead", "even", None):
         pick = recommend(snap, FixedVerdict(kind).verdict(snap), [], "core", ITEMS, manta)
         assert pick.item is manta
+
+
+def test_every_late_item_exists():
+    for keys in LATE.values():
+        assert set(keys) <= set(ITEMS)
+
+
+@pytest.mark.parametrize(
+    "role_name, expected",
+    [("core", "Black King Bar"), ("offlane", "Black King Bar"), ("support", "Glimmer Cape")],
+)
+def test_a_finished_build_still_names_an_item(snap, role_name, expected):
+    for kind in ("ahead", "even", None):
+        pick = recommend(snap, FixedVerdict(kind).verdict(snap), [], role_name, ITEMS, None)
+        assert pick.item.name == expected
+        assert pick.reason == BUILD_DONE
+
+
+def test_a_finished_build_skips_owned_late_items(snap):
+    snap.items.append(Item("slot5", "item_black_king_bar", None, True, 0))
+    pick = recommend(snap, None, [], "core", ITEMS, None)
+    assert pick.item.name == "Linken's Sphere"
+    snap.gold = 0
+    assert spoken(pick, None, snap) == "Get Linken's Sphere next, 4800 more gold: your build list is done."
+
+
+def test_every_role_and_lineup_gets_an_item(snap):
+    """Whatever the role, verdict or lineup, "what should I buy?" names an item."""
+    for role_name in LATE:
+        for kind in ("ahead", "even", "behind", None):
+            for lineup in ((), ("lina", "lion"), ("phantom_assassin",)):
+                pick = recommend(snap, FixedVerdict(kind).verdict(snap), enemies(*lineup), role_name, ITEMS, None)
+                assert pick is not None, (role_name, kind, lineup)
 
 
 def test_spoken_line(snap):
