@@ -111,6 +111,29 @@ def test_item_ready_announces_next_unowned_item(payload):
     assert said == ["You have gold for Manta Style."]
 
 
+def test_any_boots_count_for_the_builds_boots(payload):
+    # The sample hero has Power Treads; a build's Arcane Boots are done.
+    items = load_items()
+    rule = ItemReady(parse_builds({"antimage": ["Arcane Boots", "Glimmer Cape"]}, items))
+    said = run(rule, payload, [{"player.gold": 3000}])
+    assert said == ["You have gold for Glimmer Cape."]
+
+
+def test_boots_of_travel_still_come_on_top_of_other_boots(payload):
+    items = load_items()
+    rule = ItemReady(parse_builds({"antimage": ["Phase Boots", "Boots of Travel"]}, items))
+    said = run(rule, payload, [{"player.gold": 5000}])
+    assert said == ["You have gold for Boots of Travel."]
+
+
+def test_an_upgrade_counts_as_owning_the_item(payload):
+    payload["items"]["slot3"] = {"name": "item_hurricane_pike", "purchaser": 0, "can_cast": True}
+    items = load_items()
+    rule = ItemReady(parse_builds({"antimage": ["Force Staff", "Black King Bar"]}, items))
+    said = run(rule, payload, [{"player.gold": 5000}])
+    assert said == ["You have gold for Black King Bar."]
+
+
 def test_item_ready_uses_default_build():
     items = load_items()
     rule = ItemReady(parse_builds({"default": ["blink"]}, items))

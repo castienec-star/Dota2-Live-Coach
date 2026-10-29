@@ -140,6 +140,43 @@ class SkillPoint(HeroRule):
         self._reminded = False
 
 
+# Boots share one slot: owning any pair means a build's boots are done.
+# Boots of Travel are the exception, an upgrade bought on top of other boots.
+BOOTS = {
+    "item_phase_boots",
+    "item_power_treads",
+    "item_arcane_boots",
+    "item_tranquil_boots",
+    "item_guardian_greaves",
+    "item_boots_of_bearing",
+    "item_travel_boots",
+    "item_travel_boots_2",
+}
+TRAVEL = ("item_travel_boots", "item_travel_boots_2")
+
+# Items that already hold a build item, so owning them counts as owning it.
+UPGRADES = {
+    "item_arcane_boots": ("item_guardian_greaves",),
+    "item_tranquil_boots": ("item_boots_of_bearing",),
+    "item_travel_boots": ("item_travel_boots_2",),
+    "item_blink": ("item_overwhelming_blink", "item_swift_blink", "item_arcane_blink"),
+    "item_force_staff": ("item_hurricane_pike",),
+    "item_maelstrom": ("item_mjollnir", "item_gungir"),
+    "item_diffusal_blade": ("item_disperser",),
+    "item_vanguard": ("item_crimson_guard",),
+    "item_basher": ("item_abyssal_blade",),
+    "item_kaya": ("item_kaya_and_sange", "item_yasha_and_kaya"),
+    "item_urn_of_shadows": ("item_spirit_vessel",),
+}
+
+
+def owns(snap: Snapshot, key: str) -> bool:
+    """True if you have the item, an upgrade of it, or (for boots) any boots."""
+    if key in BOOTS and key not in TRAVEL and any(snap.has_item(k) for k in BOOTS):
+        return True
+    return any(snap.has_item(k) for k in (key, *UPGRADES.get(key, ())))
+
+
 class ItemReady(HeroRule):
     """Says when you can afford the next item on your build list for this hero.
 
@@ -179,7 +216,7 @@ class ItemReady(HeroRule):
     def next_item(self, snap: Snapshot) -> ItemInfo | None:
         hero = (snap.hero_name or "").removeprefix("npc_dota_hero_")
         build = self.build_for(hero, self.position(snap) if self.position else 0)
-        return next((i for i in build if not snap.has_item(i.key)), None)
+        return next((i for i in build if not owns(snap, i.key)), None)
 
     def evaluate(self, snap: Snapshot) -> str | None:
         target = self.next_item(snap)
