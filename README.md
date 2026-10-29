@@ -73,7 +73,11 @@ py -m coach
 
 Start a match (a bot match works). The console logs your hero's state every
 10 seconds, and each match is recorded to
-`%APPDATA%\Dota2LiveCoach\recordings\` as a `.jsonl` file.
+`%APPDATA%\Dota2LiveCoach\recordings\` as a `.jsonl` file, together with
+every line the coach said (or skipped as too late) and the game time.
+
+If your own `%APPDATA%\Dota2LiveCoach\coach.toml` still has settings an older
+version used (such as `[pregame.capture]`), the coach names them on start.
 
 If Dota sends nothing for a minute after the coach starts, the coach says so
 and prints what to check: whether the GSI config file is there and up to date
@@ -88,8 +92,8 @@ built-in voice. Defaults follow patch 7.41:
 
 | Reminder | Default timing |
 | --- | --- |
-| Power rune | 15 s before 6:00, then every 2 minutes |
-| Gold (bounty) runes | 15 s before 4:00, then every 4 minutes |
+| Power rune | 15 s before 6:00, then every 2 minutes; after 20:00 every 4 minutes |
+| Gold (bounty) runes | 15 s before 4:00, then every 4 minutes; after 20:00 every 8 minutes |
 | Wisdom shrines | 20 s before 7:00, then every 7 minutes |
 | Water rune | 10 s before 2:00 and 4:00 (mid only, once your position is known) |
 | Stack the camp | at :53 each minute until 11:53, only when your hero is near a neutral camp |

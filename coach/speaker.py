@@ -12,6 +12,7 @@ import itertools
 import logging
 import threading
 import time
+from collections.abc import Callable
 from typing import Protocol
 
 log = logging.getLogger(__name__)
@@ -80,6 +81,8 @@ class Speaker:
         self._closed = False
         self._factory = backend_factory
         self._speaking = threading.Event()
+        # Told each line as it is spoken (True) or skipped as late (False).
+        self.on_line: Callable[[str, bool], None] | None = None
         # The speech engine must be created on the thread that uses it.
         self._thread = threading.Thread(target=self._run, name="speaker", daemon=True)
         self._thread.start()
@@ -116,6 +119,13 @@ class Speaker:
             self._speaking.set()
             return queued_at, delay, text
 
+    def _tell(self, text: str, spoken: bool) -> None:
+        if self.on_line is not None:
+            try:
+                self.on_line(text, spoken)
+            except Exception:
+                log.exception("Could not note the line %r", text)
+
     def _run(self) -> None:
         backend = self._factory()
         while (item := self._next()) is not None:
@@ -123,7 +133,9 @@ class Speaker:
             try:
                 if time.monotonic() - queued_at > delay:
                     log.info("Skipped late line: %s", text)
+                    self._tell(text, False)
                     continue
+                self._tell(text, True)
                 backend.speak(text)
             except Exception:
                 log.exception("Could not speak %r", text)

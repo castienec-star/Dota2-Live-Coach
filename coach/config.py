@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ipaddress
+import logging as logging_mod
 import os
 import secrets
 import tomllib
@@ -11,6 +12,10 @@ from pathlib import Path
 
 APP_DIR_NAME = "Dota2LiveCoach"
 DEFAULTS_FILE = Path(__file__).resolve().parent.parent / "config" / "coach.toml"
+# Sections whose tables the player names freely (hero builds).
+FREE_SECTIONS = {"builds"}
+
+log = logging_mod.getLogger(__name__)
 
 
 def user_dir() -> Path:
@@ -60,6 +65,22 @@ def _read_toml(path: Path) -> dict:
         return tomllib.load(f)
 
 
+def stale(defaults: dict, user: dict) -> list[str]:
+    """Sections in the user's coach.toml that the coach no longer knows, such
+    as ones left over from an old version: "[pregame.capture]"."""
+    found = []
+    for name, value in user.items():
+        if name not in defaults:
+            found.append(f"[{name}]")
+        elif isinstance(value, dict) and isinstance(defaults[name], dict) and name not in FREE_SECTIONS:
+            found += [
+                f"[{name}.{key}]"
+                for key, sub in value.items()
+                if isinstance(sub, dict) and key not in defaults[name]
+            ]
+    return found
+
+
 def load_token(app_dir: Path) -> str:
     """Return the shared secret Dota sends with each update, creating it once."""
     token_file = app_dir / "gsi_token"
@@ -76,7 +97,16 @@ def load_token(app_dir: Path) -> str:
 def load(user_file: Path | None = None, app_dir: Path | None = None) -> Config:
     app_dir = app_dir or user_dir()
     user_file = user_file or app_dir / "coach.toml"
-    raw = _merge(_read_toml(DEFAULTS_FILE), _read_toml(user_file))
+    defaults, user = _read_toml(DEFAULTS_FILE), _read_toml(user_file)
+    old = stale(defaults, user)
+    if old:
+        log.warning(
+            "%s has settings this version doesn't use: %s. They are ignored; delete "
+            "them, or compare the file with config/coach.toml to see what's new.",
+            user_file,
+            ", ".join(old),
+        )
+    raw = _merge(defaults, user)
 
     server = raw.get("server", {})
     recording = raw.get("recording", {})

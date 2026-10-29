@@ -141,3 +141,18 @@ def test_new_match_resets_reminders(payload):
     payload["map"]["game_state"] = "DOTA_GAMERULES_STATE_GAME_IN_PROGRESS"
     play(state, payload, [344, 345], engine)
     assert len(said) == 2
+
+
+def test_runes_are_thinned_after_twenty_minutes(payload):
+    said = []
+    engine = Engine(build({"bounty_rune": {"enabled": False}, "wisdom_shrine": {"enabled": False}, "stack": {"enabled": False}}), said.append)
+    play(MatchState(), payload, range(1000, 1700), engine)
+    # Power runes at 18:00 and 20:00 are said; after 20:00 every other one.
+    assert said.count("Power rune in 15 seconds.") == 4  # 18:00, 20:00, 22:00, 26:00
+
+
+def test_thinning_can_be_turned_off(payload):
+    said = []
+    engine = Engine(build({"power_rune": {"thin_after": 0}}), said.append)
+    rule = engine.rules[0]
+    assert rule.name == "power_rune" and not rule.thinned(1320)

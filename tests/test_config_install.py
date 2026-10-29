@@ -70,3 +70,20 @@ def test_replay_feeds_recording(tmp_path, payload):
     coach = Coach("unused")
     assert replay(coach, recorder.path) == 3
     assert coach.state.current.gold == 300
+
+
+def test_stale_user_sections_are_found():
+    defaults = {"pregame": {"enabled": True, "positions": {}}, "reminders": {"stack": {}}, "builds": {}}
+    user = {
+        "pregame": {"capture": {"enabled": True}, "positions": {"luna": 1}, "enabled": False},
+        "reminders": {"stack": {"lead": 1}, "old_rule": {"enabled": True}},
+        "builds": {"luna": ["Mask of Madness"], "pudge_pos4": ["Blink Dagger"]},
+        "gone": {"x": 1},
+    }
+    assert config.stale(defaults, user) == ["[pregame.capture]", "[reminders.old_rule]", "[gone]"]
+
+
+def test_load_warns_about_stale_sections(tmp_path, caplog):
+    (tmp_path / "coach.toml").write_text("[pregame.capture]\nenabled = true\n", encoding="utf-8")
+    config.load(app_dir=tmp_path)
+    assert "[pregame.capture]" in caplog.text

@@ -99,3 +99,14 @@ def test_each_line_can_wait_its_own_time():
     speaker.say("answer the player waits for", max_delay=5)
     speaker.close()
     assert backend.spoken == ["first", "answer the player waits for"]
+
+
+def test_tells_each_line_spoken_or_skipped():
+    backend = Recorder(delay=0.3)
+    speaker = Speaker(lambda: backend, max_delay=0.1)
+    told = []
+    speaker.on_line = lambda text, spoken: told.append((text, spoken))
+    speaker.say("first")
+    speaker.say("late")
+    speaker.close()
+    assert told == [("first", True), ("late", False)]

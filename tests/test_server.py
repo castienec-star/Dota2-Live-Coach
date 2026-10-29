@@ -45,3 +45,26 @@ async def test_records_match_without_token(aiohttp_client, payload, tmp_path):
     assert len(entries) == 2
     assert "auth" not in entries[0][1]
     assert recorder.path.name.endswith("match-8012345678.jsonl")
+
+
+def test_recording_keeps_spoken_lines_apart_from_updates(payload, tmp_path):
+    from coach.recorder import read_lines
+
+    recorder = MatchRecorder(tmp_path)
+    recorder.start("1")
+    recorder.write(payload)
+    recorder.said("Power rune in 15 seconds.", 345)
+    recorder.said("Stack the camp.", 353, spoken=False)
+    recorder.close()
+
+    assert len(list(read_recording(recorder.path))) == 1
+    assert list(read_lines(recorder.path)) == [
+        (345, "Power rune in 15 seconds.", True),
+        (353, "Stack the camp.", False),
+    ]
+
+
+def test_said_before_a_match_is_ignored(tmp_path):
+    recorder = MatchRecorder(tmp_path)
+    recorder.said("Dota is connected.", None)
+    assert recorder.path is None
