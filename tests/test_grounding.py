@@ -24,6 +24,8 @@ def test_invented_hero_is_caught():
 def test_jungler_and_unknown_teams_are_caught():
     assert "jungler" in GROUNDING.problem("Wait for our jungler.", "", [LUNA])
     assert GROUNDING.problem("Our team is strong.", "", [LUNA], allies_known=False)
+    stay = "Stay with your team until your Black King Bar is ready."
+    assert GROUNDING.problem(stay, "", [LUNA], allies_known=False) is None
     assert GROUNDING.problem("Watch their carry.", "", [LUNA], enemies_known=False)
     assert GROUNDING.problem("Watch their carry.", "", [LUNA]) is None
 

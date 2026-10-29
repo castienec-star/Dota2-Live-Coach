@@ -16,8 +16,9 @@ from .heroes import NICKNAMES, HeroIndex, HeroInfo
 
 # Words that are never right in a Dota briefing or tip.
 _NEVER = re.compile(r"\b(junglers?|jungling)\b", re.IGNORECASE)
-# Talk about teammates or enemies, when none of them are known.
-_ALLY_TALK = re.compile(r"\b(our|teammates?|all(y|ies)|your team'?s?|support player)\b", re.IGNORECASE)
+# Claims about teammates or enemies, when none of them are known. "Stay with
+# your team" is still fine: there is always a team.
+_ALLY_TALK = re.compile(r"\b(our|teammates?|all(y|ies))\b", re.IGNORECASE)
 _ENEMY_TALK = re.compile(r"\b(enem(y|ies)|their|opponents?|the other team)\b", re.IGNORECASE)
 
 _UNITS = {
