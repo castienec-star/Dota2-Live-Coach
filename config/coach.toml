@@ -66,17 +66,21 @@ device = ""
 # patches, so adjust them here.
 # Set enabled = false to turn one off. Any reminder (here or below) can be
 # limited to some positions with e.g. positions = [4, 5]; while the coach
-# doesn't know your position, it says them all.
+# doesn't know your position, it says them all. After "thin_after" seconds only
+# every other rune is called, so they don't crowd out the rest late in the game
+# (thin_after = 0 to hear them all).
 [reminders.power_rune]
 first = 360
 every = 120
 lead = 15
+thin_after = 1200
 
 [reminders.bounty_rune]
 # Bounty runes are the gold runes: they give gold to your whole team.
 first = 240
 every = 240
 lead = 15
+thin_after = 1200
 
 [reminders.wisdom_shrine]
 first = 420

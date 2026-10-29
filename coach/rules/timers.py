@@ -27,6 +27,9 @@ class TimedReminder:
     every: int
     until: int | None = None
     lead: int = 0
+    # After this game time only every other event is said, so runes don't
+    # crowd out the rest late in the game; None or 0 = all of them.
+    thin_after: int | None = None
     _fired: set[int] = field(default_factory=set, repr=False)
 
     def event_times(self, start: int, end: int) -> list[int]:
@@ -36,12 +39,18 @@ class TimedReminder:
         while t - self.lead <= end:
             if self.until is not None and t > self.until:
                 break
-            if t - self.lead > start:
+            if t - self.lead > start and not self.thinned(t):
                 times.append(t)
             if self.every <= 0:
                 break
             t += self.every
         return times
+
+    def thinned(self, t: int) -> bool:
+        """True for the events left out after thin_after."""
+        if not self.thin_after or t <= self.thin_after or self.every <= 0:
+            return False
+        return (t - self.first) // self.every % 2 == 1
 
     def check(self, state: MatchState) -> list[str]:
         before, now = state.previous.clock_time, state.current.clock_time
@@ -106,8 +115,8 @@ class StackReminder(TimedReminder):
 
 # Patch 7.41 timings.
 DEFAULTS: dict[str, dict] = {
-    "power_rune": {"message": "Power rune in {lead} seconds.", "first": 360, "every": 120, "lead": 15},
-    "bounty_rune": {"message": "Gold runes in {lead} seconds.", "first": 240, "every": 240, "lead": 15},
+    "power_rune": {"message": "Power rune in {lead} seconds.", "first": 360, "every": 120, "lead": 15, "thin_after": 1200},
+    "bounty_rune": {"message": "Gold runes in {lead} seconds.", "first": 240, "every": 240, "lead": 15, "thin_after": 1200},
     "wisdom_shrine": {"message": "Wisdom shrines in {lead} seconds.", "first": 420, "every": 420, "lead": 20},
     "water_rune": {"message": "Water rune in {lead} seconds.", "first": 120, "every": 120, "until": 240, "lead": 10},
     "stack": {"message": "Stack the {camp} camp.", "first": 113, "every": 60, "until": 713, "lead": 0, "radius": 1000},
