@@ -212,7 +212,7 @@ class WorthBuying(ItemReady):
         builds: dict[str, list[ItemInfo]],
         heroes: HeroIndex | None = None,
         items: list[ItemInfo | str] | None = None,
-        far: int = 1500,
+        far: int = 600,
         until_minute: int = 25,
         cooldown: int = 180,
         position: PositionOf | None = None,
