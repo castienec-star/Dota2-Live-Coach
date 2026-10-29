@@ -99,7 +99,8 @@ def claude_asker(
     disabled = False
     lock = threading.Lock()
 
-    def ask(prompt: str) -> str | None:
+    def ask(prompt: str, fmt: dict | None = None) -> str | None:
+        # fmt is ignored: the prompt asks Claude for the reply's shape.
         nonlocal client, disabled
         with lock:
             if disabled:

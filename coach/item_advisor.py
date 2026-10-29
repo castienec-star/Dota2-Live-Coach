@@ -166,7 +166,10 @@ class ItemAdvisor:
     """Asks the model to choose among the rules' candidates, with the rules'
     pick as the fallback."""
 
-    def __init__(self, ask: Callable[[str, dict], str | None] | None) -> None:
+    # Answers kept; older ones (an earlier minute or match) are dropped past this.
+    CACHE = 16
+
+    def __init__(self, ask: llm.Ask | None) -> None:
         self.ask = ask
         self._cache: dict[tuple, Pick | None] = {}
         self._grounding: Grounding | None = None  # loaded on the first model reply
@@ -199,6 +202,8 @@ class ItemAdvisor:
         )
         with self._lock:
             if key not in self._cache:
+                if len(self._cache) >= self.CACHE:
+                    self._cache.clear()
                 prompt = describe(snap, picks, verdict, enemies, items, hero, position, notes)
                 reply = self.ask(prompt, schema(picks))
                 self._cache[key] = self._pick(reply, picks, enemies, notes, hero)
@@ -339,7 +344,7 @@ def watch(settings: dict, advice: Advice) -> list[ItemWatch]:
     return [ItemWatch(advice, int(settings.get("every", 15)), int(settings.get("cooldown", 120)))]
 
 
-def ollama_asker(model: str, url: str, timeout: float) -> Callable[[str, dict], str | None]:
+def ollama_asker(model: str, url: str, timeout: float) -> llm.Ask:
     """Ollama answers in the candidates' JSON schema, so the item is always one of them."""
     return llm.ollama_asker(
         model, url, timeout, SYSTEM_PROMPT, label="Ollama item advice", temperature=0.2
@@ -359,14 +364,13 @@ def build(settings: dict) -> ItemAdvisor:
     elif advisor == "claude":
         from .rules.death_tip import claude_asker
 
-        claude = claude_asker(
+        ask = claude_asker(
             settings.get("claude_model", "claude-opus-5-5"),
             settings.get("effort", "low"),
             timeout,
             system=SYSTEM_PROMPT,
             label="Item advice",
         )
-        ask = lambda prompt, fmt: claude(prompt)  # noqa: E731
     elif advisor == "rules":
         ask = None
     else:

@@ -37,7 +37,7 @@ class FakeModel:
         self.reply = reply
         self.calls = []
 
-    def __call__(self, prompt, fmt):
+    def __call__(self, prompt, fmt=None):
         self.calls.append((prompt, fmt))
         return self.reply
 
@@ -130,6 +130,15 @@ def test_same_question_is_answered_from_the_cache(snap):
     snap.clock_time += 60
     advisor.choose(snap, BEHIND, enemies("lina", "lion"), "core", ITEMS, MANTA)
     assert len(model.calls) == 2
+
+
+def test_cache_stays_small(snap):
+    model = FakeModel('{"item": "item_manta", "why": "farm"}')
+    advisor = ItemAdvisor(model)
+    for minute in range(40):
+        snap.clock_time = minute * 60
+        advisor.choose(snap, BEHIND, enemies("lina", "lion"), "core", ITEMS, MANTA)
+    assert len(advisor._cache) <= ItemAdvisor.CACHE
 
 
 def test_one_candidate_needs_no_model(snap):

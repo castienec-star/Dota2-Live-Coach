@@ -6,11 +6,17 @@ import json
 import logging
 import urllib.error
 import urllib.request
-from collections.abc import Callable
+from typing import Protocol
 
 log = logging.getLogger(__name__)
 
-Ask = Callable[[str], "str | None"]
+
+
+class Ask(Protocol):
+    """Asks a model; None when it is off, slow or failed. fmt is a JSON schema
+    the reply must follow, where the model supports it."""
+
+    def __call__(self, prompt: str, fmt: dict | None = None) -> str | None: ...
 
 
 def ollama_asker(
@@ -23,7 +29,8 @@ def ollama_asker(
     temperature: float = 0.7,
 ) -> Ask:
     """Ask a local Ollama model; returns None if Ollama is not running or is slow.
-    Pass a JSON schema as fmt to make the reply follow it."""
+    The returned ask takes an optional JSON schema as fmt, which Ollama makes
+    the reply follow."""
     warned = False
 
     def ask(prompt: str, fmt: dict | None = None) -> str | None:
