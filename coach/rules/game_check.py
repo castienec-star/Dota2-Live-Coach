@@ -3,7 +3,9 @@
 The same verdict as asking "hey coach, how am I doing?" (see
 coach/benchmarks.py): your own hero's GSI numbers against public numbers
 for your hero. When you told the coach the enemy heroes and one of them
-calls for a counter item, it is named too (see coach/situational.py).
+calls for a counter item, it is named too (see coach/situational.py). So is
+a defensive item when you said your team is losing fights or their carry is
+farming freely (see coach/game_questions.py).
 """
 
 from __future__ import annotations
@@ -12,6 +14,7 @@ from collections.abc import Callable
 
 from .. import situational
 from ..benchmarks import Benchmarks, is_support, spoken
+from ..game_questions import Notes
 from ..heroes import HeroIndex, HeroInfo
 from ..items import load_items
 from ..state import MatchState
@@ -32,6 +35,7 @@ class GameCheck:
         position: PositionOf | None = None,
         heroes: HeroIndex | None = None,
         enemies: Callable[[], list[HeroInfo]] | None = None,
+        notes: Callable[[], Notes | None] | None = None,
     ) -> None:
         self.benchmarks = benchmarks
         self.times = sorted(int(m) * 60 for m in (minutes if minutes is not None else [15, 25]))
@@ -39,6 +43,7 @@ class GameCheck:
         self.position = position
         self.heroes = heroes or HeroIndex()
         self.enemies = enemies or list
+        self.notes = notes or (lambda: None)
         self._items = load_items()
         self._done: set[int] = set()
 
@@ -58,7 +63,13 @@ class GameCheck:
         if verdict is None:
             return []
         role = situational.role(position, support)
-        counter = situational.against(self.enemies(), role, snap, self._items)
+        notes = self.notes()
+        counter = situational.against(self.enemies(), role, snap, self._items, notes.trouble if notes else None)
+        if counter is None and verdict.kind == "even":
+            # "Behind" already says to buy a defensive item.
+            reason = situational.struggling(verdict, notes)
+            if reason:
+                counter = situational.defensive(snap, role, self._items, reason)
         if counter is None:
             return [spoken(verdict, support)]
         return [f"{spoken(verdict, support, items=False)} {situational.spoken(counter, None, snap)}"]
@@ -72,8 +83,9 @@ def build(
     benchmarks: Benchmarks,
     position: PositionOf | None = None,
     enemies: Callable[[], list[HeroInfo]] | None = None,
+    notes: Callable[[], Notes | None] | None = None,
 ) -> list[GameCheck]:
     options = dict(settings.get("game_check", {}))
     if not options.pop("enabled", True):
         return []
-    return [GameCheck(benchmarks, position=position, enemies=enemies, **options)]
+    return [GameCheck(benchmarks, position=position, enemies=enemies, notes=notes, **options)]

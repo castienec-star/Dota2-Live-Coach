@@ -134,7 +134,10 @@ item data; `coach/data/PATCH` names the patch the bundled data is current for
 
 When you die with at least 10 seconds to wait, the coach speaks one short tip
 for your next life, if it is ready before you respawn. The tip is based only on
-your own hero's stats and items, nothing about enemies.
+your own hero's stats and items, plus what you answered to the coach's
+questions this match (for example "find Pudge on the minimap before you
+fight" after you said Pudge gives you trouble). The coach never looks up
+anything about enemies.
 
 Choose where tips come from with `provider` in `[reminders.death_tip]`:
 
@@ -199,8 +202,11 @@ It uses:
   and hasn't been hit for a while), never in a fight, at most one question
   every 5 minutes and each once a match. Answer in a word after the beep and
   it gives one line of advice ("Then group up with your team and go find
-  their carry"); say nothing or "skip" and it lets it go. Answers are
-  forgotten after the match. Turn them off with `game_questions = false`, or
+  their carry"); say nothing or "skip" and it lets it go. Your answers also
+  steer "What should I buy?", the 15 and 25 minute check and death tips:
+  the hero giving you trouble gets countered first, and losing fights or a
+  free-farming enemy carry means a defensive item. Answers are forgotten
+  after the match. Turn them off with `game_questions = false`, or
   space them out with `question_every`, under `[listen]`. See
   [docs/strategy/game-state-questions.md](docs/strategy/game-state-questions.md).
 - **Public hero statistics** from [OpenDota](https://www.opendota.com): how
@@ -232,8 +238,10 @@ the game clock and the enemy heroes you told it:
   and the enemy heroes you named at the start of the game (or typed). A
   counter comes first, picked for your position: Monkey King Bar against
   Phantom Assassin, Dust or Sentries against invisible heroes, Black King
-  Bar, Pipe or Glimmer Cape against a lot of magic damage, and so on. When
-  you are behind and nothing needs countering, a defensive item; otherwise
+  Bar, Pipe or Glimmer Cape against a lot of magic damage, and so on; the
+  hero you said gives you the most trouble is countered first. When you are
+  behind, or told the coach your team is losing fights or their carry is
+  farming freely, and nothing needs countering, a defensive item; otherwise
   the next item on your build. For example: "You're behind for 20 minutes.
   Get Black King Bar next, 1200 more gold: Lina and Lion do a lot of magic
   damage." See

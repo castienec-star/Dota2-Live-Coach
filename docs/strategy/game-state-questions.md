@@ -46,9 +46,28 @@ in [ahead-or-behind.md](ahead-or-behind.md):
   going back to farm. Turning fights into objectives is the most common
   missing step at low MMR.
 
-## Next (issue #11 step 4)
+## How the answers are used (issue #11 step 4)
 
-The answers are kept for the match (`GameQuestions.notes`) but not yet used
-elsewhere. Next: a lost lane or a free-farming enemy carry should tilt "what
-should I buy?" and the 15/25 minute check toward defensive items, and the
-trouble hero should be named in death tips and counter picks.
+The answers are kept for the match (`GameQuestions.notes`) and feed the
+rest of the coaching:
+
+- **Trouble hero**: countered first in "what should I buy?" and the 15/25
+  minute check, even when the threat would normally need two enemy heroes
+  (one nuker isn't worth a Black King Bar, unless it's the one killing you).
+  Built-in death tips name the hero every other death ("find Pudge on the
+  minimap before you fight, and don't meet Pudge alone"); naming it every
+  death would be nagging.
+- **Losing fights, or enemy carry farming freely**: a defensive item when
+  nothing needs countering (Black King Bar for cores, Glimmer Cape or Force
+  Staff for supports, see [situational-items.md](situational-items.md)),
+  with the reason said out loud. Losing fights also gets its own built-in
+  death tip: wait for your team and fight together near your towers.
+- **Lost lane**: a defensive item only while there is no ahead/behind
+  verdict for the hero. Once the coach has the player's own numbers, those
+  win: a player who lost lane but caught up shouldn't be told to play safe.
+- **Ahead by the numbers**: the answers don't push defensive items at all.
+  An ahead player should finish the farming or fighting item and take
+  objectives, as in [ahead-or-behind.md](ahead-or-behind.md).
+- **Model death tips** (Ollama or Claude) get the answers as one extra line
+  in the prompt ("The player told you: ..."). That is still only what the
+  player said, so it keeps the fair-play rule.
