@@ -18,7 +18,7 @@ from . import game_questions, item_advisor, situational
 from . import health as health_mod
 from . import pregame as pregame_mod
 from . import voice
-from .benchmarks import Benchmarks
+from .benchmarks import Benchmarks, status
 from .gsi_server import Coach, make_app
 from .heroes import HeroIndex, load_heroes
 from .install import find_dota, install
@@ -152,14 +152,31 @@ def what_to_buy(coach: Coach) -> str:
     return situational.spoken(pick, verdict, snap)
 
 
+# Typed for "how am I doing?".
+HOW_COMMANDS = ("how", "status")
+
+
+def how_am_i_doing(coach: Coach) -> str:
+    """The same answer as asking "how am I doing?"."""
+    snap = coach.state.current
+    if snap.hero_name is None:
+        return "I can't see your hero yet. Ask me again once the game has started."
+    advice = coach.advice
+    position = advice.position(snap) if advice.position else 0
+    return status(advice.benchmarks, snap, advice.heroes.by_key(snap.hero_name), position)
+
+
 def read_typed_picks(coach: Coach, questions: TypedQuestions | None = None) -> None:
     """Lets you type the draft in the coach window: "vs am cm lion pudge sf",
-    "buy" for what to buy now, or the answer to a start-of-game question
-    shown there."""
+    "buy" for what to buy now, "how" for how you are doing, or the answer to
+    a start-of-game question shown there."""
     for line in sys.stdin:
         command = line.strip().split(maxsplit=1)[0].lower() if line.strip() else ""
         if command in BUY_COMMANDS and coach.advice is not None:
             print(what_to_buy(coach), flush=True)
+            continue
+        if command in HOW_COMMANDS and coach.advice is not None:
+            print(how_am_i_doing(coach), flush=True)
             continue
         if command not in ("vs", "with", "pos", "clear") and questions and questions.answer(line):
             continue
@@ -258,7 +275,7 @@ def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
     if typing:
         threading.Thread(target=read_typed_picks, args=(coach, typed), daemon=True).start()
         logging.info('Type the enemy picks any time, e.g.  vs am cm lion pudge sf')
-        logging.info('Type "buy" any time to hear what to buy now')
+        logging.info('Type "buy" any time to hear what to buy now, or "how" for how you are doing')
     if listening is None:
         logging.info("Voice is off: item advice still comes unasked, at 15 and 25 minutes and when the pick changes")
     logging.info("Listening for Dota 2 on %s", cfg.url)

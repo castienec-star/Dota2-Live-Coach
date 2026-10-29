@@ -54,11 +54,27 @@ Castien asked for the unasked check on 2026-10-28.
   teams often win a fight and go back to farming; turning fights into
   buildings is how a lead wins the game.
 
+## Every hero, every minute (issue #28)
+
+- **No numbers for the hero** (not bundled, OpenDota off or unreachable): the
+  verdict uses the average of the bundled cores' curves, or the bundled
+  supports' curves, and the coach adds "That's a rough comparison with cores
+  in general." A rough answer beats "I don't know" for a beginner, as long as
+  it says it's rough.
+- **Before 8 minutes:** a core hears last hits against 3.5 per minute
+  (35 at 10:00, ROADMAP item 4), rounded to 5: "12 last hits at 5 minutes,
+  aim for about 20." Low-bracket cores often sit near half of that, and
+  last hitting is the biggest farm gap there. Supports hear only deaths
+  and a habit (keep the core safe, stack a camp). Everyone hears deaths so
+  far, since not dying is the first habit to build.
+- The 15/25 minute check now speaks for every hero, rough or not.
+
 ## Known limits
 
 - Net worth is not compared: GSI gives gold but not net worth, and the
   benchmarks have no net worth curve.
 - Benchmarks mix every bracket and every position a hero is played in (Pudge
   mid and Pudge support share one curve).
-- Next steps (issue #9 step 3): use the verdict and the enemy lineup to
-  recommend situational items.
+- Only the 16 heroes with a build have their own bundled numbers. Next:
+  bundle OpenDota's public benchmarks for every hero (issue #28 point 1),
+  refreshed with patch data.
