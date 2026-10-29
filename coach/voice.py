@@ -88,7 +88,7 @@ def _next_time(reminder: timers.TimedReminder, now: int) -> int | None:
 class Answers:
     """Short spoken answers built from the latest snapshot."""
 
-    RUNES = (("power_rune", "Power rune"), ("bounty_rune", "Gold runes"), ("wisdom_shrine", "Wisdom shrines"))
+    RUNES = (("power_rune", "Power rune"), ("bounty_rune", "Gold runes"), ("wisdom_shrine", "XP runes"))
 
     def __init__(
         self,
