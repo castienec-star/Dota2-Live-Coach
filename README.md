@@ -29,18 +29,19 @@ Install Git once (then open a new Command Prompt so it is found):
 winget install --id Git.Git -e
 ```
 
-Then, in Command Prompt. The `cd` matters: `py -m pip install -e .` must run
-inside the downloaded folder.
+Then, in Command Prompt. The `cd` matters: `py -m pip install` must run
+inside the downloaded folder. `[voice]` adds the speech models the coach
+uses to ask and answer questions out loud.
 
 ```
 git clone https://github.com/castienec-star/Dota2-Live-Coach.git
 cd Dota2-Live-Coach
-py -m pip install -e .
+py -m pip install -e ".[voice]"
 py -m coach install
 ```
 
 No Git? Click **Code > Download ZIP** on GitHub, unzip it, then `cd` into the
-unzipped folder before running `py -m pip install -e .`.
+unzipped folder before running `py -m pip install -e ".[voice]"`.
 
 `install` finds Dota 2 through Steam and writes
 `gamestate_integration_coach.cfg` into
@@ -49,6 +50,20 @@ pass the folder: `py -m coach install --dota-path "D:\SteamLibrary\steamapps\com
 
 Then in Steam, right-click Dota 2 > Properties > Launch Options and add
 `-gamestateintegration`.
+
+## Update
+
+New features only reach you once you update. Close the coach window, then
+double-click `update.bat` in the coach folder (or run it in Command Prompt).
+It downloads the newest version and installs the voice packages. Then start
+the coach again.
+
+When the coach starts, its first line says which version it is, e.g.
+`Dota 2 Live Coach, version from 2026-10-29 01:40 (b944970)`. If it also says
+`Voice questions are OFF`, the voice packages are missing: run `update.bat`
+again. If you copied `coach.toml` to `%APPDATA%\Dota2LiveCoach\` from an
+older version, your copy overrides the new defaults: delete the lines you
+didn't change on purpose (for example `enabled = false` under `[listen]`).
 
 ## Run
 
@@ -82,7 +97,7 @@ camp is alive, already stacked or blocked, so the coach cannot check that.
 | Reminder | When |
 | --- | --- |
 | You have gold for (item) | You can afford the next item on your build list |
-| Buy a (cheap item) now, you'll get your (item) later | Before 25:00, the next build item is 1500+ gold away and you can afford a Magic Wand or your hero's Bracer, Wraith Band or Null Talisman that you don't own. Each one at most once a match |
+| Buy a (cheap item) now, you'll get your (item) later | Before 25:00, you are still 600+ gold short of the next build item (boots included) and you can afford a Magic Wand or your hero's Bracer, Wraith Band or Null Talisman that you don't own. Each one at most once a match |
 | You're ahead / about even / behind for (minutes) ... | At 15:00 and 25:00, your gold, experience and last hits per minute against public numbers for your hero, with what to do about it (see "How am I doing?" below). If you told the coach the enemy heroes and one calls for a counter, it names that item and why (see "What should I buy?"). Change the minutes in `[reminders.game_check]` |
 | Low health, back off | Health drops under 25% (again after you heal over 40%) |
 | Under buyback gold | After 30:00, your gold drops under the buyback cost |
@@ -173,6 +188,18 @@ It uses:
   under `[pregame]`, or per hero under `[pregame.positions]` (e.g.
   `pudge = 4`). To turn the questions off, set `start_questions = false`
   under `[listen]`. Your own hero is always known.
+- **Short questions during the match** about what the game data can't show:
+  "How did your lane go: won, even or lost?" around 10 minutes, then "Which
+  enemy hero is giving you the most trouble?", "Is their carry farming
+  freely?" and "Is your team ahead or behind in fights?". The coach only asks
+  at a calm moment (while you wait to respawn, or when your hero is healthy
+  and hasn't been hit for a while), never in a fight, at most one question
+  every 5 minutes and each once a match. Answer in a word after the beep and
+  it gives one line of advice ("Then group up with your team and go find
+  their carry"); say nothing or "skip" and it lets it go. Answers are
+  forgotten after the match. Turn them off with `game_questions = false`, or
+  space them out with `question_every`, under `[listen]`. See
+  [docs/strategy/game-state-questions.md](docs/strategy/game-state-questions.md).
 - **Public hero statistics** from [OpenDota](https://www.opendota.com): how
   each hero does against the others and by game length, like Dota Plus shows.
   They are saved on your PC and refreshed weekly.

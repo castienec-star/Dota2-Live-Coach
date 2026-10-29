@@ -401,7 +401,13 @@ def start(
         wake = VoskWakeWord(wake_word)
         transcribe = WhisperTranscriber(str(settings.get("model", "base.en")))
     except ImportError:
-        log.warning('Voice questions need extra packages:  pip install -e ".[voice]"')
+        # Most of the coach's questions and answers need these, so say it out
+        # loud too: a line in the console is easy to miss.
+        log.warning(
+            'Voice questions are OFF: the voice packages are not installed. '
+            'Run update.bat, or:  py -m pip install -e ".[voice]"'
+        )
+        say("Voice questions are off. Run update dot bat to turn them on.")
         return None
     except Exception as exc:
         log.warning("Voice questions unavailable (%s)", exc)

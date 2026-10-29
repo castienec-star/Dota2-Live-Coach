@@ -53,7 +53,14 @@ def ollama_asker(
                 warned = True
                 log.warning("Ollama not reachable at %s (%s); using built-in lines", url, exc)
             return None
-        text = (data.get("message") or {}).get("content", "").strip()
-        return text or None
+        return clean((data.get("message") or {}).get("content", ""))
 
     return ask
+
+
+def clean(text: str) -> str | None:
+    """A model's reply as a line to speak: no wrapping quotes or stray whitespace."""
+    text = " ".join(text.split())
+    while len(text) > 1 and text[0] in "\"'“”‘’" and text[-1] in "\"'“”‘’":
+        text = text[1:-1].strip()
+    return text.strip("\"“”") or None

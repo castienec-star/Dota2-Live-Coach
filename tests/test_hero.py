@@ -111,6 +111,29 @@ def test_item_ready_announces_next_unowned_item(payload):
     assert said == ["You have gold for Manta Style."]
 
 
+def test_any_boots_count_for_the_builds_boots(payload):
+    # The sample hero has Power Treads; a build's Arcane Boots are done.
+    items = load_items()
+    rule = ItemReady(parse_builds({"antimage": ["Arcane Boots", "Glimmer Cape"]}, items))
+    said = run(rule, payload, [{"player.gold": 3000}])
+    assert said == ["You have gold for Glimmer Cape."]
+
+
+def test_boots_of_travel_still_come_on_top_of_other_boots(payload):
+    items = load_items()
+    rule = ItemReady(parse_builds({"antimage": ["Phase Boots", "Boots of Travel"]}, items))
+    said = run(rule, payload, [{"player.gold": 5000}])
+    assert said == ["You have gold for Boots of Travel."]
+
+
+def test_an_upgrade_counts_as_owning_the_item(payload):
+    payload["items"]["slot3"] = {"name": "item_hurricane_pike", "purchaser": 0, "can_cast": True}
+    items = load_items()
+    rule = ItemReady(parse_builds({"antimage": ["Force Staff", "Black King Bar"]}, items))
+    said = run(rule, payload, [{"player.gold": 5000}])
+    assert said == ["You have gold for Black King Bar."]
+
+
 def test_item_ready_uses_default_build():
     items = load_items()
     rule = ItemReady(parse_builds({"default": ["blink"]}, items))
@@ -197,8 +220,17 @@ def test_worth_buying_once_per_item_with_cooldown(payload):
 def test_worth_buying_quiet_when_big_item_is_close_or_cheap_one_unaffordable(payload):
     payload["items"]["slot2"] = {"name": "empty"}
     rule = worth_buying(["Black King Bar"])
-    assert run(rule, payload, [{"player.gold": 3000}]) == []  # BKB is 1050 away
+    assert run(rule, payload, [{"player.gold": 3500}]) == []  # BKB is 550 away
     assert run(rule, payload, [{"player.gold": 300}]) == []  # can't afford a wand
+
+
+def test_worth_buying_while_saving_for_boots(payload):
+    # Every build starts with boots of 1500 gold or less: the early game,
+    # when a wand helps most, must still get the suggestion.
+    payload["items"]["slot0"] = payload["items"]["slot2"] = {"name": "empty"}
+    payload["map"]["clock_time"] = 180
+    said = run(worth_buying(["Power Treads", "Black King Bar"]), payload, [{"player.gold": 700}])
+    assert said == ["Buy a Magic Wand now, you'll get your Power Treads later."]
 
 
 def test_worth_buying_quiet_late_or_without_a_build(payload):

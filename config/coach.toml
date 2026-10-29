@@ -38,6 +38,14 @@ enabled = true
 # Before the horn, ask your position, your teammates and the enemy heroes
 # (no wake word needed: answer after the beep, or say "skip").
 start_questions = true
+# During the match, now and then ask one short question the game data can't
+# answer: how your lane went (around 10:00), which enemy gives you the most
+# trouble, whether their carry farms freely, and how fights go. Only at calm
+# moments (dead, or healthy and not hit for a while), each once a match.
+# Answer in a word after the beep; silence or "skip" drops the question.
+game_questions = true
+# Shortest gap between two of those questions, in game seconds.
+question_every = 300
 wake_word = "hey coach"
 # faster-whisper model: "tiny.en" is lighter on the CPU, "small.en" understands more.
 model = "base.en"
@@ -136,12 +144,15 @@ enabled = true
 [reminders.worth_buying]
 # While you save for a big item, suggest a cheap one that helps any hero, e.g.
 # "Buy a Magic Wand now, you'll get your Black King Bar later." Said when the
-# next item on your build is at least "far" gold away. Each item is suggested
+# next item on your build is still at least "far" gold away, so it never
+# holds up an item you're about to buy. Builds start with boots (1500 gold
+# or less), so "far" must be well under that or the early game, when a wand
+# or bracer helps most, gets nothing. Each item is suggested
 # at most once a match, and never one you already own.
 # "stats" means Bracer, Wraith Band or Null Talisman, by your hero's main attribute.
 enabled = true
 items = ["Magic Wand", "stats"]
-far = 1500
+far = 600
 until_minute = 25
 # Seconds between two suggestions.
 cooldown = 180

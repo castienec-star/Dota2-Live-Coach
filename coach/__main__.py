@@ -4,20 +4,23 @@ from __future__ import annotations
 
 import argparse
 import logging
+import subprocess
 import sys
 import threading
+from collections.abc import Callable
 from pathlib import Path
 
 from aiohttp import web
 
 from . import config as config_mod
+from . import game_questions
 from . import pregame as pregame_mod
 from . import voice
 from .benchmarks import Benchmarks
 from .gsi_server import Coach, make_app
-from .heroes import load_heroes
+from .heroes import HeroIndex, load_heroes
 from .install import find_dota, install
-from .lineup import Interview, TypedQuestions, configured_position
+from .lineup import Interview, Question, TypedQuestions, configured_position
 from .opendota import OpenDota
 from .recorder import MatchRecorder
 from .replay import replay
@@ -89,7 +92,7 @@ def make_coach(
             # The enemy heroes the player told the coach; pregame is made below.
             lambda: coach.pregame.enemies if coach.pregame is not None else [],
         )
-        + (death_tip.build(reminders, speaker.say) if tips else [])
+        + (death_tip.build(reminders, speaker.say, position) if tips else [])
     )
     coach.listeners.append(Engine(for_positions(rules, positions, position), speaker.say))
     if tips:
@@ -130,13 +133,45 @@ def make_interview(cfg: config_mod.Config, coach: Coach) -> Interview | None:
     )
 
 
+def make_game_questions(cfg: config_mod.Config, coach: Coach) -> game_questions.GameQuestions | None:
+    """The in-match questions (lane, trouble hero, enemy carry, fights), if turned on."""
+    if coach.pregame is None:
+        return game_questions.build(cfg.listen, HeroIndex())
+    return game_questions.build(cfg.listen, coach.pregame.index, lambda: coach.pregame.enemies)
+
+
+def first_pending(*askers) -> Callable[[], Question | None] | None:
+    """The voice loop asks the first waiting question: start-of-game ones first."""
+    askers = tuple(a for a in askers if a is not None)
+    if not askers:
+        return None
+    return lambda: next((q for q in (a.pending() for a in askers) if q is not None), None)
+
+
+def version() -> str:
+    """The date and commit of this copy, so you can tell an update arrived."""
+    try:
+        out = subprocess.run(
+            ["git", "log", "-1", "--format=%cd (%h)", "--date=format:%Y-%m-%d %H:%M"],
+            cwd=Path(__file__).resolve().parent.parent,
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return "unknown (not a git download)"
+    return out.stdout.strip() or "unknown (not a git download)"
+
+
 def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
+    logging.info("Dota 2 Live Coach, version from %s", version())
     recorder = MatchRecorder(cfg.record_dir) if cfg.record else None
     speaker = make_speaker(cfg)
     benchmarks = make_benchmarks(cfg)
     coach = make_coach(cfg, speaker, recorder, benchmarks=benchmarks)
     typing = coach.pregame is not None and sys.stdin is not None and sys.stdin.isatty()
     interview = make_interview(cfg, coach)
+    questions = make_game_questions(cfg, coach)
     listening = voice.start(
         cfg.listen,
         coach.state,
@@ -144,25 +179,27 @@ def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
         lambda: speaker.busy,
         split_positions(cfg.reminders)[0],
         cfg.builds,
-        pending=interview.pending if interview else None,
+        pending=first_pending(interview, questions),
         position=position_of(cfg, coach),
         benchmarks=benchmarks,
         enemies=lambda: coach.pregame.enemies if coach.pregame is not None else [],
     )
-    questions = None
+    typed = None
     if interview is not None and listening is None and typing:
         # The coach can't hear you: ask the same questions in this window.
-        questions = TypedQuestions(interview, speaker.say, lambda text: print(text, flush=True))
+        typed = TypedQuestions(interview, speaker.say, lambda text: print(text, flush=True))
         logging.info("Voice is off, so the start-of-game questions will be asked here")
-    if interview is not None and (listening is not None or questions is not None):
+    if interview is not None and (listening is not None or typed is not None):
         # They go before the briefing so the briefing knows to wait for the answers.
         at = coach.listeners.index(coach.pregame)
-        coach.listeners[at:at] = [interview] + ([questions] if questions else [])
+        coach.listeners[at:at] = [interview] + ([typed] if typed else [])
         coach.pregame.waiting = lambda: interview.busy
     elif interview is not None:
         logging.warning("Nobody will be asked the picks: voice is off and there is no coach window to type in")
+    if questions is not None and listening is not None:
+        coach.listeners.append(questions)
     if typing:
-        threading.Thread(target=read_typed_picks, args=(coach, questions), daemon=True).start()
+        threading.Thread(target=read_typed_picks, args=(coach, typed), daemon=True).start()
         logging.info('Type the enemy picks any time, e.g.  vs am cm lion pudge sf')
     logging.info("Listening for Dota 2 on %s", cfg.url)
     try:

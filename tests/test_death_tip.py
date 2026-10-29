@@ -4,6 +4,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 
 import pytest
 
+from coach import llm
 from coach.items import load_items
 from coach.rules import Engine
 from coach.rules.death_tip import BuiltinTips, DeathTip, build, describe, ollama_asker
@@ -92,6 +93,22 @@ def test_model_tip_must_stick_to_own_data(payload, tip, spoken):
     assert said == [spoken]
 
 
+def test_model_tip_may_name_a_hero_from_the_prompt(payload, monkeypatch):
+    # What the player told the coach (e.g. the hero giving them trouble) is
+    # in the prompt, so a tip naming that hero sticks to the facts.
+    from coach.rules import death_tip
+
+    monkeypatch.setattr(
+        death_tip, "describe", lambda *a, **k: "Hero: luna\nThe player told you: Pudge gives them the most trouble"
+    )
+    tip = "Find Pudge on the minimap before you walk into the trees."
+    rule, said = make(lambda p: tip)
+    state = MatchState()
+    die(payload, state, Engine([rule], lambda line: None))
+    rule.close()
+    assert said == [tip]
+
+
 def test_builtin_provider_needs_no_model(payload):
     rule, said = make(None)
     state = MatchState()
@@ -154,6 +171,30 @@ def test_prompt_has_only_own_hero_data(payload):
     assert "Gold: 1640; buyback costs 865 (affordable)" in text
     # GSI in player mode has no enemy data, and the prompt adds none.
     assert "enemy" not in text.lower()
+
+
+def test_prompt_names_the_game_phase_and_position(payload):
+    payload["map"]["clock_time"] = 15 * 60
+    text = describe(Snapshot.from_payload(payload), load_items(), position=1)
+    assert "Game time: 15:00 (mid game)" in text
+    assert "Position: 1 (safe lane carry)" in text
+
+
+def test_laning_tip_dropped_after_the_laning_phase(payload):
+    payload["map"]["clock_time"] = 15 * 60
+    rule, said = make(lambda p: "Focus on last hits, don't waste time on denies.")
+    state = MatchState()
+    die(payload, state, Engine([rule], lambda line: None))
+    rule.close()
+    assert said == ["Built-in tip."]
+
+
+def test_quotes_around_a_tip_are_removed(payload):
+    rule, said = make(lambda p: llm.clean('"Group up with your team.\n"'))
+    state = MatchState()
+    die(payload, state, Engine([rule], lambda line: None))
+    rule.close()
+    assert said == ["Group up with your team."]
 
 
 def test_build_can_be_switched_off():
