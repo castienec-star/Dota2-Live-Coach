@@ -40,30 +40,94 @@ class HeroRule:
         self._last = None
 
 
+# Regen the player may carry, in the order worth reaching for.
+REGEN = (
+    ("item_flask", "Healing Salve"),
+    ("item_bottle", "Bottle"),
+    ("item_tango", "Tango"),
+    ("item_faerie_fire", "Faerie Fire"),
+)
+
+
 class LowHealth(HeroRule):
+    """Two warnings about your own health.
+
+    "Back off" when health drops under below %, but not while it is still
+    falling fast: mid-fight, a second before dying, the line only distracts.
+    It comes once the burst stops, when backing off can still save you.
+    "Go heal" when health stays under linger_below % for linger seconds with
+    no damage taken, the slow bleed that loses the next fight. Each is said
+    once until health climbs back over rearm %.
+    """
+
     name = "low_health"
 
-    def __init__(self, below: float = 25, rearm: float = 40, cooldown: int = 20) -> None:
+    def __init__(
+        self,
+        below: float = 25,
+        rearm: float = 40,
+        cooldown: int = 20,
+        fast: float = 15,
+        linger_below: float = 40,
+        linger: int = 10,
+        quiet: int = 3,
+    ) -> None:
         super().__init__(cooldown)
         self.below = below
         self.rearm = rearm
+        self.fast = fast
+        self.linger_below = linger_below
+        self.linger = linger
+        self.quiet = quiet
+        self._history: list[tuple[int, float]] = []  # (clock, health %), last few seconds
+        self._low_since: int | None = None
+        self._hurt_at: int | None = None
         self._armed = True
+        self._linger_armed = True
 
     def evaluate(self, snap: Snapshot) -> str | None:
         if not snap.alive or not snap.max_health:
-            self._armed = True
+            self._forget()
             return None
-        hp = snap.health_percent
+        now, hp = snap.clock_time or 0, snap.health_percent
+        if self._history and hp < self._history[-1][1]:
+            self._hurt_at = now
+        self._history = [(t, h) for t, h in self._history if now - t <= 2] + [(now, hp)]
         if hp >= self.rearm:
-            self._armed = True
-        elif hp < self.below and self._armed:
+            self._armed = self._linger_armed = True
+        self._low_since = (self._low_since if self._low_since is not None else now) if hp < self.linger_below else None
+
+        if self._last is not None and now - self._last < self.cooldown:
+            return None  # keep the warnings armed until they can be said
+        falling = max(h for _, h in self._history) - hp >= self.fast
+        if hp < self.below and self._armed and not falling:
             self._armed = False
             return "Low health, back off."
+        if (
+            self._linger_armed
+            and self._low_since is not None
+            and now - self._low_since >= self.linger
+            and (self._hurt_at is None or now - self._hurt_at >= self.quiet)
+        ):
+            self._linger_armed = False
+            return self._heal_line(snap, hp)
         return None
+
+    @staticmethod
+    def _heal_line(snap: Snapshot, hp: float) -> str:
+        regen = next((name for key, name in REGEN if snap.item(key) is not None), None)
+        if regen:
+            return f"You're at {hp:.0f} percent health. Use your {regen} before the next fight."
+        return f"You're at {hp:.0f} percent health. Go heal before the next fight."
+
+    def _forget(self) -> None:
+        self._history = []
+        self._low_since = self._hurt_at = None
+        self._armed = self._linger_armed = True
 
     def reset(self) -> None:
         super().reset()
-        self._armed = True
+        self._forget()
 
 
 class Buyback(HeroRule):
