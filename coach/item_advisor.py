@@ -70,13 +70,13 @@ def candidates(
     notes: Notes | None = None,
 ) -> list[Pick]:
     """Up to four items worth buying, the rules' own pick first: the next
-    build item, a counter to the enemy heroes, and a defensive item. None
-    are owned and none repeat."""
+    build item (a late-game item once the build is done), a counter to the
+    enemy heroes, and a defensive item. None are owned and none repeat."""
     trouble = notes.trouble if notes else None
     reason = situational.struggling(verdict, notes)
     found = [
         situational.recommend(snap, verdict, enemies, role_name, items, next_item, notes),
-        Pick(next_item, "") if next_item is not None else None,
+        Pick(next_item, "") if next_item is not None else situational.late(snap, role_name, items),
         situational.against(enemies, role_name, snap, items, trouble),
         situational.defensive(snap, role_name, items, reason or ""),
     ]
@@ -187,7 +187,10 @@ class ItemAdvisor:
         notes: Notes | None = None,
         hero: HeroInfo | None = None,
         position: int = 0,
+        wait: bool = True,
     ) -> Pick | None:
+        """wait=False never calls the model: the model's pick if it is
+        already worked out for this minute, else the rules' pick."""
         picks = candidates(snap, verdict, enemies, role_name, items, next_item, notes)
         if self.ask is None or len(picks) < 2:
             return picks[0] if picks else None
@@ -200,6 +203,9 @@ class ItemAdvisor:
             told,
             verdict.kind if verdict else None,
         )
+        if not wait:
+            found = self._cache.get(key)
+            return found if found is not None else picks[0]
         with self._lock:
             if key not in self._cache:
                 if len(self._cache) >= self.CACHE:
@@ -266,8 +272,11 @@ class Advice:
         self.enemies = enemies or list
         self.notes = notes or (lambda: None)
 
-    def __call__(self, snap: Snapshot) -> tuple[Pick | None, Verdict | None, ItemInfo | None]:
-        """The pick, the verdict and the next item on your build."""
+    def __call__(
+        self, snap: Snapshot, wait: bool = True
+    ) -> tuple[Pick | None, Verdict | None, ItemInfo | None]:
+        """The pick, the verdict and the next item on your build. wait=False
+        answers at once, from the model only if it already chose."""
         position = self.position(snap) if self.position else 0
         hero = self.heroes.by_key(snap.hero_name)
         support = is_support(hero, position)
@@ -283,6 +292,7 @@ class Advice:
             self.notes(),
             hero,
             position,
+            wait,
         )
         return pick, verdict, next_item
 

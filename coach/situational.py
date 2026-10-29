@@ -98,6 +98,15 @@ DEFENSIVE = {
     "support": ["item_glimmer_cape", "item_force_staff"],
 }
 
+# When your build list is done and nothing else calls for an item: strong
+# late-game items for the role, so the coach still names one.
+LATE = {
+    "core": ["item_black_king_bar", "item_sphere", "item_ultimate_scepter"],
+    "offlane": ["item_black_king_bar", "item_pipe", "item_crimson_guard", "item_shivas_guard"],
+    "support": ["item_glimmer_cape", "item_force_staff", "item_ghost", "item_aeon_disk"],
+}
+BUILD_DONE = "your build list is done"
+
 # Items that already hold a cheaper one, so owning them counts as owning it.
 UPGRADES = {
     "item_maelstrom": ("item_mjollnir", "item_gungir"),
@@ -195,6 +204,15 @@ def defensive(snap: Snapshot, role_name: str, items: dict[str, ItemInfo], reason
     return None
 
 
+def late(snap: Snapshot, role_name: str, items: dict[str, ItemInfo]) -> Pick | None:
+    """The first late-game item for your role you don't own yet, for when
+    your build list is done."""
+    for key in LATE[role_name]:
+        if not owns(snap, key) and key in items:
+            return Pick(items[key], BUILD_DONE)
+    return None
+
+
 def recommend(
     snap: Snapshot,
     verdict: Verdict | None,
@@ -207,14 +225,16 @@ def recommend(
     """What to buy now. A threat from the enemy lineup comes first (the
     trouble hero before the others); when you are behind or told the coach
     the game is going badly, a defensive item; otherwise the next item on
-    your build."""
+    your build, or once that is done, a late-game item for your role."""
     pick = against(enemies, role_name, snap, items, notes.trouble if notes else None)
     if pick is not None:
         return pick
     reason = struggling(verdict, notes)
     if reason is not None and (pick := defensive(snap, role_name, items, reason)) is not None:
         return pick
-    return Pick(next_item, "") if next_item is not None else None
+    if next_item is not None:
+        return Pick(next_item, "")
+    return late(snap, role_name, items)
 
 
 def spoken(pick: Pick | None, verdict: Verdict | None, snap: Snapshot) -> str:
@@ -230,7 +250,7 @@ def spoken(pick: Pick | None, verdict: Verdict | None, snap: Snapshot) -> str:
             }[verdict.kind]
         )
     if pick is None:
-        parts.append("Your build list is done. Buy what the game needs, like a Black King Bar.")
+        parts.append("You own every item I would suggest. Keep gold for buyback.")
     else:
         item = pick.item
         if snap.gold >= item.cost:

@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from coach.state import Snapshot
+from coach.state import Item, Snapshot
 from coach.voice import FRAME, UNKNOWN, Answers, Endpointer, VoiceLoop, intent, start
 
 BUILDS = {"antimage": ["Power Treads", "Battle Fury", "Manta Style"]}
@@ -45,7 +45,19 @@ def test_next_item_when_affordable(snap):
 
 def test_next_item_after_the_build_is_done(snap):
     answers = Answers({}, {"antimage": ["Power Treads"]})
-    assert answers.answer("next item?", snap).startswith("Your build list is done.")
+    reply = answers.answer("next item?", snap)
+    assert "build list is done" in reply
+    # It still names an item to get: never just "buy what the game needs".
+    assert "Black King Bar" in reply
+
+
+def test_next_item_when_every_suggestion_is_owned(snap):
+    answers = Answers({}, {"antimage": ["Power Treads"]})
+    for key in ("item_black_king_bar", "item_sphere", "item_ultimate_scepter"):
+        snap.items.append(Item("backpack0", key, None, True, 0))
+    assert answers.answer("next item?", snap) == (
+        "Your build list is done. You own every item I would suggest. Keep gold for buyback."
+    )
 
 
 def test_buyback_answers(snap):

@@ -104,7 +104,7 @@ camp is alive, already stacked or blocked, so the coach cannot check that.
 | --- | --- |
 | You have gold for (item) | You can afford the next item on your build list |
 | Buy a (cheap item) now, you'll get your (item) later | Before 25:00, you are still 600+ gold short of the next build item (boots included) and you can afford a Magic Wand or your hero's Bracer, Wraith Band or Null Talisman that you don't own. Each one at most once a match |
-| You're ahead / about even / behind for (minutes) ... | At 15:00 and 25:00, your gold, experience and last hits per minute against public numbers for your hero, with what to do about it (see "How am I doing?" below). If you told the coach the enemy heroes and one calls for a counter, it names that item and why (see "What should I buy?"). Change the minutes in `[reminders.game_check]` |
+| You're ahead / about even / behind for (minutes) ... | At 15:00 and 25:00, your gold, experience and last hits per minute against public numbers for your hero, with what to do about it (see "How am I doing?" below). It also names one item to get, the same pick as "What should I buy?" (a counter to the enemy heroes you told it, a defensive item, your next build item or a late-game item). Change the minutes in `[reminders.game_check]` |
 | Low health, back off | Health drops under 25% (again after you heal over 40%) |
 | Under buyback gold | After 30:00, your gold drops under the buyback cost |
 | Skill point unused | 10 s after a level-up you haven't spent (up to level 16) |
@@ -252,7 +252,11 @@ the game clock and the enemy heroes you told it:
   hero you said gives you the most trouble is countered first. When you are
   behind, or told the coach your team is losing fights or their carry is
   farming freely, and nothing needs countering, a defensive item; otherwise
-  the next item on your build. For example: "You're behind for 20 minutes.
+  the next item on your build, and once your build list is done, a strong
+  late-game item for your role (Black King Bar, Linken's Sphere or
+  Aghanim's Scepter for cores; Pipe, Crimson Guard or Shiva's Guard for
+  offlaners; Glimmer Cape, Force Staff, Ghost Scepter or Aeon Disk for
+  supports), so it always names an item. For example: "You're behind for 20 minutes.
   Get Black King Bar next, 1200 more gold: Lina and Lion do a lot of magic
   damage." See
   [docs/strategy/situational-items.md](docs/strategy/situational-items.md).
@@ -268,8 +272,10 @@ the game clock and the enemy heroes you told it:
   ready when you ask, and when the pick changes to a counter or a defensive
   item (not just your next build item) it says so unasked, at most every two
   minutes. Set `announce = false` under `[items]` to only hear it when you ask.
+  No microphone? Type `buy` in the coach window for the same answer.
 - "What's my next item?": the next item on your build and how much gold you
-  still need.
+  still need; once the build is done, the item "What should I buy?" would
+  name.
 - "Can I buy back?": the buyback cost against your gold, or its cooldown.
 - "When is the next rune?": the next power rune, gold runes and wisdom
   shrines.
