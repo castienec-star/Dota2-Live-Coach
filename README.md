@@ -105,7 +105,8 @@ camp is alive, already stacked or blocked, so the coach cannot check that.
 | You have gold for (item) | You can afford the next item on your build list |
 | Buy a (cheap item) now, you'll get your (item) later | Before 25:00, you are still 600+ gold short of the next build item (boots included) and you can afford a Magic Wand or your hero's Bracer, Wraith Band or Null Talisman that you don't own. Each one at most once a match |
 | You're ahead / about even / behind for (minutes) ... | At 15:00 and 25:00, your gold, experience and last hits per minute against public numbers for your hero, with what to do about it (see "How am I doing?" below). If you told the coach the enemy heroes and one calls for a counter, it names that item and why (see "What should I buy?"). Change the minutes in `[reminders.game_check]` |
-| Low health, back off | Health drops under 25% (again after you heal over 40%) |
+| Low health, back off | Health drops under 25% (again after you heal over 40%), once a burst of damage has stopped |
+| Go heal | Health stays under 40% for 10 s without taking damage; names a Salve, Bottle, Tango or Faerie Fire you carry |
 | Under buyback gold | After 30:00, your gold drops under the buyback cost |
 | Skill point unused | 10 s after a level-up you haven't spent (up to level 16) |
 | Use your wand | Hurt under 50% with a Magic Wand/Stick of 10+ charges |

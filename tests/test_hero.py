@@ -36,12 +36,42 @@ def run(rule, payload, steps):
 def test_low_health_once_until_healed(payload):
     said = run(LowHealth(), payload, [
         {"hero.health": 1000},
-        {"hero.health": 300},  # 22%
+        {"hero.health": 300},  # 22%, but still falling fast
         {"hero.health": 250},
+        {"hero.health": 250},
+        {"hero.health": 250},  # the burst is over: back off now
+        {"hero.health": 240},
         {"hero.health": 1300, "dt": 30},
-        {"hero.health": 200},
+        {"hero.health": 330, "dt": 5},
+        {"hero.health": 320},
     ])
     assert said == ["Low health, back off."] * 2
+
+
+def test_no_back_off_while_health_is_falling_fast(payload):
+    # Burst down to death: a warning a second before dying only distracts.
+    said = run(LowHealth(), payload, [
+        {"hero.health": 1300},
+        {"hero.health": 900},
+        {"hero.health": 500},
+        {"hero.health": 200},
+        {"hero.health": 0, "hero.alive": False},
+    ])
+    assert said == []
+
+
+def test_go_heal_when_health_lingers_low(payload):
+    payload["items"]["slot0"] = {"name": "item_tango", "charges": 3}
+    steps = [{"hero.health": 500}]  # 36%: under 40, over the back off line
+    steps += [{"hero.health": 500} for _ in range(10)]
+    said = run(LowHealth(), payload, steps)
+    assert said == ["You're at 36 percent health. Use your Tango before the next fight."]
+
+
+def test_no_go_heal_while_still_taking_damage(payload):
+    steps = [{"hero.health": 540 - 4 * i} for i in range(12)]  # slowly losing health
+    said = run(LowHealth(), payload, steps)
+    assert said == []
 
 
 def test_low_health_silent_when_dead(payload):

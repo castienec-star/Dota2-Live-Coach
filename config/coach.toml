@@ -101,9 +101,16 @@ radius = 1000
 
 # Reminders about your own hero. Set enabled = false to turn one off.
 [reminders.low_health]
-# Said once when health drops under "below" %, again after it climbs over "rearm" %.
+# "Back off" once when health drops under "below" %, again after it climbs over
+# "rearm" %. Not while health falls "fast" % or more within two seconds: in the
+# middle of a burst it only distracts, so it waits until the burst stops.
 below = 25
 rearm = 40
+fast = 15
+# "Go heal" (naming a Salve, Bottle, Tango or Faerie Fire you carry) when health
+# stays under "linger_below" % for "linger" seconds without taking damage.
+linger_below = 40
+linger = 10
 
 [reminders.buyback]
 # From this minute on, warn when your gold drops under the buyback cost.
