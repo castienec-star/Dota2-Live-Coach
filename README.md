@@ -29,18 +29,19 @@ Install Git once (then open a new Command Prompt so it is found):
 winget install --id Git.Git -e
 ```
 
-Then, in Command Prompt. The `cd` matters: `py -m pip install -e .` must run
-inside the downloaded folder.
+Then, in Command Prompt. The `cd` matters: `py -m pip install` must run
+inside the downloaded folder. `[voice]` adds the speech models the coach
+uses to ask and answer questions out loud.
 
 ```
 git clone https://github.com/castienec-star/Dota2-Live-Coach.git
 cd Dota2-Live-Coach
-py -m pip install -e .
+py -m pip install -e ".[voice]"
 py -m coach install
 ```
 
 No Git? Click **Code > Download ZIP** on GitHub, unzip it, then `cd` into the
-unzipped folder before running `py -m pip install -e .`.
+unzipped folder before running `py -m pip install -e ".[voice]"`.
 
 `install` finds Dota 2 through Steam and writes
 `gamestate_integration_coach.cfg` into
@@ -49,6 +50,20 @@ pass the folder: `py -m coach install --dota-path "D:\SteamLibrary\steamapps\com
 
 Then in Steam, right-click Dota 2 > Properties > Launch Options and add
 `-gamestateintegration`.
+
+## Update
+
+New features only reach you once you update. Close the coach window, then
+double-click `update.bat` in the coach folder (or run it in Command Prompt).
+It downloads the newest version and installs the voice packages. Then start
+the coach again.
+
+When the coach starts, its first line says which version it is, e.g.
+`Dota 2 Live Coach, version from 2026-10-29 01:40 (b944970)`. If it also says
+`Voice questions are OFF`, the voice packages are missing: run `update.bat`
+again. If you copied `coach.toml` to `%APPDATA%\Dota2LiveCoach\` from an
+older version, your copy overrides the new defaults: delete the lines you
+didn't change on purpose (for example `enabled = false` under `[listen]`).
 
 ## Run
 
