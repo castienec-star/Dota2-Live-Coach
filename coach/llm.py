@@ -20,6 +20,7 @@ def ollama_asker(
     system: str,
     num_predict: int = 80,
     label: str = "Ollama",
+    temperature: float = 0.7,
 ) -> Ask:
     """Ask a local Ollama model; returns None if Ollama is not running or is slow."""
     warned = False
@@ -35,7 +36,7 @@ def ollama_asker(
             "stream": False,
             # Keep the model loaded between calls so answers come back fast.
             "keep_alive": "30m",
-            "options": {"num_predict": num_predict, "temperature": 0.7},
+            "options": {"num_predict": num_predict, "temperature": temperature},
         }).encode()
         request = urllib.request.Request(
             url.rstrip("/") + "/api/chat", body, {"Content-Type": "application/json"}

@@ -1,7 +1,7 @@
 import pytest
 
 from coach.heroes import HeroIndex
-from coach.lineup import Interview, parse_heroes, parse_position
+from coach.lineup import Interview, TypedQuestions, parse_heroes, parse_position
 from coach.pregame import Pregame
 from coach.state import PRE_GAME, MatchState
 
@@ -198,3 +198,27 @@ def test_answers_reach_the_briefing(payload):
     assert len(prompts) == 1
     assert "Player's position: 5 (hard support)" in prompts[0]
     assert "Enemies: Pudge, Sniper" in prompts[0]
+
+
+def test_typed_answers_when_the_coach_cant_hear(payload):
+    sink, said, shown = Sink(), [], []
+    interview = Interview(INDEX, sink)
+    questions = TypedQuestions(interview, said.append, shown.append)
+    state = start(payload, interview)
+    questions(state)
+    questions(state)  # shown once, however many updates come
+    assert shown == [
+        "Coach asks: What position are you playing, one to five?  (type the answer and press Enter; Enter alone skips)"
+    ]
+    assert said == ["Type your position, your team and the enemy heroes in the coach window."]
+    assert questions.answer("4")
+    assert questions.answer("lion tide es cm")
+    assert questions.answer("")
+    assert questions.answer("am pa sf invoker pudge")
+    assert questions.answer("")
+    assert not questions.answer("vs pudge")  # nothing left to answer
+    assert sink.position == 4
+    assert names(sink.enemies)[1] == "Phantom Assassin"
+    assert "Position 4, soft support." in shown
+    assert shown[-1].startswith("Coach asks: Enemies: Anti-Mage")
+    assert len(said) == 1

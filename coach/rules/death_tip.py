@@ -18,6 +18,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from .. import llm
 from ..game_questions import Notes
+from ..grounding import Grounding
 from ..items import ItemInfo, load_items
 from ..lineup import POSITIONS
 from ..state import MatchState, Snapshot
@@ -30,7 +31,8 @@ You are a Dota 2 coach talking to a player through their headset while they wait
 to respawn. Give exactly one practical tip for their next life, in at most 20 \
 words of plain spoken English: no lists, no emoji, no numbers read as digits \
 unless short. Base it only on the player's own data below and what they told \
-you. Do not guess where enemies are or what they are doing. Fit the tip to the \
+you. Do not guess where enemies are or what they are doing, and never name a \
+hero that isn't in the data below. Dota has no junglers. Fit the tip to the \
 game phase given: last hits, denies and lane tips only in the laning phase; \
 after that, talk about farming the map, fighting with the team, objectives, \
 items or buyback. Reply with the tip only, without quotes."""
@@ -147,7 +149,7 @@ def claude_asker(model: str, effort: str, timeout: float) -> Ask:
 
 def ollama_asker(model: str, url: str, timeout: float) -> Ask:
     """Ask a local Ollama model for a tip; returns None if it is not running or is slow."""
-    return llm.ollama_asker(model, url, timeout, SYSTEM_PROMPT, label="Ollama tip")
+    return llm.ollama_asker(model, url, timeout, SYSTEM_PROMPT, label="Ollama tip", temperature=0.4)
 
 
 BUILTIN_TIPS = [
@@ -214,6 +216,7 @@ class DeathTip:
         self.items = items if items is not None else load_items()
         self._pool = ThreadPoolExecutor(max_workers=1, thread_name_prefix="death-tip")
         self._death = 0  # bumped on each death and new match, to drop stale tips
+        self._grounding: Grounding | None = None  # loaded on the first model tip
 
     def check(self, state: MatchState) -> list[str]:
         cur, prev = state.current, state.previous
@@ -225,10 +228,24 @@ class DeathTip:
 
     def _tip(self, state: MatchState, snap: Snapshot, death: int, deadline: float) -> None:
         position = self.position(snap) if self.position else 0
-        tip = self.ask(describe(snap, self.items, position, self.notes())) if self.ask else None
+        prompt = describe(snap, self.items, position, self.notes())
+        tip = self.ask(prompt) if self.ask else None
         if tip and not fits(tip, snap):
             log.info("Dropped an out-of-date tip: %s", tip)
             tip = None
+        if tip:
+            if self._grounding is None:
+                self._grounding = Grounding()
+            me = self._grounding.index.by_key(snap.hero_name)
+            # Only the player's own hero and heroes named in the prompt (such
+            # as one the player said gives them trouble) may be named;
+            # numbers like "two wards" are fine in a tip.
+            problem = self._grounding.problem(
+                tip, "", [me, *self._grounding.heroes(prompt)], check_numbers=False
+            )
+            if problem:
+                log.info("Death tip from the model dropped (it %s): %s", problem, tip)
+                tip = None
         tip = tip or self.fallback(snap)
         # Only speak while still in the same death, with time left to hear it.
         if (
