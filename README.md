@@ -139,6 +139,13 @@ questions this match (for example "find Pudge on the minimap before you
 fight" after you said Pudge gives you trouble). The coach never looks up
 anything about enemies.
 
+Tips also look at your own last 15 seconds alive: a save or escape item that
+was ready (Black King Bar, Shadow Blade, Blink Dagger, Force Staff, Glimmer
+Cape...), an ultimate off cooldown, a wand with 10 or more charges, or a spell
+you cast under 35% health just before dying. "You died with your Shadow Blade
+ready. Press it as soon as the fight turns." beats a general tip, and the model
+gets the same facts.
+
 Choose where tips come from with `provider` in `[reminders.death_tip]`:
 
 | Provider | Cost | Needs |

@@ -12,6 +12,10 @@ from coach.state import MatchState, Snapshot
 
 
 def die(payload, state, engine, respawn=25):
+    # Nothing in the last seconds to point at (see test_last_moments.py), so
+    # these tests get the model's or the general built-in tip.
+    payload["abilities"]["ability3"]["cooldown"] = 60
+    payload["items"]["slot2"]["charges"] = 0
     payload["hero"]["alive"] = True
     state.update(payload)
     engine(state)

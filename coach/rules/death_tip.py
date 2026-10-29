@@ -23,6 +23,7 @@ from ..items import ItemInfo, load_items
 from ..lineup import POSITIONS
 from ..state import MatchState, Snapshot
 from . import PositionOf
+from .last_moments import Moments, Recent, notice
 
 log = logging.getLogger(__name__)
 
@@ -53,7 +54,11 @@ Ask = llm.Ask
 
 
 def describe(
-    snap: Snapshot, items: dict[str, ItemInfo], position: int = 0, notes: Notes | None = None
+    snap: Snapshot,
+    items: dict[str, ItemInfo],
+    position: int = 0,
+    notes: Notes | None = None,
+    moments: Moments | None = None,
 ) -> str:
     """The player's own state, and what they told the coach, as the tip prompt sees it."""
     minutes, seconds = divmod(max(snap.clock_time or 0, 0), 60)
@@ -78,6 +83,9 @@ def describe(
     told = notes.told() if notes is not None else []
     if told:
         lines.append(f"The player told you: {'; '.join(told)}")
+    seen = moments.facts() if moments is not None else []
+    if seen:
+        lines.append(f"In the seconds before dying: {'; '.join(seen)}")
     return "\n".join(lines)
 
 
@@ -217,18 +225,25 @@ class DeathTip:
         self._pool = ThreadPoolExecutor(max_workers=1, thread_name_prefix="death-tip")
         self._death = 0  # bumped on each death and new match, to drop stale tips
         self._grounding: Grounding | None = None  # loaded on the first model tip
+        self._recent = Recent()  # the last seconds alive, for what led to a death
 
     def check(self, state: MatchState) -> list[str]:
         cur, prev = state.current, state.previous
         if prev.alive and not cur.alive and cur.respawn_seconds >= self.min_respawn:
             self._death += 1
             deadline = time.monotonic() + cur.respawn_seconds
-            self._pool.submit(self._tip, state, cur, self._death, deadline)
+            moments = notice(self._recent.snaps, self.items)
+            self._pool.submit(self._tip, state, cur, self._death, deadline, moments)
+        if not cur.alive:
+            self._recent.clear()
+        self._recent.add(cur)
         return []
 
-    def _tip(self, state: MatchState, snap: Snapshot, death: int, deadline: float) -> None:
+    def _tip(
+        self, state: MatchState, snap: Snapshot, death: int, deadline: float, moments: Moments | None = None
+    ) -> None:
         position = self.position(snap) if self.position else 0
-        prompt = describe(snap, self.items, position, self.notes())
+        prompt = describe(snap, self.items, position, self.notes(), moments)
         tip = self.ask(prompt) if self.ask else None
         if tip and not fits(tip, snap):
             log.info("Dropped an out-of-date tip: %s", tip)
@@ -246,7 +261,8 @@ class DeathTip:
             if problem:
                 log.info("Death tip from the model dropped (it %s): %s", problem, tip)
                 tip = None
-        tip = tip or self.fallback(snap)
+        # What led to this death beats a general tip.
+        tip = tip or (moments.tip() if moments is not None else None) or self.fallback(snap)
         # Only speak while still in the same death, with time left to hear it.
         if (
             tip
@@ -258,6 +274,7 @@ class DeathTip:
 
     def reset(self) -> None:
         self._death += 1
+        self._recent.clear()
 
     def close(self) -> None:
         self._pool.shutdown(wait=True)
