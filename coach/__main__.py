@@ -13,7 +13,7 @@ from pathlib import Path
 from aiohttp import web
 
 from . import config as config_mod
-from . import game_questions
+from . import game_questions, item_advisor
 from . import pregame as pregame_mod
 from . import voice
 from .benchmarks import Benchmarks
@@ -188,6 +188,7 @@ def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
         benchmarks=benchmarks,
         enemies=lambda: coach.pregame.enemies if coach.pregame is not None else [],
         notes=notes_of(coach),
+        advisor=item_advisor.build(cfg.items),
     )
     if interview is not None and listening is not None:
         # Only ask when the coach can hear the answers. It goes before the

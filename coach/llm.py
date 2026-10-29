@@ -20,13 +20,15 @@ def ollama_asker(
     system: str,
     num_predict: int = 80,
     label: str = "Ollama",
+    temperature: float = 0.7,
 ) -> Ask:
-    """Ask a local Ollama model; returns None if Ollama is not running or is slow."""
+    """Ask a local Ollama model; returns None if Ollama is not running or is slow.
+    Pass a JSON schema as fmt to make the reply follow it."""
     warned = False
 
-    def ask(prompt: str) -> str | None:
+    def ask(prompt: str, fmt: dict | None = None) -> str | None:
         nonlocal warned
-        body = json.dumps({
+        body = {
             "model": model,
             "messages": [
                 {"role": "system", "content": system},
@@ -35,10 +37,12 @@ def ollama_asker(
             "stream": False,
             # Keep the model loaded between calls so answers come back fast.
             "keep_alive": "30m",
-            "options": {"num_predict": num_predict, "temperature": 0.7},
-        }).encode()
+            "options": {"num_predict": num_predict, "temperature": temperature},
+        }
+        if fmt is not None:
+            body["format"] = fmt
         request = urllib.request.Request(
-            url.rstrip("/") + "/api/chat", body, {"Content-Type": "application/json"}
+            url.rstrip("/") + "/api/chat", json.dumps(body).encode(), {"Content-Type": "application/json"}
         )
         try:
             with urllib.request.urlopen(request, timeout=timeout) as response:

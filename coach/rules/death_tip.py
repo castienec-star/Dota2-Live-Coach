@@ -87,7 +87,9 @@ def fits(tip: str, snap: Snapshot) -> bool:
     return not any(word in lower for word in LANING_ONLY)
 
 
-def claude_asker(model: str, effort: str, timeout: float) -> Ask:
+def claude_asker(
+    model: str, effort: str, timeout: float, system: str = SYSTEM_PROMPT, label: str = "Death tips"
+) -> Ask:
     """Ask Claude for a tip; returns None on any failure so the game goes on."""
     import anthropic
 
@@ -104,14 +106,14 @@ def claude_asker(model: str, effort: str, timeout: float) -> Ask:
                 try:
                     client = anthropic.Anthropic()
                 except anthropic.AnthropicError as exc:
-                    log.warning("Death tips off: no Claude API credentials (%s)", exc)
+                    log.warning("%s off: no Claude API credentials (%s)", label, exc)
                     disabled = True
                     return None
         try:
             response = client.with_options(timeout=timeout, max_retries=0).beta.messages.create(
                 model=model,
                 max_tokens=2000,
-                system=SYSTEM_PROMPT,
+                system=system,
                 output_config={"effort": effort},
                 # Re-run on another model if the safety classifier declines.
                 betas=["server-side-fallback-2026-07-01"],
@@ -119,24 +121,24 @@ def claude_asker(model: str, effort: str, timeout: float) -> Ask:
                 messages=[{"role": "user", "content": prompt}],
             )
         except anthropic.AuthenticationError:
-            log.warning("Death tips off: the Claude API key was rejected")
+            log.warning("%s off: the Claude API key was rejected", label)
             disabled = True
             return None
         except TypeError as exc:
             # The SDK raises this when no API key or login is set up at all.
             if "authentication" not in str(exc):
                 raise
-            log.warning("Death tips off: set ANTHROPIC_API_KEY to turn them on")
+            log.warning("%s off: set ANTHROPIC_API_KEY to turn them on", label)
             disabled = True
             return None
         except anthropic.APITimeoutError:
-            log.info("Death tip took longer than %ss; skipped", timeout)
+            log.info("%s: Claude took longer than %ss; skipped", label, timeout)
             return None
         except anthropic.APIStatusError as exc:
-            log.warning("Death tip failed: %s %s", exc.status_code, exc.message)
+            log.warning("%s failed: %s %s", label, exc.status_code, exc.message)
             return None
         except anthropic.APIConnectionError:
-            log.warning("Death tip failed: no connection to the Claude API")
+            log.warning("%s failed: no connection to the Claude API", label)
             return None
         if response.stop_reason == "refusal":
             return None
