@@ -217,6 +217,8 @@ def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
     speaker = make_speaker(cfg)
     benchmarks = make_benchmarks(cfg)
     coach = make_coach(cfg, speaker, recorder, benchmarks=benchmarks)
+    if recorder is not None:
+        speaker.on_line = lambda text, spoken: recorder.said(text, coach.state.current.clock_time, spoken)
     typing = coach.pregame is not None and sys.stdin is not None and sys.stdin.isatty()
     interview = make_interview(cfg, coach)
     questions = make_game_questions(cfg, coach)

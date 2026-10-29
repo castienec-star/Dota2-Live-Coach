@@ -73,7 +73,11 @@ py -m coach
 
 Start a match (a bot match works). The console logs your hero's state every
 10 seconds, and each match is recorded to
-`%APPDATA%\Dota2LiveCoach\recordings\` as a `.jsonl` file.
+`%APPDATA%\Dota2LiveCoach\recordings\` as a `.jsonl` file, together with
+every line the coach said (or skipped as too late) and the game time.
+
+If your own `%APPDATA%\Dota2LiveCoach\coach.toml` still has settings an older
+version used (such as `[pregame.capture]`), the coach names them on start.
 
 If Dota sends nothing for a minute after the coach starts, the coach says so
 and prints what to check: whether the GSI config file is there and up to date
@@ -88,8 +92,8 @@ built-in voice. Defaults follow patch 7.41:
 
 | Reminder | Default timing |
 | --- | --- |
-| Power rune | 15 s before 6:00, then every 2 minutes |
-| Gold (bounty) runes | 15 s before 4:00, then every 4 minutes |
+| Power rune | 15 s before 6:00, then every 2 minutes; after 20:00 every 4 minutes |
+| Gold (bounty) runes | 15 s before 4:00, then every 4 minutes; after 20:00 every 8 minutes |
 | Wisdom shrines | 20 s before 7:00, then every 7 minutes |
 | Water rune | 10 s before 2:00 and 4:00 (mid only, once your position is known) |
 | Stack the camp | at :53 each minute until 11:53, only when your hero is near a neutral camp |
@@ -105,7 +109,8 @@ camp is alive, already stacked or blocked, so the coach cannot check that.
 | You have gold for (item) | You can afford the next item on your build list |
 | Buy a (cheap item) now, you'll get your (item) later | Before 25:00, you are still 600+ gold short of the next build item (boots included) and you can afford a Magic Wand or your hero's Bracer, Wraith Band or Null Talisman that you don't own. Each one at most once a match |
 | You're ahead / about even / behind for (minutes) ... | At 15:00 and 25:00, your gold, experience and last hits per minute against public numbers for your hero, with what to do about it (see "How am I doing?" below). It also names one item to get, the same pick as "What should I buy?" (a counter to the enemy heroes you told it, a defensive item, your next build item or a late-game item). Change the minutes in `[reminders.game_check]` |
-| Low health, back off | Health drops under 25% (again after you heal over 40%) |
+| Low health, back off | Health drops under 25% (again after you heal over 40%), once a burst of damage has stopped |
+| Go heal | Health stays under 40% for 10 s without taking damage; names a Salve, Bottle, Tango or Faerie Fire you carry |
 | Under buyback gold | After 30:00, your gold drops under the buyback cost |
 | Skill point unused | 10 s after a level-up you haven't spent (up to level 16) |
 | Use your wand | Hurt under 50% with a Magic Wand/Stick of 10+ charges |
@@ -138,6 +143,13 @@ your own hero's stats and items, plus what you answered to the coach's
 questions this match (for example "find Pudge on the minimap before you
 fight" after you said Pudge gives you trouble). The coach never looks up
 anything about enemies.
+
+Tips also look at your own last 15 seconds alive: a save or escape item that
+was ready (Black King Bar, Shadow Blade, Blink Dagger, Force Staff, Glimmer
+Cape...), an ultimate off cooldown, a wand with 10 or more charges, or a spell
+you cast under 35% health just before dying. "You died with your Shadow Blade
+ready. Press it as soon as the fight turns." beats a general tip, and the model
+gets the same facts.
 
 Choose where tips come from with `provider` in `[reminders.death_tip]`:
 
