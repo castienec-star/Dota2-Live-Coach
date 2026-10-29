@@ -179,8 +179,12 @@ class GameQuestions:
     def _trouble(self, text: str) -> str | None:
         heroes = parse_heroes(self.index, text)
         enemies = self.enemies()
-        # Prefer a hero the player named at the start of the game.
-        hero = next((h for h in heroes if h in enemies), heroes[0] if heroes else None)
+        # Only a hero the player named as an enemy, so a misheard ally isn't
+        # countered; any hero while no enemies are known.
+        if enemies:
+            hero = next((h for h in heroes if h in enemies), None)
+        else:
+            hero = heroes[0] if heroes else None
         if hero is None:
             return None
         self.notes.trouble = hero
