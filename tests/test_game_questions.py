@@ -126,3 +126,13 @@ def test_start_questions_go_first():
     assert first_pending(None, None) is None
     assert first_pending(Asker(first), Asker(second))() is first
     assert first_pending(Asker(None), Asker(second))() is second
+
+
+def test_trouble_hero_must_be_a_told_enemy(payload):
+    enemies = [INDEX.find("pa"), INDEX.find("lion")]
+    questions = GameQuestions(INDEX, lambda: enemies)
+    assert questions._answer("trouble", "pudge") is None  # an ally, or misheard
+    assert questions.notes.trouble is None
+    questions = GameQuestions(INDEX)  # no lineup told: any hero
+    questions._answer("trouble", "pudge")
+    assert questions.notes.trouble.name == "Pudge"
