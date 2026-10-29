@@ -39,6 +39,11 @@ from .speaker import Speaker, make_backend
 from .state import Snapshot
 
 
+def notes_of(coach: Coach) -> Callable[[], game_questions.Notes | None]:
+    """What the player answered to the in-match questions so far."""
+    return lambda: coach.questions.notes if coach.questions is not None else None
+
+
 def make_speaker(cfg: config_mod.Config) -> Speaker:
     return Speaker(
         lambda: make_backend(cfg.voice_backend, cfg.voice_name, cfg.voice_rate),
@@ -91,8 +96,9 @@ def make_coach(
             position,
             # The enemy heroes the player told the coach; pregame is made below.
             lambda: coach.pregame.enemies if coach.pregame is not None else [],
+            notes_of(coach),
         )
-        + (death_tip.build(reminders, speaker.say, position) if tips else [])
+        + (death_tip.build(reminders, speaker.say, position, notes_of(coach)) if tips else [])
     )
     coach.listeners.append(Engine(for_positions(rules, positions, position), speaker.say))
     if tips:
@@ -183,6 +189,7 @@ def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
         position=position_of(cfg, coach),
         benchmarks=benchmarks,
         enemies=lambda: coach.pregame.enemies if coach.pregame is not None else [],
+        notes=notes_of(coach),
     )
     typed = None
     if interview is not None and listening is None and typing:
@@ -198,6 +205,7 @@ def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
         logging.warning("Nobody will be asked the picks: voice is off and there is no coach window to type in")
     if questions is not None and listening is not None:
         coach.listeners.append(questions)
+        coach.questions = questions
     if typing:
         threading.Thread(target=read_typed_picks, args=(coach, typed), daemon=True).start()
         logging.info('Type the enemy picks any time, e.g.  vs am cm lion pudge sf')
