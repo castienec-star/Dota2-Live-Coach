@@ -256,6 +256,18 @@ the game clock and the enemy heroes you told it:
   Get Black King Bar next, 1200 more gold: Lina and Lion do a lot of magic
   damage." See
   [docs/strategy/situational-items.md](docs/strategy/situational-items.md).
+  With Ollama running (the same free model as the death tips), those rules
+  only make a short list of up to four items (the rule's pick, your next
+  build item, a counter, a defensive item) and the model picks one of them
+  from your own numbers and what you told the coach, and says why in a few
+  words. It can only answer with an item on that list; if it is slow (over
+  `timeout` seconds), not running or gives a bad answer, the rule's pick is
+  said. Set `advisor = "rules"` under `[items]` in your `coach.toml` to
+  skip the model, or `"claude"` to use the paid Claude API instead. The
+  coach works the answer out in the background every 15 seconds, so it is
+  ready when you ask, and when the pick changes to a counter or a defensive
+  item (not just your next build item) it says so unasked, at most every two
+  minutes. Set `announce = false` under `[items]` to only hear it when you ask.
 - "What's my next item?": the next item on your build and how much gold you
   still need.
 - "Can I buy back?": the buyback cost against your gold, or its cooldown.

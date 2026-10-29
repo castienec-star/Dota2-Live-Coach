@@ -214,3 +214,12 @@ def test_build_each_provider(provider):
 def test_build_rejects_unknown_provider():
     with pytest.raises(ValueError):
         build({"death_tip": {"provider": "gpt"}}, print)
+
+
+def test_ollama_asker_sends_a_json_schema_when_given(fake_ollama):
+    url, received = fake_ollama
+    ask = ollama_asker("llama3.1:8b", url, timeout=5)
+    ask("Hero: luna", {"type": "object"})
+    ask("Hero: luna")
+    assert received[0]["format"] == {"type": "object"}
+    assert "format" not in received[1]

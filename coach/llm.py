@@ -6,11 +6,17 @@ import json
 import logging
 import urllib.error
 import urllib.request
-from collections.abc import Callable
+from typing import Protocol
 
 log = logging.getLogger(__name__)
 
-Ask = Callable[[str], "str | None"]
+
+
+class Ask(Protocol):
+    """Asks a model; None when it is off, slow or failed. fmt is a JSON schema
+    the reply must follow, where the model supports it."""
+
+    def __call__(self, prompt: str, fmt: dict | None = None) -> str | None: ...
 
 
 def ollama_asker(
@@ -22,12 +28,14 @@ def ollama_asker(
     label: str = "Ollama",
     temperature: float = 0.7,
 ) -> Ask:
-    """Ask a local Ollama model; returns None if Ollama is not running or is slow."""
+    """Ask a local Ollama model; returns None if Ollama is not running or is slow.
+    The returned ask takes an optional JSON schema as fmt, which Ollama makes
+    the reply follow."""
     warned = False
 
-    def ask(prompt: str) -> str | None:
+    def ask(prompt: str, fmt: dict | None = None) -> str | None:
         nonlocal warned
-        body = json.dumps({
+        body = {
             "model": model,
             "messages": [
                 {"role": "system", "content": system},
@@ -37,9 +45,11 @@ def ollama_asker(
             # Keep the model loaded between calls so answers come back fast.
             "keep_alive": "30m",
             "options": {"num_predict": num_predict, "temperature": temperature},
-        }).encode()
+        }
+        if fmt is not None:
+            body["format"] = fmt
         request = urllib.request.Request(
-            url.rstrip("/") + "/api/chat", body, {"Content-Type": "application/json"}
+            url.rstrip("/") + "/api/chat", json.dumps(body).encode(), {"Content-Type": "application/json"}
         )
         try:
             with urllib.request.urlopen(request, timeout=timeout) as response:

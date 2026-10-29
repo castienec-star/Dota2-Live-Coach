@@ -24,6 +24,7 @@ from . import situational
 from .benchmarks import EARLIEST, Benchmarks, is_support, spoken
 from .game_questions import Notes
 from .heroes import HeroIndex, HeroInfo
+from .item_advisor import Advice, ItemAdvisor
 from .items import load_items
 from .lineup import Question
 from .rules import PositionOf, timers
@@ -97,6 +98,7 @@ class Answers:
         benchmarks: Benchmarks | None = None,
         enemies: Callable[[], list[HeroInfo]] | None = None,
         notes: Callable[[], Notes | None] | None = None,
+        advice: Advice | None = None,
     ) -> None:
         settings = {name: reminders.get(name, {}) for name, _ in self.RUNES}
         self.timers = {r.name: r for r in timers.build(settings) if r.name in dict(self.RUNES)}
@@ -107,6 +109,7 @@ class Answers:
         self.benchmarks = benchmarks if benchmarks is not None else Benchmarks()
         self.enemies = enemies or list
         self.notes = notes or (lambda: None)
+        self.advice = advice or Advice(ItemAdvisor(None), builds, position, self.benchmarks, enemies, notes)
 
     def answer(self, text: str, snap: Snapshot) -> str:
         kind = intent(text)
@@ -125,19 +128,9 @@ class Answers:
         return f"Next is {target.name}. You need {target.cost - snap.gold} more gold."
 
     def what_to_buy(self, snap: Snapshot) -> str:
-        position = self.position(snap) if self.position else 0
-        support = is_support(self.heroes.by_key(snap.hero_name), position)
-        verdict = self.benchmarks.verdict(snap, support)
-        next_item = self.items.next_item(snap) if self.items else None
-        pick = situational.recommend(
-            snap,
-            verdict,
-            self.enemies(),
-            situational.role(position, support),
-            self.all_items,
-            next_item,
-            self.notes(),
-        )
+        # The rules make a short list and the model, if one is on, picks from
+        # it; usually already worked out in the background.
+        pick, verdict, _ = self.advice(snap)
         return situational.spoken(pick, verdict, snap)
 
     def how_am_i_doing(self, snap: Snapshot) -> str:
@@ -397,6 +390,7 @@ def start(
     benchmarks: Benchmarks | None = None,
     enemies: Callable[[], list[HeroInfo]] | None = None,
     notes: Callable[[], Notes | None] | None = None,
+    advice: Advice | None = None,
 ) -> threading.Thread | None:
     """Start listening on a background thread, if [listen] is on and installed."""
     if not settings.get("enabled", False):
@@ -417,7 +411,7 @@ def start(
     except Exception as exc:
         log.warning("Voice questions unavailable (%s)", exc)
         return None
-    answers = Answers(reminders, builds, position, benchmarks, enemies, notes)
+    answers = Answers(reminders, builds, position, benchmarks, enemies, notes, advice)
     loop = VoiceLoop(
         wake,
         transcribe,
