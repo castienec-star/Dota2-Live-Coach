@@ -4,6 +4,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 
 import pytest
 
+from coach import llm
 from coach.items import load_items
 from coach.rules import Engine
 from coach.rules.death_tip import BuiltinTips, DeathTip, build, describe, ollama_asker
@@ -138,6 +139,30 @@ def test_prompt_has_only_own_hero_data(payload):
     assert "Gold: 1640; buyback costs 865 (affordable)" in text
     # GSI in player mode has no enemy data, and the prompt adds none.
     assert "enemy" not in text.lower()
+
+
+def test_prompt_names_the_game_phase_and_position(payload):
+    payload["map"]["clock_time"] = 15 * 60
+    text = describe(Snapshot.from_payload(payload), load_items(), position=1)
+    assert "Game time: 15:00 (mid game)" in text
+    assert "Position: 1 (safe lane carry)" in text
+
+
+def test_laning_tip_dropped_after_the_laning_phase(payload):
+    payload["map"]["clock_time"] = 15 * 60
+    rule, said = make(lambda p: "Focus on last hits, don't waste time on denies.")
+    state = MatchState()
+    die(payload, state, Engine([rule], lambda line: None))
+    rule.close()
+    assert said == ["Built-in tip."]
+
+
+def test_quotes_around_a_tip_are_removed(payload):
+    rule, said = make(lambda p: llm.clean('"Group up with your team.\n"'))
+    state = MatchState()
+    die(payload, state, Engine([rule], lambda line: None))
+    rule.close()
+    assert said == ["Group up with your team."]
 
 
 def test_build_can_be_switched_off():

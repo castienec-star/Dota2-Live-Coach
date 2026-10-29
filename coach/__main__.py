@@ -92,7 +92,7 @@ def make_coach(
             # The enemy heroes the player told the coach; pregame is made below.
             lambda: coach.pregame.enemies if coach.pregame is not None else [],
         )
-        + (death_tip.build(reminders, speaker.say) if tips else [])
+        + (death_tip.build(reminders, speaker.say, position) if tips else [])
     )
     coach.listeners.append(Engine(for_positions(rules, positions, position), speaker.say))
     if tips:
