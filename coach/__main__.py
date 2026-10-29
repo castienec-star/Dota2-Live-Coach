@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import subprocess
 import sys
 import threading
 from collections.abc import Callable
@@ -91,7 +92,7 @@ def make_coach(
             # The enemy heroes the player told the coach; pregame is made below.
             lambda: coach.pregame.enemies if coach.pregame is not None else [],
         )
-        + (death_tip.build(reminders, speaker.say) if tips else [])
+        + (death_tip.build(reminders, speaker.say, position) if tips else [])
     )
     coach.listeners.append(Engine(for_positions(rules, positions, position), speaker.say))
     if tips:
@@ -143,7 +144,23 @@ def first_pending(*askers) -> Callable[[], Question | None] | None:
     return lambda: next((q for q in (a.pending() for a in askers) if q is not None), None)
 
 
+def version() -> str:
+    """The date and commit of this copy, so you can tell an update arrived."""
+    try:
+        out = subprocess.run(
+            ["git", "log", "-1", "--format=%cd (%h)", "--date=format:%Y-%m-%d %H:%M"],
+            cwd=Path(__file__).resolve().parent.parent,
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return "unknown (not a git download)"
+    return out.stdout.strip() or "unknown (not a git download)"
+
+
 def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
+    logging.info("Dota 2 Live Coach, version from %s", version())
     recorder = MatchRecorder(cfg.record_dir) if cfg.record else None
     speaker = make_speaker(cfg)
     benchmarks = make_benchmarks(cfg)
