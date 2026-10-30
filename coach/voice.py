@@ -22,8 +22,8 @@ from collections.abc import Callable, Iterable, Iterator
 
 from . import situational
 from .benchmarks import EARLIEST, Benchmarks, is_support, spoken
-from .enemy_items import EnemyItems
 from .game_questions import Notes
+from .enemy_items import EnemyItems
 from .heroes import HeroIndex, HeroInfo
 from .item_advisor import Advice, ItemAdvisor
 from .items import load_items
