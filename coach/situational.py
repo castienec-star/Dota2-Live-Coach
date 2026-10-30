@@ -4,9 +4,9 @@ enemy heroes you told the coach about.
 The enemy lineup only comes from you (the start-of-game questions or typed
 picks), and so do the in-match answers (how your lane went, who gives you
 trouble, whether their carry farms freely, who wins fights); the coach never
-looks anything up. Only hero names are used, never enemy items, positions or
-net worth. See docs/strategy/situational-items.md for
-where each rule comes from.
+looks anything up. Enemy items count only when the player said they saw
+them (coach/enemy_items.py); enemy positions and net worth are never used.
+See docs/strategy/situational-items.md for where each rule comes from.
 """
 
 from __future__ import annotations
@@ -91,6 +91,37 @@ THREATS = [
     ),
 ]
 
+@dataclass(frozen=True)
+class ItemThreat:
+    """Enemy items the player told the coach about, and what answers them."""
+
+    enemy_items: frozenset[str]  # item keys
+    items: dict[str, str]  # role ("core", "offlane", "support") -> item key
+
+
+# Checked before the hero threats: an item the player saw beats a guess from
+# the hero. In this order; see docs/strategy/situational-items.md.
+ITEM_THREATS = [
+    ItemThreat(
+        # Saves and escapes: Nullifier dispels Ghost Scepter, Glimmer Cape and
+        # Lotus Orb, and mutes the target so it can't press Force Staff or Eul's.
+        _keys(
+            "item_ghost item_glimmer_cape item_force_staff item_hurricane_pike item_cyclone"
+            " item_wind_waker item_lotus_orb"
+        ),
+        {"core": "item_nullifier"},
+    ),
+    ItemThreat(_keys("item_butterfly"), {"core": "item_monkey_king_bar"}),
+    ItemThreat(
+        _keys("item_invis_sword item_silver_edge"),
+        {"core": "item_dust", "offlane": "item_dust", "support": "item_ward_sentry"},
+    ),
+    ItemThreat(
+        _keys("item_mekansm item_guardian_greaves item_holy_locket item_satanic"),
+        {"core": "item_skadi", "offlane": "item_spirit_vessel", "support": "item_spirit_vessel"},
+    ),
+]
+
 # When you are behind and no threat calls for something, buy to stay alive.
 DEFENSIVE = {
     "core": ["item_black_king_bar"],
@@ -171,6 +202,29 @@ def against(
     return None
 
 
+def against_items(
+    enemy_items: dict[HeroInfo, tuple[ItemInfo, ...]],
+    role_name: str,
+    snap: Snapshot,
+    items: dict[str, ItemInfo],
+) -> Pick | None:
+    """A counter to the enemy items the player told the coach about, e.g.
+    Nullifier because "Lion has Glimmer Cape and Force Staff"."""
+    for threat in ITEM_THREATS:
+        key = threat.items.get(role_name)
+        if key is None or owns(snap, key) or key not in items:
+            continue
+        seen = [
+            (hero, [i.name for i in held if i.key in threat.enemy_items])
+            for hero, held in enemy_items.items()
+        ]
+        seen = [(hero, names) for hero, names in seen if names][:2]
+        if seen:
+            why = " and ".join(f"{hero.name} has {' and '.join(names)}" for hero, names in seen)
+            return Pick(items[key], why)
+    return None
+
+
 def _singular(reason: str) -> str:
     """"do a lot of magic damage" -> "does a lot of magic damage"."""
     verb, _, rest = reason.partition(" ")
@@ -222,10 +276,14 @@ def recommend(
     next_item: ItemInfo | None,
     notes: Notes | None = None,
 ) -> Pick | None:
-    """What to buy now. A threat from the enemy lineup comes first (the
-    trouble hero before the others); when you are behind or told the coach
-    the game is going badly, a defensive item; otherwise the next item on
-    your build, or once that is done, a late-game item for your role."""
+    """What to buy now. A counter to enemy items you told the coach about
+    comes first, then a threat from the enemy lineup (the trouble hero before
+    the others); when you are behind or told the coach the game is going
+    badly, a defensive item; otherwise the next item on your build, or once
+    that is done, a late-game item for your role."""
+    pick = against_items(notes.enemy_items, role_name, snap, items) if notes else None
+    if pick is not None:
+        return pick
     pick = against(enemies, role_name, snap, items, notes.trouble if notes else None)
     if pick is not None:
         return pick

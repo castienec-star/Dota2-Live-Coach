@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import dataclasses
 import functools
 import logging
 import subprocess
@@ -43,8 +44,17 @@ from .state import Snapshot
 
 
 def notes_of(coach: Coach) -> Callable[[], game_questions.Notes | None]:
-    """What the player answered to the in-match questions so far."""
-    return lambda: coach.questions.notes if coach.questions is not None else None
+    """What the player told the coach so far: the answers to the in-match
+    questions and the enemy items they reported."""
+
+    def notes() -> game_questions.Notes | None:
+        answered = coach.questions.notes if coach.questions is not None else None
+        told = coach.enemy_items.told() if coach.enemy_items is not None else {}
+        if not told:
+            return answered
+        return dataclasses.replace(answered or game_questions.Notes(), enemy_items=told)
+
+    return notes
 
 
 def make_speaker(cfg: config_mod.Config) -> Speaker:

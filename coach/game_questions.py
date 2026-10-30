@@ -15,9 +15,10 @@ from __future__ import annotations
 import re
 import threading
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from .heroes import HeroIndex, HeroInfo
+from .items import ItemInfo
 from .lineup import _SKIP, Question, _words, parse_heroes
 from .state import MatchState
 
@@ -53,6 +54,8 @@ class Notes:
     trouble: HeroInfo | None = None  # the enemy giving them the most trouble
     carry_free: bool | None = None  # is the enemy carry farming freely?
     fights: str | None = None  # "won", "even" or "lost": team fights so far
+    # Enemy items the player said they saw (coach/enemy_items.py).
+    enemy_items: dict[HeroInfo, tuple[ItemInfo, ...]] = field(default_factory=dict)
 
     def told(self) -> list[str]:
         """The answers as short phrases, for the death tip prompt."""
@@ -66,6 +69,8 @@ class Notes:
         if self.fights is not None:
             fights = {"won": "winning", "even": "about even", "lost": "losing"}[self.fights]
             lines.append(f"their team is {fights} in fights")
+        for hero, items in self.enemy_items.items():
+            lines.append(f"{hero.name} has {' and '.join(i.name for i in items)}")
         return lines
 
 

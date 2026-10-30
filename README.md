@@ -335,6 +335,8 @@ the game clock and the enemy heroes you told it:
   glimmer, force, euls, linkens, aeon, blademail, mek, aghs...). Only the
   enemy heroes you told the coach count, and the list is gone after the
   match. No microphone? Type the same sentence in the coach window.
+  "What should I buy?" and the 15/25 minute check then counter what you
+  told it, e.g. "Buy Nullifier now: Lion has Glimmer Cape and Force Staff."
 - "Can I buy back?": the buyback cost against your gold, or its cooldown.
 - "When is the next rune?": the next power rune, gold runes and wisdom
   shrines.
