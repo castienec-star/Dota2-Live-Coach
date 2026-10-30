@@ -350,7 +350,8 @@ tell it about is dropped, and one that arrives after you died or lost a lot
 of health isn't said at all. Without Ollama running (or slower than
 `chat_timeout` seconds) you hear the list of built-in questions instead. Set
 `chat = false` under `[listen]` to turn this off; it uses the death tips'
-`provider`, so `provider = "builtin"` turns it off too. Voice questions are
+`provider`, so `provider = "builtin"` turns it off too. No microphone? Type
+the question in the coach window instead, e.g. `how do I play against pudge`. Voice questions are
 on by default and
 needs two free speech models that run on your PC (downloaded once, about
 200 MB). Install them once; until you do, the coach simply doesn't listen:

@@ -181,3 +181,27 @@ def fake_chat_ollama():
     threading.Thread(target=server.serve_forever, daemon=True).start()
     yield f"http://127.0.0.1:{server.server_port}", received
     server.shutdown()
+
+
+def test_typed_questions_go_to_the_chat(tmp_path, payload, monkeypatch, capsys):
+    import io
+
+    from coach.__main__ import make_coach, read_typed_picks
+    from coach.config import load
+    from coach.speaker import Speaker
+
+    coach = make_coach(load(app_dir=tmp_path), Speaker(), tips=False)
+    coach.state.update(payload)
+    model = FakeModel("Fight near your towers.")
+    coach.chat = Chat(model)
+    monkeypatch.setattr("sys.stdin", io.StringIO("should we fight now?\nbuy\n\n"))
+    read_typed_picks(coach)
+    out = capsys.readouterr().out.splitlines()
+    assert out[0] == "Fight near your towers."
+    assert "Manta Style" in out[1] or "Black King Bar" in out[1]  # buy is still built in
+    assert len(out) == 2 and len(model.prompts) == 1  # an empty line asks nothing
+
+    coach.chat = Chat(None)
+    monkeypatch.setattr("sys.stdin", io.StringIO("tell me a joke\n"))
+    read_typed_picks(coach)
+    assert capsys.readouterr().out.strip() == OFF

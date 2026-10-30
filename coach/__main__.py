@@ -190,6 +190,9 @@ def what_to_buy(coach: Coach) -> str:
     return situational.spoken(pick, verdict, snap)
 
 
+# Typed picks and position, read by the pre-game briefing.
+PICK_COMMANDS = ("vs", "with", "pos", "clear")
+
 # Typed for "how am I doing?".
 HOW_COMMANDS = ("how", "status")
 
@@ -206,21 +209,28 @@ def how_am_i_doing(coach: Coach) -> str:
 
 def read_typed_picks(coach: Coach, questions: TypedQuestions | None = None) -> None:
     """Lets you type the draft in the coach window: "vs am cm lion pudge sf",
-    "buy" for what to buy now, "how" for how you are doing, or the answer to
-    a start-of-game question shown there."""
+    "buy" for what to buy now, "how" for how you are doing, the answer to
+    a start-of-game question shown there, or any other question for the model."""
     for line in sys.stdin:
-        command = line.strip().split(maxsplit=1)[0].lower() if line.strip() else ""
+        if not line.strip():
+            continue
+        command = line.strip().split(maxsplit=1)[0].lower()
         if command in BUY_COMMANDS and coach.advice is not None:
             print(what_to_buy(coach), flush=True)
             continue
         if command in HOW_COMMANDS and coach.advice is not None:
             print(how_am_i_doing(coach), flush=True)
             continue
-        if command not in ("vs", "with", "pos", "clear") and questions and questions.answer(line):
+        if command not in PICK_COMMANDS and questions and questions.answer(line):
             continue
         # What an enemy has: "lion has glimmer and force".
         if coach.enemy_items is not None and coach.enemy_items.is_report(line):
             print(coach.enemy_items.report(line), flush=True)
+            continue
+        # "how do I play against pudge?": the same free chat as out loud.
+        if command not in PICK_COMMANDS and coach.chat is not None:
+            reply = coach.chat(line.strip(), coach.state.current)
+            print(coach.chat.off if reply is None else reply or "Ask me again once the fight is over.", flush=True)
             continue
         reply = coach.pregame.typed(line)
         if reply:
@@ -296,6 +306,7 @@ def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
         lambda: coach.state.current,
         coach.enemy_items.facts if coach.enemy_items is not None else None,
     )
+    coach.chat = chat
     # Keeps "what should I buy?" ready, and says when the pick changes.
     coach.listeners.append(Engine(item_advisor.watch(cfg.items, advice), speaker.say, prioritized=True))
     listening = voice.start(
@@ -333,6 +344,8 @@ def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
         threading.Thread(target=read_typed_picks, args=(coach, typed), daemon=True).start()
         logging.info('Type the enemy picks any time, e.g.  vs am cm lion pudge sf')
         logging.info('Type "buy" any time to hear what to buy now, or "how" for how you are doing')
+        if chat is not None:
+            logging.info("Or type any other question for the coach, e.g.  how do I play against pudge")
     if listening is None:
         logging.info("Voice is off: item advice still comes unasked, at 15 and 25 minutes and when the pick changes")
     logging.info("Listening for Dota 2 on %s", cfg.url)

@@ -54,7 +54,8 @@ question_every = 300
 # Pudge?") go to the death tips' model (provider and ollama_model under
 # [reminders.death_tip]), with your own hero's numbers, your build and what you
 # told the coach. If the model is off or slower than chat_timeout seconds, you
-# hear the list of built-in questions instead. Set false to turn it off.
+# hear the list of built-in questions instead. You can also type the question
+# in the coach window. Set false to turn it off.
 chat = true
 chat_timeout = 6
 wake_word = "hey coach"
