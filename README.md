@@ -174,6 +174,22 @@ Ollama then runs in the background (tray icon) and starts with Windows. The
 death. Check it with `ollama run llama3.1:8b "say hi"`. To use another model,
 pull it and set `ollama_model`.
 
+**On a PC with less GPU memory** (under 8 GB, or if Dota's frame rate drops
+with the coach running), use the 3B model, about 2 GB:
+
+```
+ollama pull llama3.2:3b
+```
+
+and set `ollama_model = "llama3.2:3b"` under `[reminders.death_tip]`. Item
+advice and the pre-game briefing use the same model unless you give them
+their own `ollama_model`, so only one model sits in GPU memory (the coach
+warns at start if you set different ones). When a match ends, and when you
+close the coach, it tells Ollama to drop the model from GPU memory right away
+instead of holding it for 30 minutes; it loads again in a few seconds at the
+next question. Set `free_after_match = false` under `[items]` to keep it
+loaded.
+
 **Claude instead:** set `provider = "claude"` and your key, then open a new
 Command Prompt:
 

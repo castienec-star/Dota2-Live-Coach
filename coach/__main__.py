@@ -16,6 +16,7 @@ from aiohttp import web
 from . import config as config_mod
 from . import game_questions, item_advisor, situational
 from . import health as health_mod
+from . import llm
 from . import pregame as pregame_mod
 from . import voice
 from .benchmarks import Benchmarks
@@ -70,6 +71,29 @@ def position_of(cfg: config_mod.Config, coach: Coach) -> PositionOf:
     return position
 
 
+def with_tip_model(cfg: config_mod.Config, table: dict) -> dict:
+    """A config table whose Ollama model and address default to the death
+    tips' ones, so the coach keeps one model in GPU memory, not two or three."""
+    tip = cfg.reminders.get("death_tip", {})
+    return {
+        "ollama_model": tip.get("ollama_model", llm.DEFAULT_MODEL),
+        "ollama_url": tip.get("ollama_url", llm.DEFAULT_URL),
+        **table,
+    }
+
+
+def ollama_models(cfg: config_mod.Config) -> set[tuple[str, str]]:
+    """Every (model, address) the death tips, briefing and item advice ask."""
+    items = with_tip_model(cfg, cfg.items)
+    return llm.models_in_use(
+        [
+            cfg.reminders.get("death_tip", {}),
+            with_tip_model(cfg, cfg.pregame),
+            {**items, "provider": items.get("advisor", "ollama")},
+        ]
+    )
+
+
 def make_benchmarks(cfg: config_mod.Config) -> Benchmarks:
     """Bundled hero benchmarks, plus OpenDota for other heroes if it is on."""
     if not cfg.pregame.get("opendota", True):
@@ -98,7 +122,7 @@ def make_coach(
     enemies = lambda: coach.pregame.enemies if coach.pregame is not None else []  # noqa: E731
     # "What should I buy?": the model picks only when tips are on.
     coach.advice = item_advisor.Advice(
-        item_advisor.build(cfg.items) if tips else item_advisor.ItemAdvisor(None),
+        item_advisor.build(with_tip_model(cfg, cfg.items)) if tips else item_advisor.ItemAdvisor(None),
         cfg.builds,
         position,
         benchmarks,
@@ -127,7 +151,7 @@ def make_coach(
     coach.listeners.append(Engine(for_positions(rules, positions, position), speaker.say, cfg.voice_max_lines, prioritized=True))
     if tips:
         coach.pregame = pregame_mod.build(
-            cfg.pregame,
+            with_tip_model(cfg, cfg.pregame),
             # Long, and only useful before the game: any reminder goes first.
             functools.partial(speaker.say, priority=LOW, max_delay=20),
             power_windows[0] if power_windows else None,
@@ -136,6 +160,15 @@ def make_coach(
         )
         if coach.pregame is not None:
             coach.listeners.append(coach.pregame)
+        models = ollama_models(cfg)
+        if len({model for model, _ in models}) > 1:
+            logging.warning(
+                "The coach asks Ollama for %s; each one takes GPU memory. Use one "
+                "ollama_model everywhere in coach.toml to save memory for Dota.",
+                " and ".join(sorted({model for model, _ in models})),
+            )
+        if models and cfg.items.get("free_after_match", True):
+            coach.listeners.append(llm.FreeAfterMatch(models))
     return coach
 
 
@@ -271,6 +304,9 @@ def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
         if recorder is not None:
             recorder.close()
         speaker.close()
+        for listener in coach.listeners:
+            if isinstance(listener, llm.FreeAfterMatch):
+                listener.free()  # closing the coach gives the GPU memory back too
     return 0
 
 
