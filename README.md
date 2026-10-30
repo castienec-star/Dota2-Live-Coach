@@ -97,6 +97,8 @@ built-in voice. Defaults follow patch 7.41:
 | Wisdom shrines | 20 s before 7:00, then every 7 minutes |
 | Water rune | 10 s before 2:00 and 4:00 (mid only, once your position is known) |
 | Stack the camp | at :53 each minute until 11:53, only when your hero is near a neutral camp |
+| Night has started | when night falls, for the first 3 nights (not Night Stalker's ultimate); `[reminders.night]` |
+| Think Roshan after a won fight | once, at 20:00; `[reminders.roshan]` |
 
 "Near a camp" uses your own hero's position and the fixed 7.41 camp spots
 (see `THIRD_PARTY_NOTICES.md`). Game State Integration does not say whether a

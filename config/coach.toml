@@ -111,6 +111,17 @@ every = 120
 until = 240
 lead = 10
 
+[reminders.night]
+# Says when night starts (everyone's vision is shorter) for the first few
+# nights of a match. Night Stalker's ultimate doesn't count.
+enabled = true
+nights = 3
+
+[reminders.roshan]
+# One reminder at this minute that a won fight is the time to take Roshan.
+enabled = true
+minute = 20
+
 [reminders.stack]
 # Pull the camp at about :53 each minute; stops after 11:53. Only said when your
 # hero stands within "radius" map units of a neutral camp (patch 7.41 camp spots).
