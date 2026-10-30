@@ -305,6 +305,12 @@ with a local model (see below):
   10 minutes for a core) and your deaths so far. No microphone? Type `how`
   in the coach window for the same answer. See
   [docs/strategy/ahead-or-behind.md](docs/strategy/ahead-or-behind.md).
+  To save the numbers for every hero, so the answer never needs the
+  internet mid-match (about three minutes, public aggregate numbers only):
+
+  ```
+  py -m coach refresh-benchmarks
+  ```
 
 - "What should I buy?": one item for right now, from how your game is going
   and the enemy heroes you named at the start of the game (or typed). A

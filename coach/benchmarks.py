@@ -3,8 +3,9 @@
 The baselines are OpenDota's public hero benchmarks: for each hero, the gold
 per minute, experience per minute and last hits per minute that 10%, 20%...
 99% of recent public matches reached. A snapshot for the heroes with a
-bundled build ships in coach/data/benchmarks.json; other heroes are read once
-from OpenDota and cached, if it is turned on. A hero with no numbers at all is
+bundled build ships in coach/data/benchmarks.json, and
+`py -m coach refresh-benchmarks` rewrites it for every hero; heroes still
+missing are read once from OpenDota and cached, if it is turned on. A hero with no numbers at all is
 compared, roughly, with the average bundled core or support, and before 8
 minutes the answer is last hits against a simple target and deaths so far.
 Only your own hero's GSI numbers are compared; nothing about other players is
@@ -18,9 +19,12 @@ from __future__ import annotations
 import functools
 import json
 import logging
+import time
 from collections.abc import Callable
 from dataclasses import dataclass
+from datetime import date
 from pathlib import Path
+from typing import Any
 
 from .heroes import HeroIndex, HeroInfo
 from .state import Snapshot
@@ -114,6 +118,67 @@ def parse_api(result: dict | None) -> dict[str, Curve] | None:
         if points:
             curves[metric] = sorted(points)
     return curves or None
+
+
+def fetch_all(
+    get: Callable[[str], Any],
+    heroes: dict[int, HeroInfo],
+    pause: float = 1.1,
+    progress: Callable[[str], None] = lambda text: None,
+) -> dict[str, dict[str, Curve]]:
+    """{hero key: {metric: curve}} for every hero OpenDota answers for with
+    all three numbers. "pause" keeps under OpenDota's free rate limit."""
+    found: dict[str, dict[str, Curve]] = {}
+    for n, hero in enumerate(sorted(heroes.values(), key=lambda h: h.id), 1):
+        time.sleep(pause)
+        curves = parse_api(get(f"/benchmarks?hero_id={hero.id}"))
+        if not curves or set(curves) != set(METRICS):
+            progress(f"{n}/{len(heroes)} {hero.name}: no data")
+            continue
+        found[hero.key] = curves
+        progress(f"{n}/{len(heroes)} {hero.name}")
+    return found
+
+
+def save(found: dict[str, dict[str, Curve]], ids: dict[str, int], path: Path = BENCHMARKS_FILE) -> int:
+    """Writes the snapshot in the bundled format: one list of percentiles,
+    then each hero's values at them. A hero whose curves use other
+    percentiles is left out. Returns how many heroes were saved."""
+    percentiles = _common_percentiles(found)
+    heroes = {}
+    for key in sorted(found):
+        curves = found[key]
+        if any([p for p, _ in curve] != percentiles for curve in curves.values()):
+            log.warning("Left out %s: its numbers use other percentiles", key)
+            continue
+        heroes[key] = {"id": ids[key]} if key in ids else {}
+        for metric in METRICS:
+            values = [round(v, 2) for _, v in curves[metric]]
+            heroes[key][metric] = [int(v) if v.is_integer() else v for v in values]
+    data = {
+        "source": "OpenDota /api/benchmarks (public aggregate stats of recent public matches), "
+        f"fetched {date.today().isoformat()}, patch {_patch()}",
+        "note": "Whole-match averages. Values at the percentiles below, in order.",
+        "percentiles": percentiles,
+        "heroes": heroes,
+    }
+    path.write_text(json.dumps(data, indent=1) + "\n", encoding="utf-8")
+    return len(heroes)
+
+
+def _common_percentiles(found: dict[str, dict[str, Curve]]) -> list[float]:
+    """The percentiles most of the curves in found use."""
+    counts: dict[tuple[float, ...], int] = {}
+    for curves in found.values():
+        for curve in curves.values():
+            key = tuple(p for p, _ in curve)
+            counts[key] = counts.get(key, 0) + 1
+    return list(max(counts, key=counts.get)) if counts else []
+
+
+def _patch() -> str:
+    patch = BENCHMARKS_FILE.parent / "PATCH"
+    return patch.read_text(encoding="utf-8").strip() if patch.is_file() else "unknown"
 
 
 def share_below(curve: Curve, value: float) -> float:
