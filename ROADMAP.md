@@ -109,6 +109,8 @@ CLAUDE.md).
   they told the coach (in-match answers), compare item timings with the
   hero's public popular-item timings instead of one 20-minute rule, and say
   "last game you fixed X" when a point from the previous review improved.
+  Also save (not speak) the review when the player abandons and GSI goes
+  silent before post-game, using the health watch.
 - Translations of the spoken lines.
 - Upgrade-aware builds: know that Dragon Lance went into Hurricane Pike (from
   dotaconstants' item components) so builds can list both steps.
