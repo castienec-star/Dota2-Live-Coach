@@ -19,6 +19,7 @@ from . import health as health_mod
 from . import pregame as pregame_mod
 from . import voice
 from .benchmarks import Benchmarks
+from .enemy_items import EnemyItems
 from .gsi_server import Coach, make_app
 from .heroes import HeroIndex, load_heroes
 from .install import find_dota, install
@@ -105,6 +106,8 @@ def make_coach(
         enemies,
         notes_of(coach),
     )
+    coach.enemy_items = EnemyItems(enemies=enemies)
+    coach.listeners.append(coach.enemy_items)
     # A death tip has its own deadline too: the respawn.
     tip_say = functools.partial(speaker.say, priority=HIGH, max_delay=10)
     reminders, positions = split_positions(cfg.reminders)
@@ -154,12 +157,15 @@ def what_to_buy(coach: Coach) -> str:
 
 def read_typed_picks(coach: Coach, questions: TypedQuestions | None = None) -> None:
     """Lets you type the draft in the coach window: "vs am cm lion pudge sf",
-    "buy" for what to buy now, or the answer to a start-of-game question
-    shown there."""
+    "buy" for what to buy now, what an enemy has ("lion has glimmer"), or the
+    answer to a start-of-game question shown there."""
     for line in sys.stdin:
         command = line.strip().split(maxsplit=1)[0].lower() if line.strip() else ""
         if command in BUY_COMMANDS and coach.advice is not None:
             print(what_to_buy(coach), flush=True)
+            continue
+        if coach.enemy_items is not None and coach.enemy_items.is_report(line):
+            print(coach.enemy_items.report(line), flush=True)
             continue
         if command not in ("vs", "with", "pos", "clear") and questions and questions.answer(line):
             continue
@@ -239,6 +245,7 @@ def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
         enemies=enemies,
         notes=notes_of(coach),
         advice=advice,
+        enemy_items=coach.enemy_items,
     )
     typed = None
     if interview is not None and listening is None and typing:
