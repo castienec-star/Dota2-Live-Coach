@@ -47,14 +47,25 @@ COMPONENTS = {
     "item_hyperstone", "item_demon_edge", "item_relic", "item_lesser_crit",
     # Dropped when you die: too risky to suggest to a new player.
     "item_rapier",
+    # Aghanim's Blessing is bought by consuming a Scepter, which "buy it next"
+    # doesn't explain to someone without one.
+    "item_ultimate_scepter_2",
 }
+# Items only a farming core should buy. Popular lists mix every position, so
+# a build with these isn't one for a support (see carry_build).
+CARRY_ONLY = {
+    "item_butterfly", "item_abyssal_blade", "item_bloodthorn", "item_greater_crit", "item_satanic",
+    "item_manta", "item_skadi", "item_mjollnir", "item_radiance", "item_bfury",
+    "item_monkey_king_bar", "item_disperser", "item_basher", "item_orchid", "item_desolator",
+}
+# A support build's big items cost about this much on average at most.
+SUPPORT_AVERAGE = 3500
 # Items left out when the build also has what they turn into.
 PARTS = {
     "item_yasha": ("item_sange_and_yasha", "item_yasha_and_kaya", "item_manta"),
     "item_kaya": ("item_kaya_and_sange", "item_yasha_and_kaya"),
     "item_sange": ("item_sange_and_yasha", "item_kaya_and_sange", "item_heavens_halberd"),
     "item_orchid": ("item_bloodthorn",),
-    "item_ultimate_scepter": ("item_ultimate_scepter_2",),
     "item_force_staff": ("item_hurricane_pike",),
     "item_dragon_lance": ("item_hurricane_pike",),
     "item_maelstrom": ("item_mjollnir", "item_gungir"),
@@ -144,6 +155,15 @@ def popular_build(stages: dict[str, list[str]], items: dict[str, ItemInfo]) -> l
         return []
     keys = ([boots] if boots else []) + big
     return [items[k] for k in keys[:BUILD_SIZE]]
+
+
+def carry_build(build: list[ItemInfo]) -> bool:
+    """True for a build a pos 4 or 5 shouldn't follow: more than one
+    carry-only item, or big items that cost over SUPPORT_AVERAGE on average."""
+    big = [i for i in build if i.key not in BOOTS]
+    if sum(i.key in CARRY_ONLY for i in big) > 1:
+        return True
+    return bool(big) and sum(i.cost for i in big) / len(big) > SUPPORT_AVERAGE
 
 
 def popular_builds(

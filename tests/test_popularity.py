@@ -2,11 +2,12 @@ import json
 
 from coach import popularity
 from coach.__main__ import main
-from coach.heroes import load_heroes
+from coach.heroes import HeroIndex, load_heroes
 from coach.items import load_items
 from coach.rules.hero import ItemReady, parse_builds
 
 ITEMS = load_items()
+HEROES = HeroIndex()
 ITEM_IDS = {"1": "blink", "29": "boots", "50": "phase_boots", "63": "power_treads", "116": "black_king_bar",
             "112": "ultimate_scepter", "36": "magic_wand", "208": "abyssal_blade", "121": "recipe_bkb",
             "147": "manta"}
@@ -115,3 +116,25 @@ def test_bundled_snapshot_covers_every_hero_with_real_items():
         keys = [i.key for i in build]
         assert len(keys) == len(set(keys)), hero
         assert not set(keys) & popularity.COMPONENTS, hero
+
+
+def test_a_support_skips_a_carry_build():
+    builds = parse_builds({"default": ["Power Treads"], "default_support": ["Glimmer Cape"]}, ITEMS)
+    carry = [ITEMS[k] for k in ("item_phase_boots", "item_radiance", "item_manta", "item_butterfly")]
+    support = [ITEMS[k] for k in ("item_arcane_boots", "item_glimmer_cape", "item_force_staff")]
+    assert popularity.carry_build(carry)
+    assert not popularity.carry_build(support)
+    rule = ItemReady(builds, HEROES, popular={"abaddon": carry, "lion": support})
+    assert rule.build_for("abaddon", 1) == carry
+    assert [i.name for i in rule.build_for("abaddon", 5)] == ["Glimmer Cape"]
+    assert rule.build_for("lion", 5) == support
+
+
+def test_expensive_items_alone_make_a_carry_build():
+    build = [ITEMS[k] for k in ("item_ultimate_scepter", "item_shivas_guard", "item_assault")]
+    assert popularity.carry_build(build)
+
+
+def test_aghanims_blessing_is_left_out():
+    stages = {"mid": ["item_ultimate_scepter_2", "item_black_king_bar", "item_blink"], "late": []}
+    assert [i.name for i in popularity.popular_build(stages, ITEMS)] == ["Black King Bar", "Blink Dagger"]

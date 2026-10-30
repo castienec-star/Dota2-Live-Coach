@@ -125,16 +125,19 @@ Zeus). Any other hero gets the items real players build on it most, from
 OpenDota's public item popularity bundled in `coach/data/item_popularity.json`
 (fetched 2026-10-30, patch 7.41f): boots first, then the most bought big
 items of the mid and late game, leaving out bare components (Ultimate Orb,
-Mystic Staff), Divine Rapier, and an item whose upgrade is also on the list.
+Mystic Staff), Divine Rapier, Aghanim's Blessing, and an item whose upgrade
+is also on the list. The numbers mix every position, so in positions 4 and 5
+a hero whose popular items are a carry's (expensive, or several of Butterfly,
+Manta, Bloodthorn and the like) gets the support build instead.
 To read fresher numbers (about three minutes, public aggregate numbers only):
 
 ```
 py -m coach refresh-items
 ```
 
-For a hero with too little data, any other hero gets a support build in positions 4 and 5, otherwise a
-core build (`default_support` and `default`); while your position isn't known,
-it goes by the hero's usual role. Builds can also depend on your position:
+A hero with too little data gets a support build in positions 4 and 5
+(`default_support`), otherwise a core build (`default`); while your position
+isn't known, it goes by the hero's usual role. Builds can also depend on your position:
 `pudge_pos2 = [...]` is Pudge's build when you play mid, and `pos3 = [...]` is
 for any hero without its own list when you play offlane (it comes before the
 popular items). Put `pudge = []` in
