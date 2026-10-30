@@ -332,6 +332,12 @@ def test_worth_buying_raindrops_only_once_the_shop_sells_them(payload):
     ]
 
 
+def test_worth_buying_no_raindrops_after_the_laning_stage(payload):
+    payload["map"]["clock_time"] = 13 * 60
+    said = run(worth_buying(["Black King Bar"], enemies=lineup("lina")), payload, [{"player.gold": 600}])
+    assert said == ["Buy a Wraith Band now, you'll get your Black King Bar later."]
+
+
 def test_cheap_counters_name_real_heroes_and_items():
     from coach.heroes import HeroIndex
     from coach.rules.hero import CHEAP_COUNTERS

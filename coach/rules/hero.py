@@ -318,6 +318,7 @@ class CheapCounter:
     reason: str  # said after the hero names, e.g. "cast a lot of spells"
     heroes: frozenset[str]  # hero keys
     after: int = 0  # game clock seconds before the shop sells it
+    until: int | None = None  # game clock seconds after which it no longer helps
 
 
 # Cheap items against the enemy heroes you told the coach, checked before the
@@ -329,13 +330,14 @@ CHEAP_COUNTERS = [
         "do a lot of magic damage",
         _keys("lina lion zuus leshrac skywrath_mage queenofpain tinker nevermore"),
         after=180,
+        until=720,  # later nukes are well over the 120 block
     ),
     CheapCounter(
         "item_magic_wand",
         "cast a lot of spells",
         _keys(
             "bristleback skywrath_mage batrider zuus shredder leshrac venomancer"
-            " storm_spirit queenofpain tinker"
+            " storm_spirit queenofpain tinker ogre_magi jakiro razor"
         ),
     ),
 ]
@@ -385,15 +387,16 @@ class WorthBuying(ItemReady):
         return self._all_items[key]
 
     def counters(self, clock: int) -> list[tuple[ItemInfo, str]]:
-        """Cheap counters to the told enemy lineup the shop sells by now, with
-        why, e.g. "Lina and Lion do a lot of magic damage"."""
+        """Cheap counters to the told enemy lineup that help at this minute,
+        with why, e.g. "Lina and Lion do a lot of magic damage"."""
         enemies = self.enemies()
         found = []
         for counter in CHEAP_COUNTERS:
             heroes = [h for h in enemies if h.key in counter.heroes]
-            if heroes and clock >= counter.after:
-                verb = counter.reason if len(heroes) > 1 else _singular(counter.reason)
-                found.append((self._item(counter.item), f"{_names(heroes)} {verb}"))
+            if not heroes or clock < counter.after or (counter.until is not None and clock >= counter.until):
+                continue
+            verb = counter.reason if len(heroes) > 1 else _singular(counter.reason)
+            found.append((self._item(counter.item), f"{_names(heroes)} {verb}"))
         return found
 
     def candidates(self, hero: str) -> list[ItemInfo]:

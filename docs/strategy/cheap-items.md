@@ -18,8 +18,8 @@ item is still 600+ gold away).
 
 | Enemy heroes that... | Item | Why |
 |---|---|---|
-| do a lot of magic damage early: Lina, Lion, Zeus, Leshrac, Skywrath Mage, Queen of Pain, Tinker, Shadow Fiend | Infused Raindrops (225) | Blocks 120 magic damage from each instance of 75 or more, 6 charges, plus mana regen. Sold from 3:00, so it is not suggested earlier. |
-| cast a lot of spells: Bristleback, Skywrath Mage, Batrider, Zeus, Timbersaw, Leshrac, Venomancer, Storm Spirit, Queen of Pain, Tinker | Magic Wand (460) | One charge per visible enemy spell within 1200 range, up to 20; each charge heals 15 health and 15 mana, used all at once. Spammers fill it in a few minutes. |
+| do a lot of magic damage early: Lina, Lion, Zeus, Leshrac, Skywrath Mage, Queen of Pain, Tinker, Shadow Fiend | Infused Raindrops (225) | Blocks 120 magic damage from each instance of 75 or more, 6 charges, plus mana regen. Sold from 3:00, so it is not suggested earlier; not after 12:00, when nukes are well over the block and the charges go in one fight. |
+| cast a lot of spells: Bristleback, Skywrath Mage, Batrider, Zeus, Timbersaw, Leshrac, Venomancer, Storm Spirit, Queen of Pain, Tinker, Ogre Magi, Jakiro, Razor | Magic Wand (460) | One charge per visible enemy spell within 1200 range, up to 20; each charge heals 15 health and 15 mana, used all at once. Spammers fill it in a few minutes. |
 
 One enemy hero is enough, because both items are cheap and each is
 suggested at most once a match. The counter is checked before the usual
@@ -27,6 +27,11 @@ Magic Wand and Bracer / Wraith Band / Null Talisman, and the line names the
 heroes: "Buy Infused Raindrops now: Lina and Lion do a lot of magic damage."
 Without a told lineup, or with no hero from the table, the reminder is the
 same as before.
+
+Viper and Silencer are left out of the wand row on purpose: their main
+harass is an autocast attack modifier (Poison Attack, Glaives of Wisdom),
+which as far as we know does not charge a wand when autocast. Add them if a
+real match shows otherwise.
 
 Not added (yet): Wind Lace or Boots against chasing heroes, Orb of Venom,
 and Blight Stone. They depend much more on the player's hero and role than
