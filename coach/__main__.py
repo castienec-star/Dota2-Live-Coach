@@ -168,7 +168,7 @@ def make_coach(
                 " and ".join(sorted({model for model, _ in models})),
             )
         if models and cfg.items.get("free_after_match", True):
-            coach.listeners.append(llm.FreeAfterMatch(models))
+            coach.listeners.append(llm.ModelMemory(models))
     return coach
 
 
@@ -298,6 +298,10 @@ def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
     app = make_app(coach)
     coach.health = health_mod.Health(cfg)
     health_mod.watch(app, coach.health, speaker.say)
+    for listener in coach.listeners:
+        if isinstance(listener, llm.ModelMemory):
+            # Dota closed or crashed mid-match sends no post-game: free on silence.
+            health_mod.repeat(app, 30, listener.idle)
     try:
         web.run_app(app, host=cfg.host, port=cfg.port, print=None, access_log=None)
     finally:
@@ -305,8 +309,10 @@ def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
             recorder.close()
         speaker.close()
         for listener in coach.listeners:
-            if isinstance(listener, llm.FreeAfterMatch):
-                listener.free()  # closing the coach gives the GPU memory back too
+            if isinstance(listener, llm.ModelMemory):
+                # Closing the coach gives the GPU memory back too; quickly, as
+                # Ollama drops the model on its own timer anyway.
+                listener.free(timeout=1.5)
     return 0
 
 

@@ -2,6 +2,7 @@ import dataclasses
 import itertools
 import json
 import threading
+import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from types import SimpleNamespace
 
@@ -41,6 +42,12 @@ def test_unload_asks_ollama_to_drop_the_model(fake_ollama):
     assert received == [("/api/generate", {"model": "llama3.2:3b", "keep_alive": 0})]
 
 
+def test_load_asks_ollama_to_load_the_model_without_a_prompt(fake_ollama):
+    url, received = fake_ollama
+    assert llm.load("llama3.2:3b", url)
+    assert received == [("/api/generate", {"model": "llama3.2:3b", "keep_alive": llm.KEEP_ALIVE})]
+
+
 def test_unload_without_ollama_is_quiet():
     assert not llm.unload("llama3.1:8b", "http://127.0.0.1:9", timeout=2)
 
@@ -62,22 +69,68 @@ def states(*game_states):
     return [SimpleNamespace(previous=a, current=b) for a, b in itertools.pairwise(snaps)]
 
 
-def test_free_after_match_unloads_once_when_the_match_ends():
-    freed = []
-    done = threading.Event()
+DRAFT = "DOTA_GAMERULES_STATE_HERO_SELECTION"
+PLAYING = "DOTA_GAMERULES_STATE_GAME_IN_PROGRESS"
 
-    def unload(model, url):
-        freed.append(model)
-        done.set()
 
-    free = llm.FreeAfterMatch({("llama3.1:8b", llm.DEFAULT_URL)}, unload)
-    for state in states("DOTA_GAMERULES_STATE_GAME_IN_PROGRESS", "DOTA_GAMERULES_STATE_GAME_IN_PROGRESS"):
-        free(state)
-    assert not done.wait(0.2)
-    for state in states("DOTA_GAMERULES_STATE_GAME_IN_PROGRESS", llm.POST_GAME, llm.POST_GAME):
-        free(state)
-    assert done.wait(5)
-    assert freed == ["llama3.1:8b"]
+class Ollama:
+    """Records load and unload calls; wait() waits for the background ones."""
+
+    def __init__(self):
+        self.calls = []
+        self.event = threading.Event()
+
+    def load(self, model, url):
+        self.calls.append(("load", model))
+        self.event.set()
+
+    def unload(self, model, url, timeout):
+        self.calls.append(("unload", model))
+        self.event.set()
+
+    def wait(self, calls):
+        while len(self.calls) < calls:
+            assert self.event.wait(5)
+            self.event.clear()
+        time.sleep(0.1)  # and no more
+        return self.calls
+
+
+def memory(ollama, clock=lambda: 0.0):
+    return llm.ModelMemory({("llama3.1:8b", llm.DEFAULT_URL)}, 180, clock, ollama.unload, ollama.load)
+
+
+def test_model_memory_loads_while_drafting_and_frees_after_the_match():
+    ollama = Ollama()
+    models = memory(ollama)
+    for state in states(None, DRAFT, DRAFT, PLAYING, PLAYING):
+        models(state)
+    assert ollama.wait(1) == [("load", "llama3.1:8b")]
+    for state in states(PLAYING, llm.POST_GAME, llm.POST_GAME, None):
+        models(state)
+    assert ollama.wait(2) == [("load", "llama3.1:8b"), ("unload", "llama3.1:8b")]
+
+
+def test_model_memory_frees_when_the_match_is_left_or_dota_goes_quiet():
+    ollama = Ollama()
+    models = memory(ollama)
+    # Started mid-match (no draft seen), then back to the menu: no post-game.
+    for state in states(None, PLAYING, None):
+        models(state)
+    assert ollama.wait(1) == [("unload", "llama3.1:8b")]
+
+    now = [0.0]
+    ollama = Ollama()
+    models = memory(ollama, lambda: now[0])
+    for state in states(None, PLAYING):
+        models(state)
+    now[0] = 179
+    models.idle()
+    assert ollama.wait(0) == []
+    now[0] = 180  # no update for three minutes: Dota closed or crashed
+    models.idle()
+    models.idle()
+    assert ollama.wait(1) == [("unload", "llama3.1:8b")]
 
 
 def config(tmp_path, **tables):
@@ -103,11 +156,11 @@ def test_item_advice_and_briefing_use_the_death_tip_model(tmp_path):
 def test_coach_frees_its_models_after_the_match(tmp_path):
     cfg = config(tmp_path, pregame={"opendota": False, "learn": False})
     coach = make_coach(cfg, Speaker(), tips=True)
-    free = [listener for listener in coach.listeners if isinstance(listener, llm.FreeAfterMatch)]
+    free = [listener for listener in coach.listeners if isinstance(listener, llm.ModelMemory)]
     assert [f.models for f in free] == [{(llm.DEFAULT_MODEL, llm.DEFAULT_URL)}]
     coach.pregame.close()
 
     cfg = config(tmp_path, pregame={"opendota": False, "learn": False}, items={"free_after_match": False})
     coach = make_coach(cfg, Speaker(), tips=True)
-    assert not any(isinstance(listener, llm.FreeAfterMatch) for listener in coach.listeners)
+    assert not any(isinstance(listener, llm.ModelMemory) for listener in coach.listeners)
     coach.pregame.close()

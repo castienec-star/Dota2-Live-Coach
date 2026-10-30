@@ -201,8 +201,9 @@ advisor = "ollama"
 # Item advice and the pre-game briefing use the death tips' ollama_model
 # unless you set one here, so only one model takes GPU memory.
 # ollama_model = "llama3.2:3b"
-# When a match ends (and when you close the coach), Ollama is told to drop
-# the model from GPU memory instead of holding it for 30 minutes.
+# Load the model while you pick your hero, and tell Ollama to drop it from
+# GPU memory when the match is over (or you leave it, or close the coach)
+# instead of holding it for 30 minutes.
 free_after_match = true
 claude_model = "claude-opus-5-5"
 effort = "low"
