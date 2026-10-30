@@ -40,54 +40,70 @@ class MatchSummary:
     started: float = 0.0  # wall-clock time of the first update
 
 
+class Tally:
+    """Builds a MatchSummary one snapshot at a time, from a recording or live
+    from the game (the post-game review)."""
+
+    def __init__(self, items: dict[str, ItemInfo]) -> None:
+        self.items = items
+        self.hero: str | None = None
+        self.last = Snapshot()
+        self.team = self.win_team = None
+        self.last_hits_10: int | None = None
+        self.death_times: list[int] = []
+        self.item_times: dict[str, int] = {}
+        self.deaths = 0
+
+    def add(self, snap: Snapshot) -> None:
+        self.team = snap.team or self.team
+        if snap.win_team in ("radiant", "dire"):
+            self.win_team = snap.win_team
+        if not snap.in_game or snap.clock_time is None:
+            return
+        self.hero = snap.hero_name or self.hero
+        if snap.deaths > self.deaths:
+            self.death_times.extend([snap.clock_time] * (snap.deaths - self.deaths))
+        self.deaths = snap.deaths
+        if self.last_hits_10 is None and snap.clock_time >= 600:
+            self.last_hits_10 = snap.last_hits
+        for item in snap.items:
+            info = self.items.get(item.name)
+            if info and info.cost >= BIG_ITEM_COST and item.name not in self.item_times:
+                self.item_times[item.name] = snap.clock_time
+        self.last = snap
+
+    def summary(self, started: float = 0.0) -> MatchSummary | None:
+        """None if no real game was seen."""
+        last = self.last
+        if self.hero is None or (last.clock_time or 0) < MIN_GAME_SECONDS:
+            return None
+        won = self.win_team == self.team if self.win_team and self.team else None
+        return MatchSummary(
+            hero=self.hero.removeprefix("npc_dota_hero_"),
+            duration=last.clock_time or 0,
+            won=won,
+            kills=last.kills,
+            deaths=last.deaths,
+            assists=last.assists,
+            last_hits_10=self.last_hits_10,
+            death_times=list(self.death_times),
+            item_times=dict(self.item_times),
+            started=started,
+        )
+
+
 def summarize(path: Path, items: dict[str, ItemInfo]) -> MatchSummary | None:
     """Summarize one recording, or None if it holds no real game."""
-    hero = None
-    last = Snapshot()
+    tally = Tally(items)
     started = None
-    team = win_team = None
-    last_hits_10 = None
-    death_times: list[int] = []
-    item_times: dict[str, int] = {}
-    deaths = 0
     try:
         for t, payload in read_recording(path):
-            snap = Snapshot.from_payload(payload)
             started = started or t
-            team = snap.team or team
-            if snap.win_team in ("radiant", "dire"):
-                win_team = snap.win_team
-            if not snap.in_game or snap.clock_time is None:
-                continue
-            hero = snap.hero_name or hero
-            if snap.deaths > deaths:
-                death_times.extend([snap.clock_time] * (snap.deaths - deaths))
-            deaths = snap.deaths
-            if last_hits_10 is None and snap.clock_time >= 600:
-                last_hits_10 = snap.last_hits
-            for item in snap.items:
-                info = items.get(item.name)
-                if info and info.cost >= BIG_ITEM_COST and item.name not in item_times:
-                    item_times[item.name] = snap.clock_time
-            last = snap
+            tally.add(Snapshot.from_payload(payload))
     except (OSError, ValueError, KeyError) as exc:
         log.warning("Skipped recording %s: %s", path.name, exc)
         return None
-    if hero is None or (last.clock_time or 0) < MIN_GAME_SECONDS:
-        return None
-    won = win_team == team if win_team and team else None
-    return MatchSummary(
-        hero=hero.removeprefix("npc_dota_hero_"),
-        duration=last.clock_time or 0,
-        won=won,
-        kills=last.kills,
-        deaths=last.deaths,
-        assists=last.assists,
-        last_hits_10=last_hits_10,
-        death_times=death_times,
-        item_times=item_times,
-        started=started or 0.0,
-    )
+    return tally.summary(started or 0.0)
 
 
 class Profile:
