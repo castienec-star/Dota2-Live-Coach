@@ -22,6 +22,7 @@ from collections.abc import Callable, Iterable, Iterator
 
 from . import situational
 from .benchmarks import Benchmarks, status
+from .chat import Chat
 from .game_questions import Notes
 from .heroes import HeroIndex, HeroInfo
 from .item_advisor import Advice, ItemAdvisor
@@ -99,6 +100,7 @@ class Answers:
         enemies: Callable[[], list[HeroInfo]] | None = None,
         notes: Callable[[], Notes | None] | None = None,
         advice: Advice | None = None,
+        chat: Chat | None = None,
     ) -> None:
         settings = {name: reminders.get(name, {}) for name, _ in self.RUNES}
         self.timers = {r.name: r for r in timers.build(settings) if r.name in dict(self.RUNES)}
@@ -110,11 +112,17 @@ class Answers:
         self.enemies = enemies or list
         self.notes = notes or (lambda: None)
         self.advice = advice or Advice(ItemAdvisor(None), builds, position, self.benchmarks, enemies, notes)
+        self.chat = chat
 
     def answer(self, text: str, snap: Snapshot) -> str:
+        """The spoken answer; "" when there is nothing to say any more."""
         kind = intent(text)
         if kind == "unknown":
-            return UNKNOWN
+            # The built-in answers are fast and exact; anything else goes to the model.
+            if self.chat is None:
+                return UNKNOWN
+            reply = self.chat(text, snap)
+            return self.chat.off if reply is None else reply
         if snap.hero_name is None:
             return "I can't see your hero yet. Ask me again once the game has started."
         return getattr(self, kind)(snap)
@@ -313,7 +321,9 @@ class VoiceLoop:
         if not text:
             return
         log.info("You asked: %s", text)
-        self.say(self.answer(text))
+        reply = self.answer(text)
+        if reply:
+            self.say(reply)
 
 
 class VoskWakeWord:
@@ -389,6 +399,7 @@ def start(
     enemies: Callable[[], list[HeroInfo]] | None = None,
     notes: Callable[[], Notes | None] | None = None,
     advice: Advice | None = None,
+    chat: Chat | None = None,
 ) -> threading.Thread | None:
     """Start listening on a background thread, if [listen] is on and installed."""
     if not settings.get("enabled", False):
@@ -409,7 +420,7 @@ def start(
     except Exception as exc:
         log.warning("Voice questions unavailable (%s)", exc)
         return None
-    answers = Answers(reminders, builds, position, benchmarks, enemies, notes, advice)
+    answers = Answers(reminders, builds, position, benchmarks, enemies, notes, advice, chat)
     loop = VoiceLoop(
         wake,
         transcribe,

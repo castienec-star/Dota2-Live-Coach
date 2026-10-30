@@ -14,6 +14,7 @@ from pathlib import Path
 from aiohttp import web
 
 from . import config as config_mod
+from . import chat as chat_mod
 from . import game_questions, item_advisor, situational
 from . import health as health_mod
 from . import llm
@@ -83,11 +84,13 @@ def with_tip_model(cfg: config_mod.Config, table: dict) -> dict:
 
 
 def ollama_models(cfg: config_mod.Config) -> set[tuple[str, str]]:
-    """Every (model, address) the death tips, briefing and item advice ask."""
+    """Every (model, address) the death tips, briefing, item advice and chat ask."""
     items = with_tip_model(cfg, cfg.items)
+    tip = cfg.reminders.get("death_tip", {})
     return llm.models_in_use(
         [
-            cfg.reminders.get("death_tip", {}),
+            tip,
+            {**tip, "enabled": bool(cfg.listen.get("chat", True))},
             with_tip_model(cfg, cfg.pregame),
             {**items, "provider": items.get("advisor", "ollama")},
         ]
@@ -274,6 +277,18 @@ def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
     questions = make_game_questions(cfg, coach)
     enemies = lambda: coach.pregame.enemies if coach.pregame is not None else []  # noqa: E731
     advice = coach.advice
+    allies = lambda: coach.pregame.allies if coach.pregame is not None else []  # noqa: E731
+    # Questions the built-in answers don't cover go to the death tips' model.
+    chat = chat_mod.build(
+        cfg.listen,
+        cfg.reminders.get("death_tip", {}),
+        advice,
+        position_of(cfg, coach),
+        allies,
+        enemies,
+        notes_of(coach),
+        lambda: coach.state.current,
+    )
     # Keeps "what should I buy?" ready, and says when the pick changes.
     coach.listeners.append(Engine(item_advisor.watch(cfg.items, advice), speaker.say, prioritized=True))
     listening = voice.start(
@@ -289,6 +304,7 @@ def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
         enemies=enemies,
         notes=notes_of(coach),
         advice=advice,
+        chat=chat,
     )
     typed = None
     if interview is not None and listening is None and typing:

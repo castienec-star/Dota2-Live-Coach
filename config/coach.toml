@@ -50,6 +50,13 @@ start_questions = true
 game_questions = true
 # Shortest gap between two of those questions, in game seconds.
 question_every = 300
+# Questions the coach has no built-in answer for ("how do I play against
+# Pudge?") go to the death tips' model (provider and ollama_model under
+# [reminders.death_tip]), with your own hero's numbers, your build and what you
+# told the coach. If the model is off or slower than chat_timeout seconds, you
+# hear the list of built-in questions instead. Set false to turn it off.
+chat = true
+chat_timeout = 6
 wake_word = "hey coach"
 # faster-whisper model: "tiny.en" is lighter on the CPU, "small.en" understands more.
 model = "base.en"
