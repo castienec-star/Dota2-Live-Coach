@@ -99,3 +99,17 @@ def test_every_nickname_is_a_real_item(matcher):
     from coach.enemy_items import NICKNAMES
 
     assert set(NICKNAMES.values()) <= set(matcher.items)
+
+
+def test_told_items_reach_what_to_buy(tmp_path, payload):
+    from coach import config
+    from coach.__main__ import make_coach, notes_of, what_to_buy
+    from coach.speaker import Speaker
+
+    cfg = config.load(app_dir=tmp_path)
+    coach = make_coach(cfg, Speaker(), tips=False)
+    coach.handle(payload)  # Anti-Mage, a core
+    assert notes_of(coach)() is None  # nothing told yet, no questions
+    coach.enemy_items.report("Lion has Glimmer and Force Staff")
+    assert "Lion has Glimmer Cape and Force Staff" in notes_of(coach)().told()
+    assert "Nullifier" in what_to_buy(coach)

@@ -173,3 +173,54 @@ def test_voice_answer_for_a_support_uses_the_position(snap):
     lineup = enemies("lina", "zuus")
     answers = Answers({}, BUILDS, position=lambda s: 5, benchmarks=FixedVerdict(None), enemies=lambda: lineup)
     assert answers.answer("what do I buy", snap) == "Buy Glimmer Cape now: Lina and Zeus do a lot of magic damage."
+
+
+def told(**held):
+    """{hero: (items...)} as EnemyItems.told() gives it, from keys."""
+    return {HEROES.by_key(hero): tuple(ITEMS[f"item_{k}"] for k in keys) for hero, keys in held.items()}
+
+
+def test_every_item_threat_item_exists():
+    from coach.situational import ITEM_THREATS
+
+    for threat in ITEM_THREATS:
+        assert threat.enemy_items <= set(ITEMS)
+        assert set(threat.items.values()) <= set(ITEMS)
+
+
+def test_told_saves_mean_nullifier_for_a_core(snap):
+    from coach.situational import against_items
+
+    pick = against_items(told(lion=("glimmer_cape", "force_staff", "blink")), "core", snap, ITEMS)
+    assert (pick.item.name, pick.reason) == ("Nullifier", "Lion has Glimmer Cape and Force Staff")
+
+
+def test_told_items_by_role_and_two_heroes(snap):
+    from coach.situational import against_items
+
+    seen = told(sven=("invis_sword",), dazzle=("silver_edge",))
+    pick = against_items(seen, "support", snap, ITEMS)
+    assert (pick.item.name, pick.reason) == ("Sentry Ward", "Sven has Shadow Blade and Dazzle has Silver Edge")
+    assert against_items(told(lion=("glimmer_cape",)), "support", snap, ITEMS) is None
+
+
+def test_told_items_beat_the_lineup_and_feed_the_model_prompt(snap):
+    from coach.game_questions import Notes
+    from coach.item_advisor import candidates, describe
+
+    notes = Notes(enemy_items=told(phantom_assassin=("butterfly",)))
+    lineup = enemies("lina", "zuus", "phantom_assassin")
+    # Phantom Assassin dodges attacks either way, but the reason is what was seen.
+    pick = recommend(snap, None, lineup, "core", ITEMS, None, notes)
+    assert (pick.item.name, pick.reason) == ("Monkey King Bar", "Phantom Assassin has Butterfly")
+    picks = candidates(snap, None, lineup, "core", ITEMS, ITEMS["item_manta"], notes)
+    assert "Phantom Assassin has Butterfly" in describe(snap, picks, None, lineup, ITEMS, notes=notes)
+
+
+def test_owned_counter_falls_through_to_the_lineup(snap):
+    snap.items.append(Item("slot5", "item_nullifier", None, True, 0))
+    from coach.game_questions import Notes
+
+    notes = Notes(enemy_items=told(lion=("glimmer_cape",)))
+    pick = recommend(snap, None, enemies("lina", "zuus"), "core", ITEMS, None, notes)
+    assert pick.item.name == "Black King Bar"

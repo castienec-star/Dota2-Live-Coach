@@ -86,9 +86,42 @@ is known (from 8:00, for heroes with benchmark numbers).
 
 - A short, hand-made list. Heroes not on it never trigger a counter; edit
   `THREATS` in `coach/situational.py` to add one.
-- It doesn't know what the enemy has bought, so it can't say "they have
-  Butterfly, buy MKB". That would need enemy items, which GSI doesn't give a
-  player and the fair-play rule forbids looking up.
+- Enemy items only count when the player says them (see below); the coach
+  never reads or looks them up, and GSI doesn't give them to a player.
+- The item table is short on purpose. Blade Mail and an enemy Black King Bar
+  call for a change in how you fight, not an item, and Linken's Sphere for
+  breaking it with a cheap targeted spell; those aren't on it yet.
+
+## Enemy items the player told the coach (issue #21)
+
+The player can say what an enemy has ("Lion has Glimmer and Force Staff",
+see `coach/enemy_items.py`). Those items are checked before step 1, because
+an item the player saw beats a guess from the hero (`ITEM_THREATS` in
+`coach/situational.py`):
+
+| Enemy has... | Core (pos 1-2) | Offlane (pos 3) | Support (pos 4-5) |
+|---|---|---|---|
+| Ghost Scepter, Glimmer Cape, Force Staff, Hurricane Pike, Eul's, Wind Waker, Lotus Orb | Nullifier | - | - |
+| Butterfly | Monkey King Bar | - | - |
+| Shadow Blade, Silver Edge | Dust of Appearance | Dust of Appearance | Sentry Ward |
+| Mekansm, Guardian Greaves, Holy Locket, Satanic | Eye of Skadi | Spirit Vessel | Spirit Vessel |
+
+The spoken reason is what the player said: "Buy Nullifier now: Lion has
+Glimmer Cape and Force Staff." The same items go into the model's prompt
+("The player told you: Lion has Glimmer Cape and Force Staff"), so the
+model can weigh them too, and into the death tip prompt.
+
+Sources: Liquipedia [Nullifier](https://liquipedia.net/dota2/Nullifier)
+(dispels the target and mutes its items),
+[Butterfly](https://liquipedia.net/dota2/Butterfly) (evasion) against
+[Monkey King Bar](https://liquipedia.net/dota2/Monkey_King_Bar),
+[Shadow Blade](https://liquipedia.net/dota2/Shadow_Blade) and
+[Silver Edge](https://liquipedia.net/dota2/Silver_Edge) (invisibility),
+[Mekansm](https://liquipedia.net/dota2/Mekansm),
+[Holy Locket](https://liquipedia.net/dota2/Holy_Locket) and
+[Satanic](https://liquipedia.net/dota2/Satanic) (healing) against
+[Eye of Skadi](https://liquipedia.net/dota2/Eye_of_Skadi) and
+[Spirit Vessel](https://liquipedia.net/dota2/Spirit_Vessel).
 
 ## In the unasked check
 

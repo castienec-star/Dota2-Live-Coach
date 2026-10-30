@@ -77,6 +77,7 @@ def candidates(
     found = [
         situational.recommend(snap, verdict, enemies, role_name, items, next_item, notes),
         Pick(next_item, "") if next_item is not None else situational.late(snap, role_name, items),
+        situational.against_items(notes.enemy_items, role_name, snap, items) if notes else None,
         situational.against(enemies, role_name, snap, items, trouble),
         situational.defensive(snap, role_name, items, reason or ""),
     ]
