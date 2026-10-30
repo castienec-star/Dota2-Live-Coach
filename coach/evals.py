@@ -19,6 +19,7 @@ from __future__ import annotations
 import argparse
 import contextlib
 import json
+import logging
 import sys
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -185,6 +186,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--only", choices=KINDS, help="run one kind of case")
     parser.add_argument("--cards-only", action="store_true", help="skip the run without cards")
     args = parser.parse_args(argv)
+    # The coach's own log lines say why a line was dropped ("names a hero
+    # not in the game: Pudge"), right under the case they belong to.
+    logging.basicConfig(level=logging.INFO, format="    why: %(message)s")
     cases = [c for c in load_cases() if args.only in (None, c["kind"])]
     asks = ollama_asks(args.model, args.url, args.timeout)
     print(f"Loading {args.model} in Ollama; the first answer can take a minute...", flush=True)
