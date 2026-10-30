@@ -94,7 +94,7 @@ built-in voice. Defaults follow patch 7.41:
 | --- | --- |
 | Power rune | 15 s before 6:00, then every 2 minutes; after 20:00 every 4 minutes |
 | Gold (bounty) runes | 15 s before 4:00, then every 4 minutes; after 20:00 every 8 minutes |
-| XP runes (wisdom shrines) | 20 s before 7:00, then every 7 minutes, all positions |
+| Wisdom shrines | 20 s before 7:00, then every 7 minutes |
 | Water rune | 10 s before 2:00 and 4:00 (mid only, once your position is known) |
 | Stack the camp | at :53 each minute until 11:53, only when your hero is near a neutral camp |
 
@@ -331,8 +331,8 @@ the game clock and the enemy heroes you told it:
   enemy heroes you told the coach count, and the list is gone after the
   match. No microphone? Type the same sentence in the coach window.
 - "Can I buy back?": the buyback cost against your gold, or its cooldown.
-- "When is the next rune?" (or "next XP rune?"): the next power rune, gold
-  runes and XP runes (wisdom shrines).
+- "When is the next rune?": the next power rune, gold runes and wisdom
+  shrines.
 
 Anything else gets "I can't help with that yet". It is on by default and
 needs two free speech models that run on your PC (downloaded once, about

@@ -17,8 +17,6 @@ BUILDS = {"antimage": ["Power Treads", "Battle Fury", "Manta Style"]}
         ("can I buyback", "buyback"),
         ("When is the next rune?", "rune"),
         ("When do the wisdom shrines spawn?", "rune"),
-        ("When is the next XP rune?", "rune"),
-        ("When are the experience runes?", "rune"),
         ("Tell me a joke.", "unknown"),
     ],
 )
@@ -75,7 +73,7 @@ def test_buyback_answers(snap):
 def test_rune_times_follow_the_clock(snap):
     answers = Answers({}, BUILDS)
     assert answers.answer("next rune?", snap) == (
-        "Power rune at 12:00, Gold runes at 12:00, XP runes at 14:00."
+        "Power rune at 12:00, Gold runes at 12:00, Wisdom shrines at 14:00."
     )
     snap.clock_time = -30
     assert answers.answer("next rune?", snap).startswith("Power rune at 6:00, Gold runes at 4:00")
