@@ -37,6 +37,7 @@ class Coach:
         self.health = None  # notices when Dota isn't sending updates (coach/health.py)
         self.advice = None  # what to buy now (coach/item_advisor.py)
         self.enemy_items = None  # enemy items the player told the coach (coach/enemy_items.py)
+        self.chat = None  # answers any other question with a model (coach/chat.py)
         self._last_summary = 0.0
 
     def handle(self, payload: dict[str, Any]) -> Snapshot:

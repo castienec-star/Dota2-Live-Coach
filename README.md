@@ -290,8 +290,9 @@ It uses:
 ### Ask the coach out loud
 
 Hands free, no window or key: say **"hey coach"**, wait for the beep, then
-ask. For now the coach answers five questions from your own hero's data,
-the game clock and the enemy heroes you told it:
+ask. The coach answers five questions straight away from your own hero's
+data, the game clock and the enemy heroes you told it, and anything else
+with a local model (see below):
 
 - "How am I doing?" / "Am I ahead?": from 8 minutes on, whether you are
   ahead, even or behind for this point of the match, comparing your gold,
@@ -352,7 +353,19 @@ the game clock and the enemy heroes you told it:
 - "When is the next rune?": the next power rune, gold runes and wisdom
   shrines.
 
-Anything else gets "I can't help with that yet". It is on by default and
+Anything else ("how do I play against Pudge?", "should I farm or push?")
+goes to the same free local model as the death tips, with only your own
+hero's numbers, your build and what to buy now, how you're doing, the heroes
+you told the coach and your answers to its questions, plus your last few
+questions this match so "and after that?" works. It answers in a sentence or
+two and says so when it doesn't know. A reply that names a hero you didn't
+tell it about is dropped, and one that arrives after you died or lost a lot
+of health isn't said at all. Without Ollama running (or slower than
+`chat_timeout` seconds) you hear the list of built-in questions instead. Set
+`chat = false` under `[listen]` to turn this off; it uses the death tips'
+`provider`, so `provider = "builtin"` turns it off too. No microphone? Type
+the question in the coach window instead, e.g. `how do I play against pudge`. Voice questions are
+on by default and
 needs two free speech models that run on your PC (downloaded once, about
 200 MB). Install them once; until you do, the coach simply doesn't listen:
 
