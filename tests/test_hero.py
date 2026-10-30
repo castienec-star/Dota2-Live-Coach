@@ -273,6 +273,84 @@ def test_worth_buying_quiet_late_or_without_a_build(payload):
     assert run(worth_buying([]), payload, [{"player.gold": 600}]) == []
 
 
+def lineup(*keys):
+    from coach.heroes import HeroIndex
+
+    index = HeroIndex()
+    return lambda: [index.by_key(k) for k in keys]
+
+
+def test_worth_buying_counters_the_told_enemy_lineup(payload):
+    # The sample hero has a Magic Wand already: Raindrops come first.
+    said = run(
+        worth_buying(["Black King Bar"], enemies=lineup("lina", "lion", "axe")),
+        payload,
+        [{"player.gold": 600}],
+    )
+    assert said == ["Buy Infused Raindrops now: Lina and Lion do a lot of magic damage."]
+
+
+def test_worth_buying_wand_against_one_spell_spammer(payload):
+    payload["items"]["slot2"] = {"name": "empty"}
+    said = run(worth_buying(["Black King Bar"], enemies=lineup("bristleback")), payload, [
+        {"player.gold": 600},
+        {"player.gold": 600, "dt": 200},
+    ])
+    # The wand is said once, with the reason, then the usual list goes on.
+    assert said == [
+        "Buy a Magic Wand now: Bristleback casts a lot of spells.",
+        "Buy a Wraith Band now, you'll get your Black King Bar later.",
+    ]
+
+
+def test_worth_buying_without_lineup_counters_keeps_the_usual_items(payload):
+    payload["items"]["slot2"] = {"name": "empty"}
+    for enemies in (lineup(), lineup("axe", "sven")):
+        said = run(worth_buying(["Black King Bar"], enemies=enemies), payload, [{"player.gold": 600}])
+        assert said == ["Buy a Magic Wand now, you'll get your Black King Bar later."]
+
+
+def test_worth_buying_counter_keeps_the_limits(payload):
+    enemies = lineup("lina")
+    # Owned, too late, or the big item is close: nothing.
+    payload["items"]["slot3"] = {"name": "item_infused_raindrop"}
+    assert run(worth_buying(["Black King Bar"], enemies=enemies), payload, [{"player.gold": 600}]) == [
+        "Buy a Wraith Band now, you'll get your Black King Bar later."
+    ]
+    payload["items"]["slot3"] = {"name": "empty"}
+    payload["map"]["clock_time"] = 26 * 60
+    assert run(worth_buying(["Black King Bar"], enemies=enemies), payload, [{"player.gold": 600}]) == []
+    payload["map"]["clock_time"] = 600
+    assert run(worth_buying(["Black King Bar"], enemies=enemies), payload, [{"player.gold": 3500}]) == []
+
+
+def test_worth_buying_raindrops_only_once_the_shop_sells_them(payload):
+    payload["map"]["clock_time"] = 120
+    rule = worth_buying(["Black King Bar"], enemies=lineup("lina"))
+    said = run(rule, payload, [{"player.gold": 600}, {"player.gold": 600, "dt": 200}])
+    assert said == [
+        "Buy a Wraith Band now, you'll get your Black King Bar later.",
+        "Buy Infused Raindrops now: Lina does a lot of magic damage.",
+    ]
+
+
+def test_worth_buying_no_raindrops_after_the_laning_stage(payload):
+    payload["map"]["clock_time"] = 13 * 60
+    said = run(worth_buying(["Black King Bar"], enemies=lineup("lina")), payload, [{"player.gold": 600}])
+    assert said == ["Buy a Wraith Band now, you'll get your Black King Bar later."]
+
+
+def test_cheap_counters_name_real_heroes_and_items():
+    from coach.heroes import HeroIndex
+    from coach.rules.hero import CHEAP_COUNTERS
+
+    index, items = HeroIndex(), load_items()
+    for counter in CHEAP_COUNTERS:
+        assert counter.item in items
+        for key in counter.heroes:
+            assert index.by_key(key) is not None, key
+
+
 def test_worth_buying_unknown_item_is_an_error():
     with pytest.raises(ValueError):
         build({"worth_buying": {"items": ["Not An Item"]}}, {"default": ["blink"]})

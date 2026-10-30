@@ -107,7 +107,7 @@ camp is alive, already stacked or blocked, so the coach cannot check that.
 | Reminder | When |
 | --- | --- |
 | You have gold for (item) | You can afford the next item on your build list |
-| Buy a (cheap item) now, you'll get your (item) later | Before 25:00, you are still 600+ gold short of the next build item (boots included) and you can afford a Magic Wand or your hero's Bracer, Wraith Band or Null Talisman that you don't own. Each one at most once a match |
+| Buy a (cheap item) now, you'll get your (item) later | Before 25:00, you are still 600+ gold short of the next build item (boots included) and you can afford a Magic Wand or your hero's Bracer, Wraith Band or Null Talisman that you don't own. Each one at most once a match. If you told the coach the enemy heroes, a cheap counter comes first with the reason: "Buy Infused Raindrops now: Lina does a lot of magic damage" (3:00 to 12:00) or "Buy a Magic Wand now: Bristleback casts a lot of spells" |
 | You're ahead / about even / behind for (minutes) ... | At 15:00 and 25:00, your gold, experience and last hits per minute against public numbers for your hero, with what to do about it (see "How am I doing?" below). It also names one item to get, the same pick as "What should I buy?" (a counter to the enemy heroes you told it, a defensive item, your next build item or a late-game item). Change the minutes in `[reminders.game_check]` |
 | Low health, back off | Health drops under 25% (again after you heal over 40%), once a burst of damage has stopped |
 | Go heal | Health stays under 40% for 10 s without taking damage; names a Salve, Bottle, Tango or Faerie Fire you carry |

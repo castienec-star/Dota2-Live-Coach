@@ -167,6 +167,8 @@ enabled = true
 # or bracer helps most, gets nothing. Each item is suggested
 # at most once a match, and never one you already own.
 # "stats" means Bracer, Wraith Band or Null Talisman, by your hero's main attribute.
+# If you told the coach the enemy heroes, a cheap counter to them comes first,
+# e.g. "Buy Infused Raindrops now: Lina does a lot of magic damage."
 enabled = true
 items = ["Magic Wand", "stats"]
 far = 600
