@@ -150,6 +150,23 @@ set in `[pregame]`; until it is known, every reminder is said. Prices come from 
 item data; `coach/data/PATCH` names the patch the bundled data is current for
 (7.41f).
 
+### After the match: three things to work on
+
+When the match ends, the coach says up to three short points from your own
+game and saves them in `%APPDATA%\Dota2LiveCoach\reviews\`:
+
+- **Deaths:** dying twice or more before 10 minutes, three deaths within five
+  minutes, or seven or more in the game, with one habit to fix it.
+- **Last hits at 10 minutes** (cores only): under 28, against a target of 35.
+- **First big item** (over 1800 gold): later than 20 minutes for a core or 25
+  for a support, or none at all.
+
+If there is less to fix, it says what went well. Games under 5 minutes get no
+review. Read the review of any recorded match again with
+`py -m coach review "%APPDATA%\Dota2LiveCoach\recordings\<file>.jsonl"`, or
+turn it off with `enabled = false` under `[reminders.review]`. The targets are
+explained in `docs/strategy/post-game-review.md`.
+
 ### Death-timer tips
 
 When you die with at least 10 seconds to wait, the coach speaks one short tip

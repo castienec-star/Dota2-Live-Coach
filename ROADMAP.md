@@ -27,7 +27,7 @@ CLAUDE.md).
    ("Buy a Magic Wand now, you'll get your Black King Bar later"), at most
    once per item a match. *Why:* low-bracket players carry unspent gold for
    minutes and lose it when they die (issue #12).
-3. [ ] **Post-game review: three things to fix.** After the match, speak
+3. [x] **Post-game review: three things to fix.** After the match, speak
    (and save as a text file) three short points from the player's own
    recording: deaths and when, last hits at 10 minutes against a target for
    their role, slow big-item timings. *Why:* this is the "learn something
@@ -103,7 +103,12 @@ CLAUDE.md).
   from public data.
 - Spoken item timing goals per hero ("aim for Battle Fury by 15 minutes").
 - A weekly progress summary from the player's own recordings (deaths per
-  game falling, last hits rising).
+  game falling, last hits rising). The post-game review (item 3) already
+  writes one text file per match in `reviews/`; the summary can compare them.
+- Post-game review, next steps: name the hero the player died to most when
+  they told the coach (in-match answers), compare item timings with the
+  hero's public popular-item timings instead of one 20-minute rule, and say
+  "last game you fixed X" when a point from the previous review improved.
 - Translations of the spoken lines.
 - Upgrade-aware builds: know that Dragon Lance went into Hurricane Pike (from
   dotaconstants' item components) so builds can list both steps.
