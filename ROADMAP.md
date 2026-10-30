@@ -36,11 +36,11 @@ CLAUDE.md).
    last hits with a simple target (for example 35 at 10:00 for a core) and
    give one encouraging line. Supports skip it. *Why:* last hitting is the
    biggest farm gap in low brackets and GSI gives last hits directly.
-5. [ ] **"Don't fight, heal" after a near-death.** When health stays under
+5. [x] **"Don't fight, heal" after a near-death.** When health stays under
    the low-health line for a while without healing, suggest going back or
    using regen (salve, tango, fountain), naming regen the player owns.
    *Why:* dying is the number one habit to fix below Divine.
-6. [ ] **Death streak tip.** After two or three deaths close together, one
+6. [x] **Death streak tip.** After two or three deaths close together, one
    calm line: farm safely, stay near towers, buy a Black King Bar or
    defensive item if it is on the build. *Why:* tilt and feeding are classic
    low-bracket losses; one sentence can stop the spiral.

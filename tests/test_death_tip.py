@@ -227,3 +227,46 @@ def test_ollama_asker_sends_a_json_schema_when_given(fake_ollama):
     ask("Hero: luna")
     assert received[0]["format"] == {"type": "object"}
     assert "format" not in received[1]
+
+
+def test_three_deaths_close_together_get_the_streak_line(payload):
+    rule, said = make(lambda p: "Model tip.", position=lambda snap: 1)
+    state = MatchState()
+    engine = Engine([rule], lambda line: None)
+    for clock in (600, 700, 820):
+        payload["map"]["clock_time"] = clock
+        die(payload, state, engine)
+        rule._pool.submit(lambda: None).result()  # the tip is said before the next life
+    rule.close()
+    assert said[:2] == ["Model tip.", "Model tip."]
+    # Anti-Mage at pos 1 owns no Black King Bar, the first defensive item for a core.
+    assert said[2] == (
+        "That's 3 deaths in 4 minutes. Take a breath: farm near your towers "
+        "until your team groups up and get Black King Bar before anything greedy."
+    )
+
+
+def test_streak_line_once_per_streak_and_not_for_spread_deaths(payload):
+    rule, said = make(lambda p: "Model tip.", position=lambda snap: 1)
+    state = MatchState()
+    engine = Engine([rule], lambda line: None)
+    for clock in (600, 650, 700, 750, 1500, 2100, 2700):
+        payload["map"]["clock_time"] = clock
+        die(payload, state, engine)
+        rule._pool.submit(lambda: None).result()  # the tip is said before the next life
+    rule.close()
+    streaks = [line for line in said if line.startswith("That's")]
+    # 600, 650, 700 make a streak; 750 alone doesn't start a new one; the rest are spread out.
+    assert len(streaks) == 1 and len(said) == 7
+
+
+def test_streak_can_be_turned_off(payload):
+    rule, said = make(lambda p: "Model tip.", streak=0)
+    state = MatchState()
+    engine = Engine([rule], lambda line: None)
+    for clock in (600, 650, 700):
+        payload["map"]["clock_time"] = clock
+        die(payload, state, engine)
+        rule._pool.submit(lambda: None).result()  # the tip is said before the next life
+    rule.close()
+    assert said == ["Model tip."] * 3
