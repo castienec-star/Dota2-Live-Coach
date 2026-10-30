@@ -263,7 +263,11 @@ the game clock and the enemy heroes you told it:
   experience and last hits per minute with public OpenDota numbers for your
   hero (supports only by experience), and what to do about it. Numbers for
   popular low-bracket heroes come with the coach; other heroes are read once
-  from OpenDota if `opendota` is on in `[pregame]`. See
+  from OpenDota if `opendota` is on in `[pregame]`, and without them the coach
+  compares you roughly with cores or supports in general and says so. Before
+  8 minutes it gives your last hits against a simple target (about 35 at
+  10 minutes for a core) and your deaths so far. No microphone? Type `how`
+  in the coach window for the same answer. See
   [docs/strategy/ahead-or-behind.md](docs/strategy/ahead-or-behind.md).
 
 - "What should I buy?": one item for right now, from how your game is going

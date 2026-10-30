@@ -2,9 +2,11 @@ import pytest
 
 from coach.benchmarks import (
     Benchmarks,
+    early,
     load_benchmarks,
     parse_api,
     ramp,
+    role_curves,
     share_below,
 )
 from coach.heroes import HeroIndex
@@ -68,10 +70,34 @@ def test_supports_are_judged_on_experience_only():
     assert Benchmarks().verdict(lion, support=True).kind == "even"
 
 
-def test_no_verdict_early_or_without_numbers():
+def test_no_verdict_early():
     assert Benchmarks().verdict(jugg(clock=300)) is None
-    am = Snapshot(clock_time=900, hero_name="npc_dota_hero_antimage", gpm=500, xpm=500)
-    assert Benchmarks().verdict(am) is None
+
+
+def test_heroes_without_numbers_get_a_rough_verdict_for_their_role():
+    am = Snapshot(clock_time=900, hero_name="npc_dota_hero_antimage", gpm=450, xpm=500, last_hits=75)
+    verdict = Benchmarks().verdict(am)
+    assert verdict.rough and verdict.kind == "even"
+    assert not Benchmarks().verdict(jugg()).rough
+    roles = role_curves()
+    # Cores farm more than supports.
+    assert roles[False]["gold_per_min"][4][1] > roles[True]["gold_per_min"][4][1]
+
+
+def test_a_broken_benchmarks_file_still_answers(monkeypatch, tmp_path):
+    broken = tmp_path / "benchmarks.json"
+    broken.write_text("{not json", encoding="utf-8")
+    monkeypatch.setattr("coach.benchmarks.BENCHMARKS_FILE", broken)
+    monkeypatch.setattr("coach.benchmarks.load_benchmarks", lambda path=broken: load_benchmarks(path))
+    role_curves.cache_clear()
+    try:
+        benchmarks = Benchmarks()
+        assert benchmarks.heroes == {}
+        assert benchmarks.verdict(jugg()) is None
+        line = Answers({}, {}, benchmarks=benchmarks).answer("how am I doing", jugg(last_hits=30))
+        assert line.startswith("30 last hits at 15 minutes, aim for about 50.")
+    finally:
+        role_curves.cache_clear()
 
 
 def test_other_heroes_are_fetched_once():
@@ -127,7 +153,7 @@ def test_spoken_verdicts():
     assert "Black King Bar" in answers.answer("how am I doing", jugg(900, 300, 350, 40))
     assert answers.answer("am I ahead", jugg(900, 450, 500, 75)).startswith("You're about even")
     assert answers.answer("am I ahead", jugg(900, 620, 700, 110)).startswith("You're ahead for 15 minutes.")
-    assert answers.answer("how am I doing", jugg(clock=200)).startswith("It's too early")
+    assert answers.answer("how am I doing", jugg(clock=60)).startswith("The game has just started.")
 
 
 def test_spoken_verdict_for_a_support_by_position():
@@ -138,9 +164,46 @@ def test_spoken_verdict_for_a_support_by_position():
     assert "Glimmer Cape" in line
 
 
-def test_spoken_verdict_without_numbers():
-    am = Snapshot(clock_time=900, hero_name="npc_dota_hero_antimage", gpm=500, xpm=500)
-    assert Answers({}, {}).answer("how am I doing", am) == "I don't have numbers for Anti-Mage yet."
+def test_spoken_verdict_without_numbers_is_rough():
+    am = Snapshot(clock_time=900, hero_name="npc_dota_hero_antimage", gpm=450, xpm=500, last_hits=75)
+    answers = Answers({}, {})
+    line = answers.answer("how am I doing", am)
+    assert line.startswith("You're about even for 15 minutes.")
+    assert line.endswith("That's a rough comparison with cores in general.")
+    # Said once a match, not every time.
+    assert "rough" not in answers.answer("how am I doing", am)
+    am.match_id = "next match"
+    assert "rough" in answers.answer("how am I doing", am)
+
+
+def test_game_check_and_question_share_the_rough_caveat():
+    benchmarks = Benchmarks()
+    am = Snapshot(clock_time=900, hero_name="npc_dota_hero_antimage", gpm=450, xpm=500, last_hits=75)
+    (line,) = run_check(GameCheck(benchmarks, minutes=[15]), am)
+    assert "rough comparison" in line
+    assert "rough" not in Answers({}, {}, benchmarks=benchmarks).answer("how am I doing", am)
+
+
+@pytest.mark.parametrize(
+    "clock, last_hits, deaths, expected",
+    [
+        (180, 6, 0, "6 last hits at 3 minutes, aim for about 10. No deaths yet, good."),
+        (300, 12, 0, "12 last hits at 5 minutes, aim for about 15. No deaths yet, good."),
+        (300, 22, 1, "22 last hits at 5 minutes, that's on track. One death so far"),
+        (420, 25, 3, "25 last hits at 7 minutes, that's on track. 3 deaths already"),
+    ],
+)
+def test_early_answer_for_a_core(clock, last_hits, deaths, expected):
+    snap = jugg(clock=clock, last_hits=last_hits)
+    snap.deaths = deaths
+    assert Answers({}, {}).answer("how am I doing", snap).startswith(expected)
+
+
+def test_early_answer_for_a_support():
+    lion = Snapshot(clock_time=360, hero_name="npc_dota_hero_lion", last_hits=3, deaths=2)
+    line = early(lion, support=True)
+    assert line.startswith("It's too early to judge a support at 6 minutes. 2 deaths already")
+    assert "last hits" not in line
 
 
 def run_check(rule, snap):
@@ -163,11 +226,12 @@ def test_game_check_speaks_once_at_each_minute():
     assert run_check(rule, jugg(clock=1510)) != []
 
 
-def test_game_check_skips_a_missed_minute_and_unknown_heroes():
+def test_game_check_skips_a_missed_minute_and_speaks_for_every_hero():
     rule = GameCheck(Benchmarks(), minutes=[15, 25])
     assert run_check(rule, jugg(clock=1000)) == []  # started the coach at 16:40
     am = Snapshot(clock_time=1500, hero_name="npc_dota_hero_antimage", gpm=500, xpm=500)
-    assert run_check(rule, am) == []
+    (line,) = run_check(rule, am)
+    assert "rough comparison with cores" in line
 
 
 def test_game_check_uses_the_support_verdict_by_position():

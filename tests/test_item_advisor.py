@@ -244,3 +244,21 @@ def test_typed_buy_answers_in_the_coach_window(tmp_path, payload, monkeypatch, c
     out = capsys.readouterr().out
     assert out.startswith(("Buy ", "Get ", "You're"))
     assert "Manta Style" in out or "Black King Bar" in out
+
+
+def test_typed_how_answers_in_the_coach_window(tmp_path, payload, monkeypatch, capsys):
+    import io
+
+    from coach.__main__ import make_coach, read_typed_picks
+    from coach.config import load
+    from coach.speaker import Speaker
+
+    coach = make_coach(load(app_dir=tmp_path), Speaker(), tips=False)
+    monkeypatch.setattr("sys.stdin", io.StringIO("how\n"))
+    read_typed_picks(coach)
+    assert capsys.readouterr().out.startswith("I can't see your hero yet.")
+
+    coach.state.update(payload)
+    monkeypatch.setattr("sys.stdin", io.StringIO("status\n"))
+    read_typed_picks(coach)
+    assert capsys.readouterr().out.startswith(("You're", "It's too early", "The game has just"))

@@ -21,7 +21,7 @@ import time
 from collections.abc import Callable, Iterable, Iterator
 
 from . import situational
-from .benchmarks import EARLIEST, Benchmarks, is_support, spoken
+from .benchmarks import Benchmarks, status
 from .game_questions import Notes
 from .heroes import HeroIndex, HeroInfo
 from .item_advisor import Advice, ItemAdvisor
@@ -139,15 +139,8 @@ class Answers:
         return situational.spoken(pick, verdict, snap)
 
     def how_am_i_doing(self, snap: Snapshot) -> str:
-        if (snap.clock_time or 0) < EARLIEST:
-            return "It's too early to tell. Ask me again after 8 minutes."
         hero = self.heroes.by_key(snap.hero_name)
-        support = is_support(hero, self.position(snap) if self.position else 0)
-        verdict = self.benchmarks.verdict(snap, support)
-        if verdict is None:
-            name = hero.name if hero else "this hero"
-            return f"I don't have numbers for {name} yet."
-        return spoken(verdict, support)
+        return status(self.benchmarks, snap, hero, self.position(snap) if self.position else 0)
 
     def buyback(self, snap: Snapshot) -> str:
         if snap.buyback_cost <= 0:

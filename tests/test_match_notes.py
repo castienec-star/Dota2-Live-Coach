@@ -73,7 +73,9 @@ def test_losing_fights_buys_to_stay_alive(snap):
 def test_voice_answer_uses_the_notes(snap):
     snap.gold = 500
     notes = Notes(lane="lost", trouble=hero("lion"))
-    answers = Answers({}, {}, benchmarks=Benchmarks(), notes=lambda: notes)
+    benchmarks = Benchmarks()
+    benchmarks.verdict = lambda snap, support=False: None  # no verdict to say first
+    answers = Answers({}, {}, benchmarks=benchmarks, notes=lambda: notes)
     assert answers.answer("what should I buy", snap) == (
         "Get Black King Bar next, 3550 more gold: Lion does a lot of magic damage."
     )
