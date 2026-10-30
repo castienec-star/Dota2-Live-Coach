@@ -119,8 +119,13 @@ def run_case(case: dict, ask: llm.Ask, heroes: HeroIndex, items: dict[str, ItemI
 
 
 def run(
-    cases: list[dict], asks: dict[str, llm.Ask], cards: bool, runs: int = 1
+    cases: list[dict],
+    asks: dict[str, llm.Ask],
+    cards: bool,
+    runs: int = 1,
+    progress: Callable[[Result], None] | None = None,
 ) -> list[Result]:
+    """progress(result) is called as each answer comes in."""
     heroes, items = HeroIndex(), load_items()
     results = []
     off = mock.patch.object(knowledge, "_load", lambda: NO_CARDS)
@@ -129,6 +134,8 @@ def run(
             for _ in range(runs):
                 reply, good = run_case(case, asks[case["kind"]], heroes, items)
                 results.append(Result(case["name"], cards, reply, good))
+                if progress is not None:
+                    progress(results[-1])
     return results
 
 
@@ -180,13 +187,23 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     cases = [c for c in load_cases() if args.only in (None, c["kind"])]
     asks = ollama_asks(args.model, args.url, args.timeout)
+    print(f"Loading {args.model} in Ollama; the first answer can take a minute...", flush=True)
     if asks["tip"]("Hero: test") is None:
         print(f"Ollama did not answer at {args.url} with {args.model}. Is it running, and is the model pulled?")
         return 1
-    results = run(cases, asks, cards=True, runs=args.runs)
+    total = len(cases) * args.runs * (1 if args.cards_only else 2)
+    done = 0
+
+    def progress(result: Result) -> None:
+        nonlocal done
+        done += 1
+        cards = "with cards" if result.cards else "no cards"
+        print(f"[{done}/{total}] {result.case} ({cards}): {result.points} of 2", flush=True)
+
+    results = run(cases, asks, cards=True, runs=args.runs, progress=progress)
     if not args.cards_only:
-        results += run(cases, asks, cards=False, runs=args.runs)
-    print(f"Model {args.model}, {len(cases)} cases, {args.runs} run(s) each")
+        results += run(cases, asks, cards=False, runs=args.runs, progress=progress)
+    print(f"\nModel {args.model}, {len(cases)} cases, {args.runs} run(s) each")
     report(results)
     return 0
 
