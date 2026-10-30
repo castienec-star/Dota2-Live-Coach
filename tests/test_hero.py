@@ -196,7 +196,9 @@ def test_default_builds_name_real_heroes_and_items(tmp_path):
     keys = {h.key for h in HeroIndex().heroes.values()}
     assert {"default", "default_support"} <= set(cfg.builds)
     for hero, names in cfg.builds.items():
-        assert hero in keys | {"default", "default_support"}, f"no hero called {hero!r}"
+        # "spirit_breaker_pos3" is a build for one position of a hero.
+        name = hero.rsplit("_pos", 1)[0] if hero[-1:].isdigit() and "_pos" in hero else hero
+        assert name in keys | {"default", "default_support"}, f"no hero called {hero!r}"
         assert len(names) == len(set(names)), f"repeated item in the build for {hero}"
     # Fails loudly if a patch removes an item a build names.
     parse_builds(cfg.builds, load_items())
@@ -313,3 +315,14 @@ def test_default_config_builds(tmp_path):
     assert {r.name for r in rules} >= {
         "low_health", "buyback", "skill_point", "wand", "ward", "item_ready", "worth_buying",
     }
+
+
+def test_spirit_breaker_builds(tmp_path):
+    from coach import config
+
+    cfg = config.load(app_dir=tmp_path)
+    ready = ItemReady(parse_builds(cfg.builds, load_items()))
+    # Unknown position or 4: the roaming support build; 3: the core one.
+    assert ready.build_for("spirit_breaker")[1].name == "Spirit Vessel"
+    assert ready.build_for("spirit_breaker", 4)[1].name == "Spirit Vessel"
+    assert ready.build_for("spirit_breaker", 3)[1].name == "Shadow Blade"
