@@ -90,6 +90,8 @@ _HAS = re.compile(r"\b(has|have|got|bought|built|building|carries|carrying|with)
 _FORGET = re.compile(r"\b(forget|clear|reset)\b.*\bitems?\b")
 # About the player, not an enemy: "do I have BKB?", "should I get Pipe?".
 _SELF = re.compile(r"\b(i|i'm|my|me|should|do|does|what|which)\b")
+# One answer can name several heroes: "Lion has Glimmer, and Sven has BKB".
+_PARTS = re.compile(r"[,.;!?]|\band\b(?=(?:\s+[\w'-]+){1,3}\s+(?:has|have|got|bought|built|is)\b)", re.I)
 # "Lion has Force Staff, not Glimmer": what follows "not" is a correction.
 _NOT = re.compile(r"\bnot\b.*")
 # Cheap or consumable items say nothing about a fight; not worth keeping.
@@ -186,10 +188,28 @@ class EnemyItems:
             self._told[hero.key] = (hero, tuple(items))
         return f"Got it, {hero.name} has {_list([i.name for i in items])}."
 
-    def _parse(self, words: str) -> tuple[HeroInfo, list[ItemInfo]] | None:
-        """The enemy hero and its items from "<hero> has <items>"."""
+    def answer(self, text: str) -> str | None:
+        """The answer to "check the enemy items": one or more "<hero> has
+        <items>", where the verb may be left out ("Lion glimmer and force").
+        Records each and returns one read-back, or None if nothing was heard."""
+        if not _words(text) or _SKIP.search(_words(text)):
+            return None
+        said = []
+        for part in _PARTS.split(text):
+            parsed = self._parse(_words(part), asked=True) if part and part.strip() else None
+            if parsed is None:
+                continue
+            hero, items = parsed
+            with self._lock:
+                self._told[hero.key] = (hero, tuple(items))
+            said.append(f"{hero.name} has {_list([i.name for i in items])}")
+        return f"Got it, {' and '.join(said)}." if said else None
+
+    def _parse(self, words: str, asked: bool = False) -> tuple[HeroInfo, list[ItemInfo]] | None:
+        """The enemy hero and its items from "<hero> has <items>". asked: an
+        answer to the coach's question, where "has" may be left out."""
         items, rest = self.matcher.find(_NOT.sub("", words))
-        if not items or not _HAS.search(rest) or _SELF.search(rest):
+        if not items or not (asked or _HAS.search(rest)) or _SELF.search(rest):
             return None
         heroes = self._heroes(rest)
         return (heroes[0], items) if heroes else None

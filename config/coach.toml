@@ -60,6 +60,14 @@ max_seconds = 5
 cooldown = 3
 # Microphone name or number; empty = Windows default.
 device = ""
+# At calm moments around these minutes, then every enemy_items_every minutes,
+# ask you to check the enemy items (click an enemy hero or open the
+# scoreboard) and say what you see: "Lion has Glimmer and Sven has BKB".
+# "What should I buy?" then counters them. Uses the same calm moments and
+# question_every gap as game_questions. Set enemy_items_check = false to turn it off.
+enemy_items_check = true
+enemy_items_at = [12, 20, 30]
+enemy_items_every = 10
 
 # Clock reminders. Times are game-clock seconds (6:00 = 360); "lead" is how many
 # seconds early to speak. Defaults follow patch 7.41; timings change between

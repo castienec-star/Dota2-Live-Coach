@@ -16,6 +16,16 @@ never looks anything up about other players.
 | Is their carry farming freely? | 15:00 | end | yes / no |
 | Is your team ahead or behind in fights? | 20:00 | end | ahead / even / behind |
 
+| Check the enemy items, then tell me what you see. | 12:00, 20:00, 30:00, then every 10 minutes | again and again | "Lion has Glimmer, and Sven has BKB" |
+
+- The enemy items check (issue #21 step 2) is the one question asked more
+  than once: items change all game. A check missed while the player was
+  busy isn't asked twice; the next one comes at its own time. Answers go to
+  `coach/enemy_items.py` and are countered in "what should I buy?" (see
+  [situational-items.md](situational-items.md)). The times follow when
+  core items usually land at low MMR: the first big defensive items
+  (Glimmer, Force Staff, BKB) around 12 to 20 minutes, the late ones after 30.
+  `enemy_items_at` and `enemy_items_every` under `[listen]` change them.
 - 10:00 is when the laning stage is usually over; after 18:00 "how did your
   lane go" is old news, so it is dropped.
 - Only at calm moments: dead with at least 10 seconds to wait, or alive with

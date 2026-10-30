@@ -266,8 +266,13 @@ It uses:
   steer "What should I buy?", the 15 and 25 minute check and death tips:
   the hero giving you trouble gets countered first, and losing fights or a
   free-farming enemy carry means a defensive item. Answers are forgotten
-  after the match. Turn them off with `game_questions = false`, or
-  space them out with `question_every`, under `[listen]`. See
+  after the match. Around 12, 20 and 30 minutes, then every 10, it also
+  says "Check the enemy items, then tell me what you see": click an enemy
+  hero or open the scoreboard and answer like "Lion has Glimmer, and Sven
+  has BKB" (see the enemy items line under voice questions). Turn them off
+  with `game_questions = false` (or only the item checks with
+  `enemy_items_check = false`), or space them out with `question_every`,
+  under `[listen]`. See
   [docs/strategy/game-state-questions.md](docs/strategy/game-state-questions.md).
 - **Public hero statistics** from [OpenDota](https://www.opendota.com): how
   each hero does against the others and by game length, like Dota Plus shows.
