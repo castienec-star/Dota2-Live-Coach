@@ -314,7 +314,6 @@ def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
         enemies,
         notes_of(coach),
         lambda: coach.state.current,
-        coach.enemy_items.facts if coach.enemy_items is not None else None,
     )
     coach.chat = chat
     # Keeps "what should I buy?" ready, and says when the pick changes.

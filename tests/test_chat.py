@@ -205,3 +205,19 @@ def test_typed_questions_go_to_the_chat(tmp_path, payload, monkeypatch, capsys):
     monkeypatch.setattr("sys.stdin", io.StringIO("tell me a joke\n"))
     read_typed_picks(coach)
     assert capsys.readouterr().out.strip() == OFF
+
+
+def test_reported_enemy_items_are_in_the_prompt_once(tmp_path, payload):
+    from coach import config
+    from coach.__main__ import make_coach, notes_of
+    from coach.speaker import Speaker
+
+    cfg = config.load(app_dir=tmp_path)
+    coach = make_coach(cfg, Speaker(), tips=False)
+    coach.handle(payload)
+    coach.enemy_items.report("Lion has Glimmer")
+    model = FakeModel("Buy a Nullifier.")
+    # As cmd_run builds it: the enemy items come with notes_of().
+    chat = Chat(model, notes=notes_of(coach), enemy_items=coach.enemy_items.facts)
+    chat("what does Lion have?", coach.state.current)
+    assert model.prompts[0].count("Lion has Glimmer Cape") == 1

@@ -188,7 +188,8 @@ class Chat:
         lines.append("Teammates: " + (", ".join(h.name for h in others) if others else "not known"))
         lines.append("Enemies: " + (", ".join(h.name for h in enemies) if enemies else "not known"))
         notes = self.notes()
-        told = (notes.told() if notes is not None else []) + self.enemy_items()
+        # notes_of() already holds the reported enemy items; each fact once.
+        told = list(dict.fromkeys((notes.told() if notes is not None else []) + self.enemy_items()))
         if told:
             lines.append(f"The player told you: {'; '.join(told)}")
         if self.history:
