@@ -122,20 +122,22 @@ comes with simple builds for heroes popular from Herald to Ancient (Axe,
 Bristleback, Drow Ranger, Juggernaut, Legion Commander, Lion, Luna, Ogre Magi,
 Phantom Assassin, Pudge, Slark, Sniper, Viper, Witch Doctor, Wraith King and
 Zeus). Any other hero gets the items real players build on it most, from
-OpenDota's public item popularity (boots first, then the most bought big
-items of the mid and late game), once that data is saved with:
+OpenDota's public item popularity bundled in `coach/data/item_popularity.json`
+(fetched 2026-10-30, patch 7.41f): boots first, then the most bought big
+items of the mid and late game, leaving out bare components (Ultimate Orb,
+Mystic Staff), Divine Rapier, and an item whose upgrade is also on the list.
+To read fresher numbers (about three minutes, public aggregate numbers only):
 
 ```
 py -m coach refresh-items
 ```
 
-It takes about three minutes, reads only public aggregate numbers, and saves
-`coach/data/item_popularity.json`. Without it, or for a hero with too little
-data, any other hero gets a support build in positions 4 and 5, otherwise a
+For a hero with too little data, any other hero gets a support build in positions 4 and 5, otherwise a
 core build (`default_support` and `default`); while your position isn't known,
 it goes by the hero's usual role. Builds can also depend on your position:
 `pudge_pos2 = [...]` is Pudge's build when you play mid, and `pos3 = [...]` is
-for any hero without its own list when you play offlane. Put `pudge = []` in
+for any hero without its own list when you play offlane (it comes before the
+popular items). Put `pudge = []` in
 your own `coach.toml` to turn the reminder off for one hero.
 
 Any reminder can be limited to some positions, e.g. `positions = [4, 5]` under

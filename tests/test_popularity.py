@@ -71,6 +71,10 @@ def test_hero_without_a_build_gets_the_popular_one():
     # Your own build list always wins.
     assert [i.name for i in rule.build_for("pudge")] == ["Blink Dagger"]
     assert rule.build_for("axe")[1].name == "Satanic"
+    # A position list of your own wins too; the popular one comes before the defaults.
+    builds["pos2"] = [ITEMS["item_bottle"]]
+    assert [i.name for i in rule.build_for("lina", 2)] == ["Bottle"]
+    assert rule.build_for("lina", 1)[0].name == "Power Treads"
 
 
 def test_refresh_items_command(tmp_path, monkeypatch):
@@ -88,3 +92,26 @@ def test_refresh_items_saves_nothing_when_offline(tmp_path, monkeypatch):
     out = tmp_path / "pop.json"
     assert main(["--config", str(tmp_path / "none.toml"), "refresh-items", "--out", str(out)]) == 1
     assert not out.exists()
+
+
+def test_components_and_replaced_parts_are_left_out():
+    stages = {
+        "early": ["item_boots", "item_travel_boots", "item_power_treads"],
+        "mid": ["item_yasha", "item_ultimate_orb", "item_kaya", "item_yasha_and_kaya"],
+        "late": ["item_rapier", "item_black_king_bar", "item_mystic_staff"],
+    }
+    names = [i.name for i in popularity.popular_build(stages, ITEMS)]
+    # Travel boots aren't the first boots; Yasha and Kaya replace their parts.
+    assert names == ["Power Treads", "Yasha and Kaya", "Black King Bar"]
+
+
+def test_bundled_snapshot_covers_every_hero_with_real_items():
+    snapshot = popularity.load()
+    heroes = {h.key for h in load_heroes().values()}
+    assert set(snapshot) == heroes
+    builds = popularity.popular_builds(ITEMS, snapshot)
+    assert len(builds) >= len(heroes) * 0.9
+    for hero, build in builds.items():
+        keys = [i.key for i in build]
+        assert len(keys) == len(set(keys)), hero
+        assert not set(keys) & popularity.COMPONENTS, hero

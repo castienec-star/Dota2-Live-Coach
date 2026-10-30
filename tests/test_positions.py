@@ -27,7 +27,7 @@ def names(build):
 
 
 def test_build_order_by_position():
-    rule = ItemReady(parse_builds(BUILDS, load_items()), HeroIndex())
+    rule = ItemReady(parse_builds(BUILDS, load_items()), HeroIndex(), popular={})
     assert names(rule.build_for("pudge", 2)) == ["Phase Boots"]
     assert names(rule.build_for("pudge", 4)) == ["Tranquil Boots"]
     assert names(rule.build_for("pudge")) == ["Tranquil Boots"]
@@ -36,7 +36,7 @@ def test_build_order_by_position():
 
 
 def test_position_beats_hero_roles_for_the_default_build():
-    rule = ItemReady(parse_builds(BUILDS, load_items()), HeroIndex())
+    rule = ItemReady(parse_builds(BUILDS, load_items()), HeroIndex(), popular={})
     # Crystal Maiden is a support by role, Anti-Mage a carry.
     assert names(rule.build_for("crystal_maiden")) == ["Glimmer Cape"]
     assert names(rule.build_for("crystal_maiden", 1)) == ["Battle Fury"]
