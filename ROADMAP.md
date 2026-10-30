@@ -32,7 +32,7 @@ CLAUDE.md).
    recording: deaths and when, last hits at 10 minutes against a target for
    their role, slow big-item timings. *Why:* this is the "learn something
    every game" moment that justifies a subscription.
-4. [ ] **Last-hit pace check.** At 5 and 10 minutes, compare the player's
+4. [x] **Last-hit pace check.** At 5 and 10 minutes, compare the player's
    last hits with a simple target (for example 35 at 10:00 for a core) and
    give one encouraging line. Supports skip it. *Why:* last hitting is the
    biggest farm gap in low brackets and GSI gives last hits directly.
@@ -99,6 +99,10 @@ CLAUDE.md).
   start-of-game answers or typed picks, issue #16): Magic Wand against spell spammers, Infused Raindrops against
   magic nukers, Wind Lace or boots when the build has none yet.
 
+- Last-hit pace, next steps (item 4 is done in `coach/rules/last_hits.py`):
+  count denies too ("and 6 denies, nice") once the coach knows the lane
+  matchup, and in the post-game review say "you hit 15 at 5:00 this game,
+  up from 9" by comparing with the player's earlier reviews.
 - Skill build reminders per hero (for example "max your first spell"),
   from public data.
 - Spoken item timing goals per hero ("aim for Battle Fury by 15 minutes").

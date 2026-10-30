@@ -14,7 +14,8 @@ import time
 from collections.abc import Callable
 from pathlib import Path
 
-from .benchmarks import CREEPS_MEET, LAST_HITS_PER_MIN, is_support
+from . import benchmarks
+from .benchmarks import is_support
 from .heroes import HeroIndex
 from .items import ItemInfo, load_items
 from .profile import BIG_ITEM_COST, MatchSummary, Tally
@@ -36,7 +37,7 @@ LAST_HIT_SHORT = 0.8  # under 80% of the target is a point to fix
 
 def last_hit_target() -> int:
     """Last hits a core should have at 10:00, rounded to 5 (35)."""
-    return 5 * round(LAST_HITS_PER_MIN * (10 - CREEPS_MEET) / 5)
+    return benchmarks.last_hit_target(10)
 
 
 def _streak(death_times: list[int]) -> tuple[int, int, int]:
