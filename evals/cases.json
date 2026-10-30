@@ -37,15 +37,15 @@
    "kind": "tip", "hero": "drow_ranger", "position": 1, "minute": 6, "level": 5,
    "gold": 350, "kda": [0, 2, 0], "last_hits": 22, "respawn": 14,
    "items": ["tango", "magic_stick", "boots", "tpscroll"],
-   "expect": ["frost arrow", "gust", "tower", "last hit", "careful", "behind your creeps"]
+   "expect": ["frost arrow", "tower", "careful", "behind your creeps", "stay back", "farm safely"]
   },
   {
-   "name": "Wraith King died with Reincarnation down",
+   "name": "Wraith King dies in a mid-game fight",
    "kind": "tip", "hero": "skeleton_king", "position": 1, "minute": 27, "level": 20,
    "gold": 1500, "kda": [6, 4, 7], "last_hits": 230,
    "items": ["phase_boots", "armlet", "radiance", "blink", "tpscroll"],
    "told": {"fights": "even"},
-   "expect": ["reincarnation", "ultimate"]
+   "expect": ["reincarnation", "with your team", "together", "blink", "armlet"]
   },
   {
    "name": "Core against Lion, Lina and Axe",

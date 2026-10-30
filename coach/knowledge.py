@@ -33,6 +33,9 @@ KNOWLEDGE_FILE = Path(__file__).resolve().parent / "data" / "knowledge.json"
 
 # The longest description kept for an ability or item, in words.
 MAX_WORDS = 24
+# Items get more: the effect that matters (Silver Edge's break, Spirit
+# Vessel's heal cut) is often in the second sentence.
+ITEM_WORDS = 30
 # The ultimate sits in the sixth slot of dotaconstants' ability list.
 ULTIMATE_SLOT = 5
 
@@ -130,7 +133,7 @@ def item_card(raw: dict) -> str:
             stats.append(stat)
     parts = [", ".join(stats[:4])] if stats else []
     for ability in (raw.get("abilities") or [])[:3]:
-        what = short(ability.get("description", ""), 14)
+        what = short(ability.get("description", ""), ITEM_WORDS)
         title = ability.get("title", "")
         if title:
             parts.append(f"{ability.get('type', 'active')} {title}" + (f": {what.rstrip('.')}" if what else ""))
@@ -191,9 +194,55 @@ def hero_card(hero: HeroInfo | None, ultimate_only: bool = False) -> str:
     return f"{hero.name}: {what}" if hero is not None and what else ""
 
 
+# What players buy these for, in Dota's own words. The patch data describes
+# each item but often hides this past its first sentences (Silver Edge's
+# break) or in numbers; it changes rarely, so it is written by hand. No
+# hero names: a death tip may name any hero its prompt names.
+ITEM_USES = {
+    "item_black_king_bar": "spell immunity against stuns, hexes and magic damage",
+    "item_monkey_king_bar": "pierces evasion (Butterfly and evasion abilities)",
+    "item_silver_edge": "break: turns off the target's passive abilities",
+    "item_spirit_vessel": "cuts enemy healing and regeneration",
+    "item_glimmer_cape": "saves you or an ally from magic burst",
+    "item_force_staff": "pushes you or an ally out of danger",
+    "item_hurricane_pike": "pushes you away from an enemy and keeps attacking",
+    "item_nullifier": "dispels Ghost Scepter, Eul's and Glimmer Cape and slows",
+    "item_orchid": "silences a hero who escapes with spells",
+    "item_bloodthorn": "silences a hero who escapes with spells",
+    "item_dust": "reveals invisible heroes",
+    "item_gem": "reveals invisible heroes and wards",
+    "item_lotus_orb": "reflects targeted spells and dispels",
+    "item_sphere": "blocks one targeted spell",
+    "item_aeon_disk": "survive a burst of damage",
+    "item_blade_mail": "returns damage to heroes who hit you",
+    "item_heavens_halberd": "disarms a right-click carry",
+    "item_ghost": "immune to physical attacks for a few seconds",
+    "item_abyssal_blade": "stun that goes through spell immunity",
+    "item_sheepstick": "hex: disables any hero",
+    "item_cyclone": "dispels and lifts a hero out of a fight",
+    "item_wind_waker": "dispels and lifts a hero out of a fight",
+    "item_pipe": "team shield against magic damage",
+    "item_crimson_guard": "team block against physical damage",
+    "item_shivas_guard": "armor and slows attack speed around you",
+    "item_assault": "armor for your team, less for enemies",
+    "item_butterfly": "evasion against right-click heroes",
+    "item_manta": "illusions to farm and fight, and a dispel",
+    "item_satanic": "lifesteal to survive long fights",
+    "item_greater_crit": "critical hits for more damage",
+    "item_heart": "lots of health and regeneration",
+    "item_diffusal_blade": "burns mana and slows",
+    "item_magic_wand": "quick heal from charges when enemies cast spells",
+    "item_blink": "jump into or out of a fight",
+}
+
+
 def item_line(item: ItemInfo) -> str:
-    """What an item gives and does, or "" when the data has nothing on it."""
-    return _load()["items"].get(item.key, "")
+    """What an item is for and what it does, or "" when the data has nothing on it."""
+    found = _load()["items"].get(item.key, "")
+    use = ITEM_USES.get(item.key)
+    if use:
+        return f"for {use}; {found}" if found else f"for {use}"
+    return found
 
 
 def hero_cards(heroes: list[HeroInfo | None], ultimate_only: bool = False) -> list[str]:

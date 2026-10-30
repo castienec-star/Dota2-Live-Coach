@@ -3,6 +3,7 @@ import json
 from coach import knowledge
 from coach.draft import Analysis, Draft
 from coach.game_questions import Notes
+from coach.grounding import Grounding
 from coach.heroes import HeroIndex
 from coach.item_advisor import describe as item_prompt
 from coach.items import load_items
@@ -91,4 +92,17 @@ def test_item_prompt_has_what_candidates_and_enemy_ultimates_do(payload):
     picks = [Pick(ITEMS["item_black_king_bar"], ""), Pick(ITEMS["item_manta"], "")]
     text = item_prompt(snap, picks, None, [HEROES.by_key("lion")], ITEMS)
     assert "- Lion: Finger of Death (ultimate)" in text
-    assert "- item_black_king_bar: Black King Bar, 4050 gold; Strength, Damage; active Avatar" in text
+    assert (
+        "- item_black_king_bar: Black King Bar, 4050 gold; for spell immunity against stuns, "
+        "hexes and magic damage; Strength, Damage; active Avatar"
+    ) in text
+
+
+def test_items_say_what_players_buy_them_for():
+    assert knowledge.item_line(ITEMS["item_silver_edge"]).startswith("for break: turns off")
+    # Items without a written use still say what they do.
+    assert knowledge.item_line(ITEMS["item_tango"]).startswith("use Devour")
+    uses = " ".join(knowledge.ITEM_USES.values())
+    assert not any(c.isdigit() for c in uses)
+    # A death tip may name any hero its prompt names.
+    assert not Grounding(HEROES).heroes(uses)
