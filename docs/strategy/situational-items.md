@@ -57,6 +57,29 @@ well-timed counter is worth more than the next greedy item.
 The verdict (ahead, even or behind) comes first in the spoken answer when it
 is known (from 8:00, for heroes with benchmark numbers).
 
+## Cheap counters while saving (issue #16)
+
+The "worth buying now" reminder (`WorthBuying` in `coach/rules/hero.py`)
+suggests a cheap item while the next build item is still far away. When the
+player told the coach the enemy heroes, a cheap counter to them comes before
+the usual Magic Wand and stat item (`CHEAP_COUNTERS`):
+
+| Enemy heroes that... | Cheap item | When |
+|---|---|---|
+| cast a lot of spells (Bristleback, Skywrath, Batrider, Zeus, Ogre Magi, Silencer, Jakiro, Venomancer, Viper, Huskar, Lina, QoP, Leshrac, Death Prophet, Necrophos, Witch Doctor, Storm Spirit, Tinker, Razor) | Magic Wand | before 25:00 |
+| do a lot of magic damage early (Lina, Lion, Zeus, Leshrac, Skywrath, QoP, Shadow Fiend, Tinker, Puck) | Infused Raindrops | before 12:00 |
+
+One enemy hero is enough. The same limits as the usual cheap items apply: at
+most once per item a match, the cooldown between suggestions, never an item
+the player owns, and only while the next build item is 600+ gold away.
+Without a told lineup nothing changes.
+
+Why these two: every spell an enemy casts near you charges a Magic Stick or
+Wand, which then restores health and mana on use, so spell-heavy lanes fill
+it fast. Infused Raindrops block a fixed amount of magic damage from bigger
+nukes, a few times, which is what loses a lane to Lina, Lion or Zeus; later
+the nukes outgrow the block, hence 12:00.
+
 ## Sources
 
 - Item effects, patch 7.41: Liquipedia item pages, e.g.
@@ -79,6 +102,10 @@ is known (from 8:00, for heroes with benchmark numbers).
   [Crimson Guard](https://liquipedia.net/dota2/Crimson_Guard) and
   [Shiva's Guard](https://liquipedia.net/dota2/Shiva%27s_Guard) (team auras),
   [Aeon Disk](https://liquipedia.net/dota2/Aeon_Disk) (saves you from burst).
+- Cheap counters: Liquipedia [Magic Wand](https://liquipedia.net/dota2/Magic_Wand)
+  (charges from nearby enemy spell casts) and
+  [Infused Raindrops](https://liquipedia.net/dota2/Infused_Raindrops) (blocks
+  magic damage above a threshold, limited charges).
   The list is general advice, not per hero; a per-hero list from OpenDota's
   public item popularity is the next step of issue #27.
 

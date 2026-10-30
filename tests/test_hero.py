@@ -273,6 +273,55 @@ def test_worth_buying_quiet_late_or_without_a_build(payload):
     assert run(worth_buying([]), payload, [{"player.gold": 600}]) == []
 
 
+def enemy(key):
+    from coach.heroes import HeroIndex
+
+    return HeroIndex().by_key(key)
+
+
+def test_worth_buying_names_a_counter_to_the_told_enemies(payload):
+    payload["items"]["slot2"] = {"name": "empty"}  # no wand
+    rule = worth_buying(["Black King Bar"])
+    rule.enemies = lambda: [enemy("bristleback"), enemy("axe"), enemy("batrider")]
+    said = run(rule, payload, [{"player.gold": 600}])
+    assert said == ["Buy a Magic Wand now, Bristleback and Batrider cast a lot of spells."]
+
+
+def test_worth_buying_raindrops_against_early_nukes_only_early(payload):
+    # The sample hero owns a Magic Wand already.
+    rule = worth_buying(["Black King Bar"])
+    rule.enemies = lambda: [enemy("lina")]
+    payload["map"]["clock_time"] = 300
+    assert run(rule, payload, [{"player.gold": 600}]) == [
+        "Buy Infused Raindrops now, Lina does a lot of magic damage early."
+    ]
+    rule = worth_buying(["Black King Bar"])
+    rule.enemies = lambda: [enemy("lina")]
+    payload["map"]["clock_time"] = 13 * 60
+    # Too late for Raindrops: the usual cheap item instead.
+    assert run(rule, payload, [{"player.gold": 600}]) == ["Buy a Wraith Band now, you'll get your Black King Bar later."]
+
+
+def test_worth_buying_without_a_lineup_or_a_match_keeps_the_usual_items(payload):
+    payload["items"]["slot2"] = {"name": "empty"}
+    rule = worth_buying(["Black King Bar"])
+    rule.enemies = lambda: [enemy("axe"), enemy("sven")]
+    said = run(rule, payload, [{"player.gold": 600}])
+    assert said == ["Buy a Magic Wand now, you'll get your Black King Bar later."]
+
+
+def test_worth_buying_says_a_counter_once(payload):
+    payload["items"]["slot2"] = {"name": "empty"}
+    rule = worth_buying(["Black King Bar"], cooldown=0)
+    rule.enemies = lambda: [enemy("zuus")]
+    said = run(rule, payload, [{"player.gold": 700}, {"player.gold": 700, "dt": 10}, {"player.gold": 700, "dt": 10}])
+    assert said == [
+        "Buy a Magic Wand now, Zeus casts a lot of spells.",
+        "Buy Infused Raindrops now, Zeus does a lot of magic damage early.",
+        "Buy a Wraith Band now, you'll get your Black King Bar later.",
+    ]
+
+
 def test_worth_buying_unknown_item_is_an_error():
     with pytest.raises(ValueError):
         build({"worth_buying": {"items": ["Not An Item"]}}, {"default": ["blink"]})
