@@ -98,18 +98,30 @@ class Health:
 def watch(app: web.Application, health: Health, say: Callable[[str], None], every: float = 5) -> None:
     """Run health.check() every few seconds while the server runs."""
 
+    def check() -> None:
+        line = health.check()
+        if line:
+            say(line)
+
+    repeat(app, every, check)
+
+
+def repeat(app: web.Application, seconds: float, job: Callable[[], None]) -> None:
+    """Run job() every few seconds while the server runs."""
+
     async def loop() -> None:
         while True:
-            await asyncio.sleep(every)
-            line = health.check()
-            if line:
-                say(line)
+            await asyncio.sleep(seconds)
+            job()
+
+    tasks: list[asyncio.Task] = []
 
     async def start(app: web.Application) -> None:
-        app["health_task"] = asyncio.create_task(loop())
+        tasks.append(asyncio.create_task(loop()))
 
     async def stop(app: web.Application) -> None:
-        app["health_task"].cancel()
+        for task in tasks:
+            task.cancel()
 
     app.on_startup.append(start)
     app.on_cleanup.append(stop)
