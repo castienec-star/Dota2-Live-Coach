@@ -11,7 +11,7 @@ clear habit per game sticks; a list of ten mistakes does not.
    farm time. One death point only, the most specific that fits:
    - two or more deaths **before 10:00** means the laning stage is the
      problem: stand behind your creeps, go back to the tower when low;
-   - **three deaths within five minutes** is the tilt spiral (walking back
+   - **three deaths within six minutes** (the same streak as the live death-tip line) is the tilt spiral (walking back
      into the same fight): farm near your towers for a minute instead;
    - **seven or more** deaths in a game, spread out: think about the
      enemies you can't see before walking forward, and keep a Town Portal.

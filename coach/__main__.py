@@ -168,8 +168,9 @@ def make_coach(
     )
     coach.listeners.append(Engine(for_positions(rules, positions, position), speaker.say, cfg.voice_max_lines, prioritized=True))
     if reminders.get("review", {}).get("enabled", True):
-        # Nothing else is said after the game, so it may wait for a busy speaker.
-        review_say = functools.partial(speaker.say, priority=LOW, max_delay=60)
+        # The last thing said, and players often leave within seconds of the
+        # end: first in line, most useful point first; the file has the rest.
+        review_say = functools.partial(speaker.say, priority=HIGH, max_delay=5)
         # A fast replay (no tips) only prints it.
         folder = cfg.app_dir / "reviews" if tips else None
         coach.listeners.append(review_mod.Review(review_say, folder, position))

@@ -155,7 +155,7 @@ item data; `coach/data/PATCH` names the patch the bundled data is current for
 When the match ends, the coach says up to three short points from your own
 game and saves them in `%APPDATA%\Dota2LiveCoach\reviews\`:
 
-- **Deaths:** dying twice or more before 10 minutes, three deaths within five
+- **Deaths:** dying twice or more before 10 minutes, three deaths within six
   minutes, or seven or more in the game, with one habit to fix it.
 - **Last hits at 10 minutes** (cores only): under 28, against a target of 35.
 - **First big item** (over 1800 gold): later than 20 minutes for a core or 25
