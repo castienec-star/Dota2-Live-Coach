@@ -249,11 +249,12 @@ class ItemReady(HeroRule):
     """Says when you can afford the next item on your build list for this hero.
 
     The build is the first that exists of: "<hero>_pos<N>" for your position,
-    "<hero>", the hero's popular items from OpenDota (coach/popularity.py,
-    after `py -m coach refresh-items`), "pos<N>", then "default_support" for
+    "<hero>", "pos<N>", the hero's popular items from OpenDota
+    (coach/popularity.py, coach/data/item_popularity.json), then "default_support" for
     positions 4 and 5 (or, while the position is not known, for heroes that
     are a support and not also a carry by OpenDota's hero roles), otherwise
-    "default".
+    "default". The popular items mix every position, so a support skips them
+    when they look like a carry's build.
     """
 
     name = "item_ready"
@@ -267,11 +268,11 @@ class ItemReady(HeroRule):
     ) -> None:
         super().__init__(0)
         self.builds = builds
-        if popular is None:
-            from ..popularity import popular_builds
+        # coach/popularity.py imports this module, so it is imported here.
+        from ..popularity import carry_build, popular_builds
 
-            popular = popular_builds(load_items())
-        self.popular = popular
+        self.popular = popular if popular is not None else popular_builds(load_items())
+        self.carry_build = carry_build
         self.heroes = heroes
         self.position = position
         self._announced: set[str] = set()
@@ -284,9 +285,9 @@ class ItemReady(HeroRule):
         for key in (f"{hero}_pos{position}", hero, f"pos{position}"):
             if key in self.builds:
                 return self.builds[key]
-            if key == hero and hero in self.popular:
-                return self.popular[hero]
         support = position in (4, 5) if position else self.is_support(hero)
+        if hero in self.popular and not (support and self.carry_build(self.popular[hero])):
+            return self.popular[hero]
         if "default_support" in self.builds and support:
             return self.builds["default_support"]
         return self.builds.get("default", [])

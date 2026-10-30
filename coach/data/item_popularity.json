@@ -1,0 +1,6180 @@
+{
+ "fetched": "2026-10-30",
+ "heroes": {
+  "abaddon": {
+   "early": [
+    "item_boots",
+    "item_chainmail",
+    "item_phase_boots",
+    "item_null_talisman",
+    "item_bracer",
+    "item_ogre_axe",
+    "item_arcane_boots",
+    "item_broadsword",
+    "item_void_stone",
+    "item_power_treads"
+   ],
+   "late": [
+    "item_orchid",
+    "item_bloodthorn",
+    "item_basher",
+    "item_blink",
+    "item_sange",
+    "item_ultimate_scepter",
+    "item_manta",
+    "item_abyssal_blade",
+    "item_eagle",
+    "item_guardian_greaves"
+   ],
+   "mid": [
+    "item_talisman_of_evasion",
+    "item_relic",
+    "item_radiance",
+    "item_diadem",
+    "item_blade_of_alacrity",
+    "item_yasha",
+    "item_blink",
+    "item_manta",
+    "item_echo_sabre",
+    "item_broadsword"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_magic_stick",
+    "item_quelling_blade",
+    "item_circlet",
+    "item_blood_grenade",
+    "item_magic_wand",
+    "item_ward_sentry",
+    "item_faerie_fire",
+    "item_gauntlets"
+   ]
+  },
+  "abyssal_underlord": {
+   "early": [
+    "item_boots",
+    "item_soul_ring",
+    "item_bracer",
+    "item_chainmail",
+    "item_phase_boots",
+    "item_power_treads",
+    "item_ogre_axe",
+    "item_staff_of_wizardry",
+    "item_arcane_boots",
+    "item_ring_of_health"
+   ],
+   "late": [
+    "item_shivas_guard",
+    "item_black_king_bar",
+    "item_soul_booster",
+    "item_mystic_staff",
+    "item_crellas_crozier",
+    "item_octarine_core",
+    "item_lotus_orb",
+    "item_ultimate_scepter",
+    "item_sheepstick",
+    "item_ultimate_scepter_2"
+   ],
+   "mid": [
+    "item_staff_of_wizardry",
+    "item_ogre_axe",
+    "item_blade_of_alacrity",
+    "item_point_booster",
+    "item_ultimate_scepter",
+    "item_aghanims_shard",
+    "item_vitality_booster",
+    "item_rod_of_atos",
+    "item_platemail",
+    "item_mithril_hammer"
+   ],
+   "start": [
+    "item_gauntlets",
+    "item_branches",
+    "item_tango",
+    "item_magic_stick",
+    "item_circlet",
+    "item_enchanted_mango",
+    "item_faerie_fire",
+    "item_quelling_blade",
+    "item_ring_of_protection",
+    "item_sobi_mask"
+   ]
+  },
+  "alchemist": {
+   "early": [
+    "item_boots",
+    "item_soul_ring",
+    "item_chainmail",
+    "item_phase_boots",
+    "item_power_treads",
+    "item_relic",
+    "item_ogre_axe",
+    "item_bracer",
+    "item_talisman_of_evasion",
+    "item_point_booster"
+   ],
+   "late": [
+    "item_ultimate_scepter",
+    "item_assault",
+    "item_sange",
+    "item_basher",
+    "item_abyssal_blade",
+    "item_hyperstone",
+    "item_reaver",
+    "item_overwhelming_blink",
+    "item_eagle",
+    "item_black_king_bar"
+   ],
+   "mid": [
+    "item_ogre_axe",
+    "item_radiance",
+    "item_talisman_of_evasion",
+    "item_relic",
+    "item_blink",
+    "item_mithril_hammer",
+    "item_black_king_bar",
+    "item_blade_of_alacrity",
+    "item_hyperstone",
+    "item_staff_of_wizardry"
+   ],
+   "start": [
+    "item_gauntlets",
+    "item_branches",
+    "item_tango",
+    "item_quelling_blade",
+    "item_magic_stick",
+    "item_faerie_fire",
+    "item_ward_observer",
+    "item_circlet",
+    "item_ward_sentry",
+    "item_flask"
+   ]
+  },
+  "ancient_apparition": {
+   "early": [
+    "item_boots",
+    "item_arcane_boots",
+    "item_tranquil_boots",
+    "item_urn_of_shadows",
+    "item_null_talisman",
+    "item_chainmail",
+    "item_staff_of_wizardry",
+    "item_bracer"
+   ],
+   "late": [
+    "item_blink",
+    "item_glimmer_cape",
+    "item_force_staff",
+    "item_mystic_staff",
+    "item_sheepstick",
+    "item_aeon_disk",
+    "item_cyclone",
+    "item_gungir",
+    "item_soul_booster",
+    "item_refresher"
+   ],
+   "mid": [
+    "item_arcane_boots",
+    "item_staff_of_wizardry",
+    "item_glimmer_cape",
+    "item_vitality_booster",
+    "item_aghanims_shard",
+    "item_rod_of_atos",
+    "item_force_staff",
+    "item_pavise",
+    "item_blink",
+    "item_ghost"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_blood_grenade",
+    "item_ward_dispenser",
+    "item_faerie_fire",
+    "item_ward_sentry",
+    "item_smoke_of_deceit",
+    "item_magic_stick",
+    "item_circlet",
+    "item_enchanted_mango"
+   ]
+  },
+  "antimage": {
+   "early": [
+    "item_boots",
+    "item_ring_of_health",
+    "item_power_treads",
+    "item_broadsword",
+    "item_void_stone",
+    "item_wraith_band",
+    "item_pers",
+    "item_bracer"
+   ],
+   "late": [
+    "item_ultimate_orb",
+    "item_eagle",
+    "item_black_king_bar",
+    "item_butterfly",
+    "item_skadi",
+    "item_basher",
+    "item_sange",
+    "item_abyssal_blade",
+    "item_ultimate_scepter",
+    "item_ultimate_scepter_2"
+   ],
+   "mid": [
+    "item_broadsword",
+    "item_blade_of_alacrity",
+    "item_bfury",
+    "item_yasha",
+    "item_diadem",
+    "item_manta",
+    "item_pers",
+    "item_ultimate_orb",
+    "item_skadi",
+    "item_mithril_hammer"
+   ],
+   "start": [
+    "item_branches",
+    "item_circlet",
+    "item_tango",
+    "item_faerie_fire",
+    "item_quelling_blade",
+    "item_magic_stick",
+    "item_slippers",
+    "item_magic_wand",
+    "item_ward_observer",
+    "item_ward_sentry"
+   ]
+  },
+  "arc_warden": {
+   "early": [
+    "item_hand_of_midas",
+    "item_boots",
+    "item_javelin",
+    "item_mithril_hammer",
+    "item_power_treads",
+    "item_bottle",
+    "item_wraith_band",
+    "item_maelstrom",
+    "item_blade_of_alacrity",
+    "item_null_talisman"
+   ],
+   "late": [
+    "item_hyperstone",
+    "item_bloodthorn",
+    "item_ultimate_orb",
+    "item_force_staff",
+    "item_hurricane_pike",
+    "item_mystic_staff",
+    "item_sheepstick",
+    "item_black_king_bar",
+    "item_blink",
+    "item_eagle"
+   ],
+   "mid": [
+    "item_maelstrom",
+    "item_hyperstone",
+    "item_mithril_hammer",
+    "item_mjollnir",
+    "item_blitz_knuckles",
+    "item_blade_of_alacrity",
+    "item_oblivion_staff",
+    "item_orchid",
+    "item_travel_boots",
+    "item_claymore"
+   ],
+   "start": [
+    "item_branches",
+    "item_circlet",
+    "item_ward_observer",
+    "item_faerie_fire",
+    "item_tango",
+    "item_gloves",
+    "item_magic_wand",
+    "item_magic_stick",
+    "item_slippers",
+    "item_ward_dispenser"
+   ]
+  },
+  "axe": {
+   "early": [
+    "item_boots",
+    "item_chainmail",
+    "item_phase_boots",
+    "item_splintmail",
+    "item_bracer",
+    "item_broadsword",
+    "item_blade_mail",
+    "item_ring_of_health",
+    "item_soul_ring",
+    "item_helm_of_iron_will"
+   ],
+   "late": [
+    "item_black_king_bar",
+    "item_reaver",
+    "item_shivas_guard",
+    "item_heart",
+    "item_lotus_orb",
+    "item_soul_booster",
+    "item_yasha",
+    "item_kaya",
+    "item_octarine_core",
+    "item_travel_boots"
+   ],
+   "mid": [
+    "item_blink",
+    "item_ogre_axe",
+    "item_blade_mail",
+    "item_mithril_hammer",
+    "item_black_king_bar",
+    "item_broadsword",
+    "item_aghanims_shard",
+    "item_vitality_booster",
+    "item_diadem",
+    "item_platemail"
+   ],
+   "start": [
+    "item_gauntlets",
+    "item_branches",
+    "item_ring_of_protection",
+    "item_tango",
+    "item_faerie_fire",
+    "item_circlet",
+    "item_magic_stick",
+    "item_quelling_blade",
+    "item_flask",
+    "item_ward_observer"
+   ]
+  },
+  "bane": {
+   "early": [
+    "item_boots",
+    "item_arcane_boots",
+    "item_void_stone",
+    "item_energy_booster",
+    "item_tranquil_boots"
+   ],
+   "late": [
+    "item_ultimate_scepter",
+    "item_blink",
+    "item_aether_lens",
+    "item_force_staff",
+    "item_glimmer_cape",
+    "item_travel_boots",
+    "item_invis_sword",
+    "item_refresher",
+    "item_travel_boots_2",
+    "item_lotus_orb"
+   ],
+   "mid": [
+    "item_point_booster",
+    "item_ogre_axe",
+    "item_arcane_boots",
+    "item_aether_lens",
+    "item_staff_of_wizardry",
+    "item_ghost",
+    "item_blink",
+    "item_blade_of_alacrity",
+    "item_glimmer_cape",
+    "item_pavise"
+   ],
+   "start": [
+    "item_branches",
+    "item_ward_dispenser",
+    "item_tango",
+    "item_blood_grenade",
+    "item_faerie_fire",
+    "item_smoke_of_deceit",
+    "item_enchanted_mango",
+    "item_ward_sentry",
+    "item_magic_stick",
+    "item_circlet"
+   ]
+  },
+  "batrider": {
+   "early": [
+    "item_boots",
+    "item_tranquil_boots",
+    "item_ancient_janggo",
+    "item_bracer",
+    "item_null_talisman",
+    "item_bottle",
+    "item_travel_boots",
+    "item_void_stone",
+    "item_blink",
+    "item_ring_of_health"
+   ],
+   "late": [
+    "item_ultimate_scepter",
+    "item_force_staff",
+    "item_black_king_bar",
+    "item_shivas_guard",
+    "item_aether_lens",
+    "item_boots_of_bearing",
+    "item_soul_booster",
+    "item_octarine_core",
+    "item_refresher",
+    "item_ultimate_orb"
+   ],
+   "mid": [
+    "item_blink",
+    "item_ogre_axe",
+    "item_mithril_hammer",
+    "item_black_king_bar",
+    "item_staff_of_wizardry",
+    "item_ancient_janggo",
+    "item_force_staff",
+    "item_ring_of_tarrasque",
+    "item_boots_of_bearing",
+    "item_platemail"
+   ],
+   "start": [
+    "item_branches",
+    "item_faerie_fire",
+    "item_tango",
+    "item_circlet",
+    "item_ward_dispenser",
+    "item_blood_grenade",
+    "item_magic_stick",
+    "item_ward_observer",
+    "item_ward_sentry",
+    "item_ring_of_regen"
+   ]
+  },
+  "beastmaster": {
+   "early": [
+    "item_helm_of_iron_will",
+    "item_boots",
+    "item_helm_of_the_dominator",
+    "item_null_talisman",
+    "item_arcane_boots",
+    "item_bottle",
+    "item_point_booster",
+    "item_power_treads",
+    "item_ogre_axe",
+    "item_bracer"
+   ],
+   "late": [
+    "item_black_king_bar",
+    "item_assault",
+    "item_hyperstone",
+    "item_blink",
+    "item_relic",
+    "item_nullifier",
+    "item_travel_boots",
+    "item_mystic_staff",
+    "item_sheepstick",
+    "item_refresher"
+   ],
+   "mid": [
+    "item_ogre_axe",
+    "item_ultimate_orb",
+    "item_helm_of_the_overlord",
+    "item_blink",
+    "item_mithril_hammer",
+    "item_black_king_bar",
+    "item_helm_of_the_dominator",
+    "item_blade_of_alacrity",
+    "item_staff_of_wizardry",
+    "item_ultimate_scepter"
+   ],
+   "start": [
+    "item_branches",
+    "item_sobi_mask",
+    "item_tango",
+    "item_magic_stick",
+    "item_circlet",
+    "item_quelling_blade",
+    "item_faerie_fire",
+    "item_magic_wand",
+    "item_ward_observer",
+    "item_ward_sentry"
+   ]
+  },
+  "bloodseeker": {
+   "early": [
+    "item_boots",
+    "item_chainmail",
+    "item_phase_boots",
+    "item_javelin",
+    "item_power_treads",
+    "item_wraith_band",
+    "item_null_talisman",
+    "item_mithril_hammer",
+    "item_bracer",
+    "item_broadsword"
+   ],
+   "late": [
+    "item_eagle",
+    "item_basher",
+    "item_sange",
+    "item_blink",
+    "item_ultimate_orb",
+    "item_black_king_bar",
+    "item_butterfly",
+    "item_ultimate_scepter",
+    "item_abyssal_blade",
+    "item_hyperstone"
+   ],
+   "mid": [
+    "item_mithril_hammer",
+    "item_ogre_axe",
+    "item_maelstrom",
+    "item_hyperstone",
+    "item_mjollnir",
+    "item_black_king_bar",
+    "item_blade_of_alacrity",
+    "item_yasha",
+    "item_aghanims_shard",
+    "item_diadem"
+   ],
+   "start": [
+    "item_branches",
+    "item_quelling_blade",
+    "item_circlet",
+    "item_tango",
+    "item_magic_stick",
+    "item_faerie_fire",
+    "item_magic_wand",
+    "item_slippers",
+    "item_ward_observer",
+    "item_gauntlets"
+   ]
+  },
+  "bounty_hunter": {
+   "early": [
+    "item_tranquil_boots",
+    "item_boots",
+    "item_urn_of_shadows",
+    "item_void_stone",
+    "item_chainmail",
+    "item_bottle",
+    "item_phase_boots",
+    "item_diadem"
+   ],
+   "late": [
+    "item_force_staff",
+    "item_cyclone",
+    "item_blink",
+    "item_mystic_staff",
+    "item_vladmir",
+    "item_wind_waker",
+    "item_lotus_orb",
+    "item_consecrated_wraps",
+    "item_sheepstick",
+    "item_black_king_bar"
+   ],
+   "mid": [
+    "item_staff_of_wizardry",
+    "item_essence_distiller",
+    "item_cyclone",
+    "item_force_staff",
+    "item_ancient_janggo",
+    "item_spirit_vessel",
+    "item_diadem",
+    "item_aghanims_shard",
+    "item_platemail",
+    "item_pers"
+   ],
+   "start": [
+    "item_ward_dispenser",
+    "item_branches",
+    "item_blood_grenade",
+    "item_tango",
+    "item_boots",
+    "item_faerie_fire",
+    "item_wind_lace",
+    "item_ward_sentry",
+    "item_ward_observer",
+    "item_circlet"
+   ]
+  },
+  "brewmaster": {
+   "early": [
+    "item_boots",
+    "item_bracer",
+    "item_chainmail",
+    "item_phase_boots",
+    "item_urn_of_shadows",
+    "item_diadem",
+    "item_blitz_knuckles",
+    "item_power_treads",
+    "item_wraith_band",
+    "item_null_talisman"
+   ],
+   "late": [
+    "item_hyperstone",
+    "item_assault",
+    "item_black_king_bar",
+    "item_blink",
+    "item_refresher",
+    "item_ultimate_scepter",
+    "item_aeon_disk",
+    "item_soul_booster",
+    "item_travel_boots",
+    "item_bloodthorn"
+   ],
+   "mid": [
+    "item_ogre_axe",
+    "item_staff_of_wizardry",
+    "item_point_booster",
+    "item_blade_of_alacrity",
+    "item_ultimate_scepter",
+    "item_blink",
+    "item_hand_of_midas",
+    "item_claymore",
+    "item_orchid",
+    "item_oblivion_staff"
+   ],
+   "start": [
+    "item_branches",
+    "item_circlet",
+    "item_tango",
+    "item_gauntlets",
+    "item_faerie_fire",
+    "item_magic_stick",
+    "item_quelling_blade",
+    "item_ring_of_protection",
+    "item_magic_wand",
+    "item_ward_observer"
+   ]
+  },
+  "bristleback": {
+   "early": [
+    "item_boots",
+    "item_bracer",
+    "item_power_treads",
+    "item_ring_of_health",
+    "item_soul_ring",
+    "item_vitality_booster",
+    "item_null_talisman",
+    "item_void_stone",
+    "item_vanguard",
+    "item_pers"
+   ],
+   "late": [
+    "item_reaver",
+    "item_heart",
+    "item_sange_and_yasha",
+    "item_yasha",
+    "item_black_king_bar",
+    "item_sange",
+    "item_hyperstone",
+    "item_assault",
+    "item_ultimate_orb",
+    "item_ultimate_scepter"
+   ],
+   "mid": [
+    "item_aghanims_shard",
+    "item_ogre_axe",
+    "item_platemail",
+    "item_blade_of_alacrity",
+    "item_sange",
+    "item_lotus_orb",
+    "item_yasha",
+    "item_consecrated_wraps",
+    "item_sange_and_yasha",
+    "item_pers"
+   ],
+   "start": [
+    "item_branches",
+    "item_gauntlets",
+    "item_tango",
+    "item_circlet",
+    "item_magic_stick",
+    "item_enchanted_mango",
+    "item_quelling_blade",
+    "item_faerie_fire",
+    "item_ring_of_protection",
+    "item_magic_wand"
+   ]
+  },
+  "broodmother": {
+   "early": [
+    "item_boots",
+    "item_soul_ring",
+    "item_power_treads",
+    "item_wraith_band",
+    "item_blitz_knuckles",
+    "item_blade_of_alacrity",
+    "item_oblivion_staff",
+    "item_bracer",
+    "item_yasha",
+    "item_diadem"
+   ],
+   "late": [
+    "item_ultimate_orb",
+    "item_eagle",
+    "item_butterfly",
+    "item_black_king_bar",
+    "item_skadi",
+    "item_bloodthorn",
+    "item_blink",
+    "item_demon_edge",
+    "item_diffusal_blade",
+    "item_relic"
+   ],
+   "mid": [
+    "item_claymore",
+    "item_diadem",
+    "item_manta",
+    "item_yasha",
+    "item_blade_of_alacrity",
+    "item_oblivion_staff",
+    "item_orchid",
+    "item_blitz_knuckles",
+    "item_mithril_hammer",
+    "item_ogre_axe"
+   ],
+   "start": [
+    "item_branches",
+    "item_circlet",
+    "item_tango",
+    "item_quelling_blade",
+    "item_faerie_fire",
+    "item_slippers",
+    "item_ward_observer",
+    "item_magic_stick",
+    "item_magic_wand",
+    "item_gauntlets"
+   ]
+  },
+  "centaur": {
+   "early": [
+    "item_helm_of_iron_will",
+    "item_helm_of_the_dominator",
+    "item_bracer",
+    "item_ring_of_health",
+    "item_soul_ring",
+    "item_ring_of_tarrasque",
+    "item_vanguard",
+    "item_blink",
+    "item_broadsword",
+    "item_platemail"
+   ],
+   "late": [
+    "item_black_king_bar",
+    "item_shivas_guard",
+    "item_ultimate_scepter",
+    "item_heart",
+    "item_reaver",
+    "item_blink",
+    "item_lotus_orb",
+    "item_overwhelming_blink",
+    "item_soul_booster",
+    "item_crellas_crozier"
+   ],
+   "mid": [
+    "item_ring_of_tarrasque",
+    "item_blink",
+    "item_reaver",
+    "item_heart",
+    "item_platemail",
+    "item_pers",
+    "item_lotus_orb",
+    "item_aghanims_shard",
+    "item_helm_of_the_dominator",
+    "item_ogre_axe"
+   ],
+   "start": [
+    "item_gauntlets",
+    "item_branches",
+    "item_ring_of_protection",
+    "item_tango",
+    "item_faerie_fire",
+    "item_circlet",
+    "item_quelling_blade",
+    "item_magic_stick",
+    "item_enchanted_mango",
+    "item_wind_lace"
+   ]
+  },
+  "chaos_knight": {
+   "early": [
+    "item_boots",
+    "item_power_treads",
+    "item_bracer",
+    "item_helm_of_iron_will",
+    "item_armlet",
+    "item_broadsword",
+    "item_soul_ring",
+    "item_ogre_axe",
+    "item_void_stone",
+    "item_urn_of_shadows"
+   ],
+   "late": [
+    "item_reaver",
+    "item_heart",
+    "item_bloodthorn",
+    "item_blink",
+    "item_ultimate_orb",
+    "item_black_king_bar",
+    "item_manta",
+    "item_harpoon",
+    "item_ultimate_scepter",
+    "item_yasha"
+   ],
+   "mid": [
+    "item_armlet",
+    "item_blitz_knuckles",
+    "item_oblivion_staff",
+    "item_ogre_axe",
+    "item_claymore",
+    "item_blink",
+    "item_orchid",
+    "item_echo_sabre",
+    "item_broadsword",
+    "item_blade_of_alacrity"
+   ],
+   "start": [
+    "item_branches",
+    "item_gauntlets",
+    "item_tango",
+    "item_quelling_blade",
+    "item_magic_stick",
+    "item_circlet",
+    "item_faerie_fire",
+    "item_blood_grenade",
+    "item_magic_wand",
+    "item_enchanted_mango"
+   ]
+  },
+  "chen": {
+   "early": [
+    "item_boots",
+    "item_arcane_boots",
+    "item_chainmail",
+    "item_ancient_janggo",
+    "item_mekansm"
+   ],
+   "late": [
+    "item_pipe",
+    "item_guardian_greaves",
+    "item_ultimate_scepter",
+    "item_vladmir",
+    "item_solar_crest",
+    "item_glimmer_cape",
+    "item_force_staff",
+    "item_blink",
+    "item_holy_locket",
+    "item_hyperstone"
+   ],
+   "mid": [
+    "item_arcane_boots",
+    "item_mekansm",
+    "item_ancient_janggo",
+    "item_guardian_greaves",
+    "item_pavise",
+    "item_vladmir",
+    "item_solar_crest",
+    "item_ring_of_tarrasque",
+    "item_staff_of_wizardry",
+    "item_pipe"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_blood_grenade",
+    "item_ward_sentry",
+    "item_smoke_of_deceit",
+    "item_ward_dispenser",
+    "item_faerie_fire",
+    "item_orb_of_frost",
+    "item_magic_stick",
+    "item_headdress"
+   ]
+  },
+  "clinkz": {
+   "early": [
+    "item_boots",
+    "item_power_treads",
+    "item_falcon_blade",
+    "item_soul_ring",
+    "item_mithril_hammer",
+    "item_wraith_band",
+    "item_javelin"
+   ],
+   "late": [
+    "item_demon_edge",
+    "item_lesser_crit",
+    "item_greater_crit",
+    "item_black_king_bar",
+    "item_ultimate_scepter",
+    "item_force_staff",
+    "item_hurricane_pike",
+    "item_ultimate_orb",
+    "item_relic",
+    "item_sphere"
+   ],
+   "mid": [
+    "item_mithril_hammer",
+    "item_blade_of_alacrity",
+    "item_desolator",
+    "item_aghanims_shard",
+    "item_dragon_lance",
+    "item_staff_of_wizardry",
+    "item_point_booster",
+    "item_claymore",
+    "item_ogre_axe",
+    "item_lesser_crit"
+   ],
+   "start": [
+    "item_faerie_fire",
+    "item_branches",
+    "item_magic_wand",
+    "item_tango",
+    "item_circlet",
+    "item_magic_stick",
+    "item_slippers",
+    "item_quelling_blade",
+    "item_sobi_mask",
+    "item_ward_observer"
+   ]
+  },
+  "crystal_maiden": {
+   "early": [
+    "item_boots",
+    "item_tranquil_boots",
+    "item_null_talisman",
+    "item_soul_ring",
+    "item_ancient_janggo",
+    "item_shadow_amulet"
+   ],
+   "late": [
+    "item_blink",
+    "item_glimmer_cape",
+    "item_black_king_bar",
+    "item_force_staff",
+    "item_ultimate_scepter",
+    "item_solar_crest",
+    "item_cyclone",
+    "item_boots_of_bearing",
+    "item_mystic_staff",
+    "item_wind_waker"
+   ],
+   "mid": [
+    "item_aghanims_shard",
+    "item_staff_of_wizardry",
+    "item_glimmer_cape",
+    "item_blink",
+    "item_force_staff",
+    "item_pavise",
+    "item_ancient_janggo",
+    "item_solar_crest",
+    "item_ghost",
+    "item_point_booster"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_blood_grenade",
+    "item_ward_dispenser",
+    "item_enchanted_mango",
+    "item_ward_sentry",
+    "item_faerie_fire",
+    "item_smoke_of_deceit",
+    "item_magic_stick",
+    "item_gauntlets"
+   ]
+  },
+  "dark_seer": {
+   "early": [
+    "item_helm_of_iron_will",
+    "item_helm_of_the_dominator",
+    "item_null_talisman",
+    "item_soul_ring",
+    "item_boots",
+    "item_arcane_boots",
+    "item_chasm_stone",
+    "item_platemail",
+    "item_power_treads",
+    "item_blink"
+   ],
+   "late": [
+    "item_black_king_bar",
+    "item_soul_booster",
+    "item_blink",
+    "item_mystic_staff",
+    "item_crellas_crozier",
+    "item_ultimate_scepter",
+    "item_sheepstick",
+    "item_octarine_core",
+    "item_ultimate_orb",
+    "item_sphere"
+   ],
+   "mid": [
+    "item_platemail",
+    "item_shivas_guard",
+    "item_aghanims_shard",
+    "item_blink",
+    "item_ogre_axe",
+    "item_mithril_hammer",
+    "item_helm_of_the_dominator",
+    "item_black_king_bar",
+    "item_pers",
+    "item_arcane_boots"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_circlet",
+    "item_sobi_mask",
+    "item_mantle",
+    "item_quelling_blade",
+    "item_magic_stick",
+    "item_faerie_fire",
+    "item_enchanted_mango",
+    "item_clarity"
+   ]
+  },
+  "dark_willow": {
+   "early": [
+    "item_boots",
+    "item_tranquil_boots",
+    "item_urn_of_shadows",
+    "item_bracer",
+    "item_null_talisman"
+   ],
+   "late": [
+    "item_blink",
+    "item_consecrated_wraps",
+    "item_cyclone",
+    "item_mystic_staff",
+    "item_sheepstick",
+    "item_aeon_disk",
+    "item_force_staff",
+    "item_wind_waker",
+    "item_travel_boots",
+    "item_lotus_orb"
+   ],
+   "mid": [
+    "item_essence_distiller",
+    "item_staff_of_wizardry",
+    "item_cyclone",
+    "item_blink",
+    "item_vitality_booster",
+    "item_consecrated_wraps",
+    "item_aghanims_shard",
+    "item_ghost",
+    "item_force_staff",
+    "item_arcane_boots"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_blood_grenade",
+    "item_faerie_fire",
+    "item_ward_dispenser",
+    "item_ward_sentry",
+    "item_circlet",
+    "item_ring_of_regen",
+    "item_smoke_of_deceit",
+    "item_magic_stick"
+   ]
+  },
+  "dawnbreaker": {
+   "early": [
+    "item_boots",
+    "item_soul_ring",
+    "item_chainmail",
+    "item_phase_boots",
+    "item_bracer",
+    "item_void_stone",
+    "item_ogre_axe",
+    "item_bottle",
+    "item_broadsword",
+    "item_null_talisman"
+   ],
+   "late": [
+    "item_basher",
+    "item_assault",
+    "item_hyperstone",
+    "item_black_king_bar",
+    "item_sange",
+    "item_abyssal_blade",
+    "item_relic",
+    "item_nullifier",
+    "item_blink",
+    "item_harpoon"
+   ],
+   "mid": [
+    "item_ogre_axe",
+    "item_broadsword",
+    "item_echo_sabre",
+    "item_mithril_hammer",
+    "item_aghanims_shard",
+    "item_diadem",
+    "item_harpoon",
+    "item_black_king_bar",
+    "item_phase_boots",
+    "item_claymore"
+   ],
+   "start": [
+    "item_branches",
+    "item_gauntlets",
+    "item_tango",
+    "item_circlet",
+    "item_quelling_blade",
+    "item_magic_stick",
+    "item_enchanted_mango",
+    "item_ring_of_protection",
+    "item_faerie_fire",
+    "item_ward_observer"
+   ]
+  },
+  "dazzle": {
+   "early": [
+    "item_boots"
+   ],
+   "late": [
+    "item_blink",
+    "item_glimmer_cape",
+    "item_aeon_disk",
+    "item_solar_crest",
+    "item_guardian_greaves",
+    "item_cyclone",
+    "item_travel_boots",
+    "item_force_staff",
+    "item_vladmir",
+    "item_aether_lens"
+   ],
+   "mid": [
+    "item_holy_locket",
+    "item_arcane_boots",
+    "item_mekansm",
+    "item_pavise",
+    "item_blink",
+    "item_solar_crest",
+    "item_staff_of_wizardry",
+    "item_glimmer_cape",
+    "item_ghost",
+    "item_vladmir"
+   ],
+   "start": [
+    "item_branches",
+    "item_ward_dispenser",
+    "item_tango",
+    "item_blood_grenade",
+    "item_smoke_of_deceit",
+    "item_faerie_fire",
+    "item_ward_sentry",
+    "item_enchanted_mango",
+    "item_magic_stick",
+    "item_ward_observer"
+   ]
+  },
+  "death_prophet": {
+   "early": [
+    "item_boots",
+    "item_bottle",
+    "item_null_talisman",
+    "item_power_treads",
+    "item_chainmail",
+    "item_phase_boots",
+    "item_staff_of_wizardry",
+    "item_urn_of_shadows",
+    "item_void_stone",
+    "item_vitality_booster"
+   ],
+   "late": [
+    "item_shivas_guard",
+    "item_black_king_bar",
+    "item_blink",
+    "item_mystic_staff",
+    "item_sheepstick",
+    "item_kaya_and_sange",
+    "item_soul_booster",
+    "item_sange",
+    "item_wind_waker",
+    "item_reaver"
+   ],
+   "mid": [
+    "item_staff_of_wizardry",
+    "item_ogre_axe",
+    "item_mithril_hammer",
+    "item_vitality_booster",
+    "item_cyclone",
+    "item_consecrated_wraps",
+    "item_black_king_bar",
+    "item_platemail",
+    "item_kaya",
+    "item_blink"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_faerie_fire",
+    "item_circlet",
+    "item_ward_observer",
+    "item_magic_stick",
+    "item_ward_dispenser",
+    "item_mantle",
+    "item_blood_grenade",
+    "item_ward_sentry"
+   ]
+  },
+  "disruptor": {
+   "early": [
+    "item_boots",
+    "item_arcane_boots",
+    "item_tranquil_boots",
+    "item_null_talisman",
+    "item_urn_of_shadows"
+   ],
+   "late": [
+    "item_ultimate_scepter",
+    "item_blink",
+    "item_glimmer_cape",
+    "item_force_staff",
+    "item_aeon_disk",
+    "item_vladmir",
+    "item_cyclone",
+    "item_refresher",
+    "item_invis_sword",
+    "item_solar_crest"
+   ],
+   "mid": [
+    "item_arcane_boots",
+    "item_blink",
+    "item_glimmer_cape",
+    "item_pavise",
+    "item_ghost",
+    "item_staff_of_wizardry",
+    "item_solar_crest",
+    "item_point_booster",
+    "item_essence_distiller",
+    "item_ogre_axe"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_blood_grenade",
+    "item_ward_dispenser",
+    "item_faerie_fire",
+    "item_smoke_of_deceit",
+    "item_ward_sentry",
+    "item_enchanted_mango",
+    "item_magic_stick",
+    "item_circlet"
+   ]
+  },
+  "doom_bringer": {
+   "early": [
+    "item_chainmail",
+    "item_boots",
+    "item_phase_boots",
+    "item_bracer",
+    "item_soul_ring",
+    "item_ancient_janggo",
+    "item_staff_of_wizardry",
+    "item_void_stone"
+   ],
+   "late": [
+    "item_shivas_guard",
+    "item_black_king_bar",
+    "item_ultimate_scepter",
+    "item_reaver",
+    "item_overwhelming_blink",
+    "item_soul_booster",
+    "item_travel_boots",
+    "item_heart",
+    "item_octarine_core",
+    "item_cyclone"
+   ],
+   "mid": [
+    "item_blink",
+    "item_ogre_axe",
+    "item_aghanims_shard",
+    "item_mithril_hammer",
+    "item_ancient_janggo",
+    "item_black_king_bar",
+    "item_talisman_of_evasion",
+    "item_relic",
+    "item_radiance",
+    "item_platemail"
+   ],
+   "start": [
+    "item_gauntlets",
+    "item_branches",
+    "item_circlet",
+    "item_tango",
+    "item_magic_stick",
+    "item_quelling_blade",
+    "item_faerie_fire",
+    "item_ring_of_protection",
+    "item_ring_of_regen",
+    "item_ward_observer"
+   ]
+  },
+  "dragon_knight": {
+   "early": [
+    "item_boots",
+    "item_power_treads",
+    "item_soul_ring",
+    "item_bracer",
+    "item_blink",
+    "item_chainmail",
+    "item_bottle",
+    "item_phase_boots",
+    "item_oblivion_staff",
+    "item_blitz_knuckles"
+   ],
+   "late": [
+    "item_soul_booster",
+    "item_octarine_core",
+    "item_ultimate_scepter",
+    "item_shivas_guard",
+    "item_reaver",
+    "item_overwhelming_blink",
+    "item_black_king_bar",
+    "item_hyperstone",
+    "item_orchid",
+    "item_bloodthorn"
+   ],
+   "mid": [
+    "item_blink",
+    "item_ogre_axe",
+    "item_aghanims_shard",
+    "item_mithril_hammer",
+    "item_black_king_bar",
+    "item_talisman_of_evasion",
+    "item_relic",
+    "item_radiance",
+    "item_point_booster",
+    "item_tiara_of_selemene"
+   ],
+   "start": [
+    "item_branches",
+    "item_gauntlets",
+    "item_circlet",
+    "item_ward_observer",
+    "item_tango",
+    "item_quelling_blade",
+    "item_magic_stick",
+    "item_faerie_fire",
+    "item_ward_sentry",
+    "item_wind_lace"
+   ]
+  },
+  "drow_ranger": {
+   "early": [
+    "item_boots",
+    "item_power_treads",
+    "item_falcon_blade",
+    "item_blade_of_alacrity",
+    "item_wraith_band",
+    "item_dragon_lance",
+    "item_null_talisman",
+    "item_ogre_axe",
+    "item_bracer"
+   ],
+   "late": [
+    "item_black_king_bar",
+    "item_demon_edge",
+    "item_eagle",
+    "item_butterfly",
+    "item_lesser_crit",
+    "item_invis_sword",
+    "item_silver_edge",
+    "item_hurricane_pike",
+    "item_reaver",
+    "item_greater_crit"
+   ],
+   "mid": [
+    "item_blade_of_alacrity",
+    "item_yasha",
+    "item_dragon_lance",
+    "item_staff_of_wizardry",
+    "item_diadem",
+    "item_manta",
+    "item_force_staff",
+    "item_hurricane_pike",
+    "item_ogre_axe",
+    "item_mithril_hammer"
+   ],
+   "start": [
+    "item_branches",
+    "item_faerie_fire",
+    "item_circlet",
+    "item_tango",
+    "item_magic_wand",
+    "item_magic_stick",
+    "item_quelling_blade",
+    "item_slippers",
+    "item_ward_observer",
+    "item_wraith_band"
+   ]
+  },
+  "earth_spirit": {
+   "early": [
+    "item_boots",
+    "item_bottle",
+    "item_urn_of_shadows",
+    "item_power_treads",
+    "item_diadem",
+    "item_soul_ring",
+    "item_bracer",
+    "item_chainmail",
+    "item_phase_boots",
+    "item_spirit_vessel"
+   ],
+   "late": [
+    "item_shivas_guard",
+    "item_soul_booster",
+    "item_sange",
+    "item_kaya_and_sange",
+    "item_kaya",
+    "item_black_king_bar",
+    "item_octarine_core",
+    "item_bloodstone",
+    "item_refresher",
+    "item_crellas_crozier"
+   ],
+   "mid": [
+    "item_ogre_axe",
+    "item_spirit_vessel",
+    "item_mithril_hammer",
+    "item_black_king_bar",
+    "item_diadem",
+    "item_staff_of_wizardry",
+    "item_kaya",
+    "item_power_treads",
+    "item_platemail",
+    "item_sange"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_ward_observer",
+    "item_faerie_fire",
+    "item_gauntlets",
+    "item_circlet",
+    "item_magic_stick",
+    "item_ward_sentry",
+    "item_quelling_blade",
+    "item_ward_dispenser"
+   ]
+  },
+  "earthshaker": {
+   "early": [
+    "item_boots",
+    "item_bottle",
+    "item_soul_ring",
+    "item_power_treads",
+    "item_blink",
+    "item_chainmail",
+    "item_phase_boots",
+    "item_arcane_boots",
+    "item_bracer"
+   ],
+   "late": [
+    "item_black_king_bar",
+    "item_refresher",
+    "item_soul_booster",
+    "item_yasha",
+    "item_octarine_core",
+    "item_yasha_and_kaya",
+    "item_aeon_disk",
+    "item_travel_boots",
+    "item_kaya",
+    "item_cyclone"
+   ],
+   "mid": [
+    "item_aghanims_shard",
+    "item_blink",
+    "item_staff_of_wizardry",
+    "item_kaya",
+    "item_blade_of_alacrity",
+    "item_ogre_axe",
+    "item_travel_boots",
+    "item_yasha",
+    "item_yasha_and_kaya",
+    "item_point_booster"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_ward_observer",
+    "item_faerie_fire",
+    "item_ward_dispenser",
+    "item_enchanted_mango",
+    "item_clarity",
+    "item_blood_grenade",
+    "item_ward_sentry",
+    "item_sobi_mask"
+   ]
+  },
+  "elder_titan": {
+   "early": [
+    "item_boots",
+    "item_tranquil_boots",
+    "item_chainmail",
+    "item_phase_boots",
+    "item_bracer",
+    "item_lifesteal",
+    "item_ogre_axe",
+    "item_broadsword",
+    "item_bottle",
+    "item_blade_of_alacrity"
+   ],
+   "late": [
+    "item_force_staff",
+    "item_solar_crest",
+    "item_ultimate_scepter",
+    "item_demon_edge",
+    "item_lesser_crit",
+    "item_cyclone",
+    "item_glimmer_cape",
+    "item_boots_of_bearing",
+    "item_lotus_orb",
+    "item_vladmir"
+   ],
+   "mid": [
+    "item_staff_of_wizardry",
+    "item_ogre_axe",
+    "item_ancient_janggo",
+    "item_point_booster",
+    "item_pavise",
+    "item_broadsword",
+    "item_blade_of_alacrity",
+    "item_ultimate_scepter",
+    "item_solar_crest",
+    "item_aghanims_shard"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_blood_grenade",
+    "item_ward_dispenser",
+    "item_ward_sentry",
+    "item_smoke_of_deceit",
+    "item_wind_lace",
+    "item_faerie_fire",
+    "item_boots",
+    "item_gauntlets"
+   ]
+  },
+  "ember_spirit": {
+   "early": [
+    "item_boots",
+    "item_bottle",
+    "item_urn_of_shadows",
+    "item_chainmail",
+    "item_phase_boots",
+    "item_diadem",
+    "item_ring_of_health",
+    "item_spirit_vessel",
+    "item_void_stone",
+    "item_power_treads"
+   ],
+   "late": [
+    "item_ultimate_scepter",
+    "item_black_king_bar",
+    "item_ultimate_orb",
+    "item_shivas_guard",
+    "item_sange",
+    "item_kaya",
+    "item_kaya_and_sange",
+    "item_refresher",
+    "item_skadi",
+    "item_sphere"
+   ],
+   "mid": [
+    "item_spirit_vessel",
+    "item_ogre_axe",
+    "item_diadem",
+    "item_mithril_hammer",
+    "item_aghanims_shard",
+    "item_staff_of_wizardry",
+    "item_black_king_bar",
+    "item_kaya",
+    "item_phase_boots",
+    "item_point_booster"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_faerie_fire",
+    "item_ward_observer",
+    "item_quelling_blade",
+    "item_ward_sentry",
+    "item_magic_stick",
+    "item_ring_of_protection",
+    "item_blood_grenade"
+   ]
+  },
+  "enchantress": {
+   "early": [
+    "item_boots",
+    "item_urn_of_shadows",
+    "item_point_booster",
+    "item_power_treads",
+    "item_ogre_axe",
+    "item_staff_of_wizardry",
+    "item_bracer",
+    "item_null_talisman",
+    "item_tranquil_boots"
+   ],
+   "late": [
+    "item_hurricane_pike",
+    "item_force_staff",
+    "item_ultimate_scepter",
+    "item_blink",
+    "item_hyperstone",
+    "item_black_king_bar",
+    "item_pipe",
+    "item_assault",
+    "item_crimson_guard",
+    "item_glimmer_cape"
+   ],
+   "mid": [
+    "item_staff_of_wizardry",
+    "item_ancient_janggo",
+    "item_blade_of_alacrity",
+    "item_ogre_axe",
+    "item_power_treads",
+    "item_force_staff",
+    "item_point_booster",
+    "item_ultimate_scepter",
+    "item_essence_distiller",
+    "item_pavise"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_faerie_fire",
+    "item_ward_dispenser",
+    "item_blood_grenade",
+    "item_smoke_of_deceit",
+    "item_ward_sentry",
+    "item_circlet",
+    "item_magic_stick",
+    "item_quelling_blade"
+   ]
+  },
+  "enigma": {
+   "early": [
+    "item_boots",
+    "item_ancient_janggo",
+    "item_tranquil_boots",
+    "item_null_talisman",
+    "item_helm_of_iron_will",
+    "item_urn_of_shadows",
+    "item_soul_ring",
+    "item_helm_of_the_dominator",
+    "item_bracer",
+    "item_staff_of_wizardry"
+   ],
+   "late": [
+    "item_ultimate_scepter",
+    "item_black_king_bar",
+    "item_shivas_guard",
+    "item_octarine_core",
+    "item_soul_booster",
+    "item_refresher",
+    "item_travel_boots",
+    "item_ultimate_scepter_2",
+    "item_invis_sword",
+    "item_ultimate_orb"
+   ],
+   "mid": [
+    "item_blink",
+    "item_aghanims_shard",
+    "item_ogre_axe",
+    "item_mithril_hammer",
+    "item_black_king_bar",
+    "item_point_booster",
+    "item_ring_of_tarrasque",
+    "item_boots_of_bearing",
+    "item_vitality_booster",
+    "item_spirit_vessel"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_ring_of_regen",
+    "item_faerie_fire",
+    "item_magic_stick",
+    "item_circlet",
+    "item_magic_wand",
+    "item_wind_lace",
+    "item_ward_observer",
+    "item_blight_stone"
+   ]
+  },
+  "faceless_void": {
+   "early": [
+    "item_boots",
+    "item_power_treads",
+    "item_ring_of_health",
+    "item_broadsword",
+    "item_wraith_band",
+    "item_lifesteal",
+    "item_void_stone",
+    "item_pers",
+    "item_mask_of_madness",
+    "item_javelin"
+   ],
+   "late": [
+    "item_ultimate_orb",
+    "item_ultimate_scepter",
+    "item_black_king_bar",
+    "item_eagle",
+    "item_skadi",
+    "item_demon_edge",
+    "item_butterfly",
+    "item_manta",
+    "item_hyperstone",
+    "item_monkey_king_bar"
+   ],
+   "mid": [
+    "item_broadsword",
+    "item_blade_of_alacrity",
+    "item_bfury",
+    "item_yasha",
+    "item_diadem",
+    "item_ogre_axe",
+    "item_pers",
+    "item_mithril_hammer",
+    "item_manta",
+    "item_point_booster"
+   ],
+   "start": [
+    "item_branches",
+    "item_quelling_blade",
+    "item_tango",
+    "item_magic_stick",
+    "item_circlet",
+    "item_faerie_fire",
+    "item_slippers",
+    "item_magic_wand",
+    "item_ward_sentry",
+    "item_ward_observer"
+   ]
+  },
+  "furion": {
+   "early": [
+    "item_boots",
+    "item_power_treads",
+    "item_javelin",
+    "item_mithril_hammer",
+    "item_urn_of_shadows",
+    "item_diadem",
+    "item_wraith_band",
+    "item_maelstrom",
+    "item_blitz_knuckles",
+    "item_null_talisman"
+   ],
+   "late": [
+    "item_demon_edge",
+    "item_hyperstone",
+    "item_reaver",
+    "item_greater_crit",
+    "item_eagle",
+    "item_satanic",
+    "item_butterfly",
+    "item_lesser_crit",
+    "item_hydras_breath",
+    "item_specialists_array"
+   ],
+   "mid": [
+    "item_mithril_hammer",
+    "item_blade_of_alacrity",
+    "item_dragon_lance",
+    "item_hyperstone",
+    "item_mjollnir",
+    "item_maelstrom",
+    "item_ogre_axe",
+    "item_black_king_bar",
+    "item_staff_of_wizardry",
+    "item_force_staff"
+   ],
+   "start": [
+    "item_branches",
+    "item_circlet",
+    "item_faerie_fire",
+    "item_tango",
+    "item_magic_wand",
+    "item_ward_observer",
+    "item_magic_stick",
+    "item_ward_dispenser",
+    "item_blood_grenade",
+    "item_ward_sentry"
+   ]
+  },
+  "grimstroke": {
+   "early": [
+    "item_boots",
+    "item_arcane_boots",
+    "item_null_talisman",
+    "item_urn_of_shadows",
+    "item_blink",
+    "item_bottle",
+    "item_bracer"
+   ],
+   "late": [
+    "item_blink",
+    "item_ultimate_scepter",
+    "item_mystic_staff",
+    "item_sheepstick",
+    "item_aeon_disk",
+    "item_glimmer_cape",
+    "item_aether_lens",
+    "item_travel_boots",
+    "item_force_staff",
+    "item_invis_sword"
+   ],
+   "mid": [
+    "item_arcane_boots",
+    "item_staff_of_wizardry",
+    "item_blink",
+    "item_point_booster",
+    "item_glimmer_cape",
+    "item_ogre_axe",
+    "item_aghanims_shard",
+    "item_force_staff",
+    "item_blade_of_alacrity",
+    "item_ghost"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_blood_grenade",
+    "item_faerie_fire",
+    "item_ward_sentry",
+    "item_ward_dispenser",
+    "item_magic_stick",
+    "item_smoke_of_deceit",
+    "item_circlet",
+    "item_enchanted_mango"
+   ]
+  },
+  "gyrocopter": {
+   "early": [
+    "item_boots",
+    "item_falcon_blade",
+    "item_power_treads",
+    "item_blade_of_alacrity",
+    "item_wraith_band",
+    "item_urn_of_shadows",
+    "item_claymore",
+    "item_lesser_crit",
+    "item_dragon_lance",
+    "item_bottle"
+   ],
+   "late": [
+    "item_demon_edge",
+    "item_greater_crit",
+    "item_reaver",
+    "item_satanic",
+    "item_black_king_bar",
+    "item_blink",
+    "item_eagle",
+    "item_lesser_crit",
+    "item_force_staff",
+    "item_butterfly"
+   ],
+   "mid": [
+    "item_blade_of_alacrity",
+    "item_ogre_axe",
+    "item_staff_of_wizardry",
+    "item_aghanims_shard",
+    "item_dragon_lance",
+    "item_diadem",
+    "item_yasha",
+    "item_manta",
+    "item_claymore",
+    "item_lesser_crit"
+   ],
+   "start": [
+    "item_branches",
+    "item_faerie_fire",
+    "item_tango",
+    "item_circlet",
+    "item_ward_dispenser",
+    "item_blood_grenade",
+    "item_quelling_blade",
+    "item_ward_sentry",
+    "item_slippers",
+    "item_magic_stick"
+   ]
+  },
+  "hoodwink": {
+   "early": [
+    "item_boots",
+    "item_urn_of_shadows",
+    "item_arcane_boots",
+    "item_wraith_band",
+    "item_tranquil_boots"
+   ],
+   "late": [
+    "item_blink",
+    "item_mystic_staff",
+    "item_force_staff",
+    "item_sheepstick",
+    "item_glimmer_cape",
+    "item_cyclone",
+    "item_lotus_orb",
+    "item_aeon_disk",
+    "item_wind_waker",
+    "item_consecrated_wraps"
+   ],
+   "mid": [
+    "item_essence_distiller",
+    "item_arcane_boots",
+    "item_staff_of_wizardry",
+    "item_aghanims_shard",
+    "item_blink",
+    "item_force_staff",
+    "item_pavise",
+    "item_solar_crest",
+    "item_vitality_booster",
+    "item_glimmer_cape"
+   ],
+   "start": [
+    "item_branches",
+    "item_ward_dispenser",
+    "item_tango",
+    "item_blood_grenade",
+    "item_faerie_fire",
+    "item_circlet",
+    "item_ward_sentry",
+    "item_smoke_of_deceit",
+    "item_magic_stick",
+    "item_enchanted_mango"
+   ]
+  },
+  "huskar": {
+   "early": [
+    "item_boots",
+    "item_helm_of_iron_will",
+    "item_armlet",
+    "item_power_treads",
+    "item_chainmail",
+    "item_bracer",
+    "item_phase_boots",
+    "item_ogre_axe",
+    "item_staff_of_wizardry",
+    "item_blink"
+   ],
+   "late": [
+    "item_ultimate_scepter",
+    "item_reaver",
+    "item_satanic",
+    "item_black_king_bar",
+    "item_blink",
+    "item_yasha",
+    "item_travel_boots",
+    "item_force_staff",
+    "item_heart",
+    "item_sange_and_yasha"
+   ],
+   "mid": [
+    "item_ogre_axe",
+    "item_mithril_hammer",
+    "item_blade_of_alacrity",
+    "item_black_king_bar",
+    "item_blink",
+    "item_dragon_lance",
+    "item_armlet",
+    "item_staff_of_wizardry",
+    "item_force_staff",
+    "item_aghanims_shard"
+   ],
+   "start": [
+    "item_gauntlets",
+    "item_branches",
+    "item_faerie_fire",
+    "item_ward_observer",
+    "item_magic_stick",
+    "item_tango",
+    "item_ward_dispenser",
+    "item_quelling_blade",
+    "item_blood_grenade",
+    "item_boots"
+   ]
+  },
+  "invoker": {
+   "early": [
+    "item_null_talisman",
+    "item_staff_of_wizardry",
+    "item_boots",
+    "item_kaya",
+    "item_meteor_hammer",
+    "item_urn_of_shadows",
+    "item_diadem",
+    "item_vitality_booster",
+    "item_rod_of_atos",
+    "item_wraith_band"
+   ],
+   "late": [
+    "item_octarine_core",
+    "item_shivas_guard",
+    "item_soul_booster",
+    "item_mystic_staff",
+    "item_sheepstick",
+    "item_ultimate_scepter",
+    "item_black_king_bar",
+    "item_blink",
+    "item_ultimate_scepter_2",
+    "item_refresher"
+   ],
+   "mid": [
+    "item_travel_boots",
+    "item_ogre_axe",
+    "item_mithril_hammer",
+    "item_black_king_bar",
+    "item_meteor_hammer",
+    "item_kaya",
+    "item_vitality_booster",
+    "item_point_booster",
+    "item_staff_of_wizardry",
+    "item_soul_booster"
+   ],
+   "start": [
+    "item_branches",
+    "item_circlet",
+    "item_faerie_fire",
+    "item_ward_observer",
+    "item_tango",
+    "item_mantle",
+    "item_magic_stick",
+    "item_sobi_mask",
+    "item_magic_wand",
+    "item_ward_sentry"
+   ]
+  },
+  "jakiro": {
+   "early": [
+    "item_boots",
+    "item_arcane_boots",
+    "item_null_talisman",
+    "item_urn_of_shadows",
+    "item_tranquil_boots"
+   ],
+   "late": [
+    "item_ultimate_scepter",
+    "item_force_staff",
+    "item_aether_lens",
+    "item_blink",
+    "item_glimmer_cape",
+    "item_cyclone",
+    "item_travel_boots",
+    "item_vladmir",
+    "item_guardian_greaves",
+    "item_aeon_disk"
+   ],
+   "mid": [
+    "item_arcane_boots",
+    "item_staff_of_wizardry",
+    "item_force_staff",
+    "item_cyclone",
+    "item_glimmer_cape",
+    "item_pavise",
+    "item_solar_crest",
+    "item_ancient_janggo",
+    "item_ghost",
+    "item_point_booster"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_blood_grenade",
+    "item_faerie_fire",
+    "item_ward_dispenser",
+    "item_ward_sentry",
+    "item_smoke_of_deceit",
+    "item_magic_stick",
+    "item_enchanted_mango",
+    "item_circlet"
+   ]
+  },
+  "juggernaut": {
+   "early": [
+    "item_boots",
+    "item_power_treads",
+    "item_ring_of_health",
+    "item_void_stone",
+    "item_broadsword",
+    "item_pers",
+    "item_wraith_band",
+    "item_chainmail",
+    "item_phase_boots",
+    "item_javelin"
+   ],
+   "late": [
+    "item_eagle",
+    "item_blink",
+    "item_ultimate_orb",
+    "item_butterfly",
+    "item_ultimate_scepter",
+    "item_demon_edge",
+    "item_swift_blink",
+    "item_monkey_king_bar",
+    "item_skadi",
+    "item_basher"
+   ],
+   "mid": [
+    "item_broadsword",
+    "item_blade_of_alacrity",
+    "item_yasha",
+    "item_bfury",
+    "item_diadem",
+    "item_manta",
+    "item_pers",
+    "item_eagle",
+    "item_claymore",
+    "item_talisman_of_evasion"
+   ],
+   "start": [
+    "item_branches",
+    "item_quelling_blade",
+    "item_tango",
+    "item_magic_stick",
+    "item_faerie_fire",
+    "item_circlet",
+    "item_magic_wand",
+    "item_slippers",
+    "item_enchanted_mango",
+    "item_gauntlets"
+   ]
+  },
+  "keeper_of_the_light": {
+   "early": [
+    "item_boots",
+    "item_urn_of_shadows",
+    "item_diadem",
+    "item_spirit_vessel",
+    "item_tranquil_boots",
+    "item_blitz_knuckles",
+    "item_oblivion_staff",
+    "item_point_booster",
+    "item_bracer"
+   ],
+   "late": [
+    "item_mystic_staff",
+    "item_sheepstick",
+    "item_ultimate_scepter",
+    "item_soul_booster",
+    "item_octarine_core",
+    "item_force_staff",
+    "item_black_king_bar",
+    "item_travel_boots",
+    "item_cyclone",
+    "item_travel_boots_2"
+   ],
+   "mid": [
+    "item_staff_of_wizardry",
+    "item_force_staff",
+    "item_travel_boots",
+    "item_holy_locket",
+    "item_point_booster",
+    "item_vitality_booster",
+    "item_tiara_of_selemene",
+    "item_soul_booster",
+    "item_octarine_core",
+    "item_claymore"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_circlet",
+    "item_faerie_fire",
+    "item_ward_dispenser",
+    "item_blood_grenade",
+    "item_ward_observer",
+    "item_ward_sentry",
+    "item_magic_stick",
+    "item_boots"
+   ]
+  },
+  "kez": {
+   "early": [
+    "item_boots",
+    "item_power_treads",
+    "item_ring_of_health",
+    "item_void_stone",
+    "item_pers",
+    "item_cloak",
+    "item_wraith_band",
+    "item_mage_slayer",
+    "item_bracer"
+   ],
+   "late": [
+    "item_ultimate_scepter",
+    "item_demon_edge",
+    "item_lesser_crit",
+    "item_greater_crit",
+    "item_blink",
+    "item_black_king_bar",
+    "item_eagle",
+    "item_ultimate_orb",
+    "item_ultimate_scepter_2",
+    "item_swift_blink"
+   ],
+   "mid": [
+    "item_mithril_hammer",
+    "item_mage_slayer",
+    "item_ogre_axe",
+    "item_desolator",
+    "item_blade_of_alacrity",
+    "item_pers",
+    "item_point_booster",
+    "item_black_king_bar",
+    "item_staff_of_wizardry",
+    "item_ultimate_scepter"
+   ],
+   "start": [
+    "item_branches",
+    "item_circlet",
+    "item_faerie_fire",
+    "item_tango",
+    "item_quelling_blade",
+    "item_magic_stick",
+    "item_magic_wand",
+    "item_slippers",
+    "item_ward_observer",
+    "item_ward_sentry"
+   ]
+  },
+  "kunkka": {
+   "early": [
+    "item_bracer",
+    "item_boots",
+    "item_chainmail",
+    "item_phase_boots",
+    "item_ogre_axe",
+    "item_broadsword",
+    "item_bottle",
+    "item_urn_of_shadows",
+    "item_claymore",
+    "item_ring_of_health"
+   ],
+   "late": [
+    "item_demon_edge",
+    "item_shivas_guard",
+    "item_black_king_bar",
+    "item_ultimate_scepter",
+    "item_greater_crit",
+    "item_mystic_staff",
+    "item_lesser_crit",
+    "item_sheepstick",
+    "item_reaver",
+    "item_silver_edge"
+   ],
+   "mid": [
+    "item_ogre_axe",
+    "item_mithril_hammer",
+    "item_blade_of_alacrity",
+    "item_point_booster",
+    "item_staff_of_wizardry",
+    "item_black_king_bar",
+    "item_claymore",
+    "item_ultimate_scepter",
+    "item_aghanims_shard",
+    "item_blitz_knuckles"
+   ],
+   "start": [
+    "item_branches",
+    "item_gauntlets",
+    "item_circlet",
+    "item_tango",
+    "item_quelling_blade",
+    "item_ward_observer",
+    "item_faerie_fire",
+    "item_magic_stick",
+    "item_ward_dispenser",
+    "item_blood_grenade"
+   ]
+  },
+  "largo": {
+   "early": [
+    "item_boots",
+    "item_chainmail",
+    "item_phase_boots",
+    "item_soul_ring",
+    "item_bracer",
+    "item_staff_of_wizardry",
+    "item_bottle",
+    "item_urn_of_shadows",
+    "item_diadem",
+    "item_ring_of_health"
+   ],
+   "late": [
+    "item_ultimate_scepter",
+    "item_black_king_bar",
+    "item_ultimate_orb",
+    "item_sphere",
+    "item_soul_booster",
+    "item_shivas_guard",
+    "item_crellas_crozier",
+    "item_kaya_and_sange",
+    "item_sange",
+    "item_octarine_core"
+   ],
+   "mid": [
+    "item_ogre_axe",
+    "item_staff_of_wizardry",
+    "item_kaya",
+    "item_aghanims_shard",
+    "item_sange",
+    "item_kaya_and_sange",
+    "item_pers",
+    "item_platemail",
+    "item_point_booster",
+    "item_lotus_orb"
+   ],
+   "start": [
+    "item_branches",
+    "item_gauntlets",
+    "item_tango",
+    "item_magic_stick",
+    "item_faerie_fire",
+    "item_circlet",
+    "item_quelling_blade",
+    "item_blood_grenade",
+    "item_ward_observer",
+    "item_ward_dispenser"
+   ]
+  },
+  "legion_commander": {
+   "early": [
+    "item_boots",
+    "item_bracer",
+    "item_chainmail",
+    "item_phase_boots",
+    "item_broadsword",
+    "item_splintmail",
+    "item_soul_ring",
+    "item_power_treads",
+    "item_blade_mail",
+    "item_blink"
+   ],
+   "late": [
+    "item_black_king_bar",
+    "item_invis_sword",
+    "item_demon_edge",
+    "item_hyperstone",
+    "item_assault",
+    "item_ultimate_scepter",
+    "item_relic",
+    "item_nullifier",
+    "item_silver_edge",
+    "item_greater_crit"
+   ],
+   "mid": [
+    "item_blink",
+    "item_blade_mail",
+    "item_ogre_axe",
+    "item_broadsword",
+    "item_mithril_hammer",
+    "item_claymore",
+    "item_black_king_bar",
+    "item_blitz_knuckles",
+    "item_lesser_crit",
+    "item_invis_sword"
+   ],
+   "start": [
+    "item_branches",
+    "item_gauntlets",
+    "item_tango",
+    "item_quelling_blade",
+    "item_circlet",
+    "item_magic_stick",
+    "item_faerie_fire",
+    "item_ring_of_protection",
+    "item_slippers",
+    "item_belt_of_strength"
+   ]
+  },
+  "leshrac": {
+   "early": [
+    "item_boots",
+    "item_arcane_boots",
+    "item_bottle",
+    "item_staff_of_wizardry",
+    "item_null_talisman",
+    "item_kaya",
+    "item_blink",
+    "item_power_treads",
+    "item_travel_boots",
+    "item_bracer"
+   ],
+   "late": [
+    "item_soul_booster",
+    "item_shivas_guard",
+    "item_black_king_bar",
+    "item_bloodstone",
+    "item_mystic_staff",
+    "item_sange",
+    "item_kaya_and_sange",
+    "item_yasha",
+    "item_reaver",
+    "item_yasha_and_kaya"
+   ],
+   "mid": [
+    "item_kaya",
+    "item_staff_of_wizardry",
+    "item_ogre_axe",
+    "item_blink",
+    "item_sange",
+    "item_kaya_and_sange",
+    "item_veil_of_discord",
+    "item_vitality_booster",
+    "item_mithril_hammer",
+    "item_point_booster"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_faerie_fire",
+    "item_ward_observer",
+    "item_circlet",
+    "item_ward_sentry",
+    "item_ward_dispenser",
+    "item_blood_grenade",
+    "item_mantle",
+    "item_magic_stick"
+   ]
+  },
+  "lich": {
+   "early": [
+    "item_boots",
+    "item_tranquil_boots",
+    "item_shadow_amulet",
+    "item_arcane_boots"
+   ],
+   "late": [
+    "item_ultimate_scepter",
+    "item_blink",
+    "item_aeon_disk",
+    "item_glimmer_cape",
+    "item_force_staff",
+    "item_solar_crest",
+    "item_black_king_bar",
+    "item_invis_sword",
+    "item_travel_boots",
+    "item_cyclone"
+   ],
+   "mid": [
+    "item_aghanims_shard",
+    "item_blink",
+    "item_glimmer_cape",
+    "item_staff_of_wizardry",
+    "item_force_staff",
+    "item_pavise",
+    "item_ghost",
+    "item_point_booster",
+    "item_solar_crest",
+    "item_arcane_boots"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_blood_grenade",
+    "item_ward_dispenser",
+    "item_faerie_fire",
+    "item_enchanted_mango",
+    "item_smoke_of_deceit",
+    "item_ward_sentry",
+    "item_magic_stick",
+    "item_wind_lace"
+   ]
+  },
+  "life_stealer": {
+   "early": [
+    "item_boots",
+    "item_chainmail",
+    "item_phase_boots",
+    "item_talisman_of_evasion",
+    "item_relic",
+    "item_bracer"
+   ],
+   "late": [
+    "item_ultimate_scepter",
+    "item_basher",
+    "item_hyperstone",
+    "item_sange",
+    "item_abyssal_blade",
+    "item_manta",
+    "item_assault",
+    "item_ultimate_scepter_2",
+    "item_demon_edge",
+    "item_ultimate_orb"
+   ],
+   "mid": [
+    "item_relic",
+    "item_talisman_of_evasion",
+    "item_radiance",
+    "item_blade_of_alacrity",
+    "item_yasha",
+    "item_armlet",
+    "item_diadem",
+    "item_ogre_axe",
+    "item_manta",
+    "item_sange"
+   ],
+   "start": [
+    "item_gauntlets",
+    "item_quelling_blade",
+    "item_branches",
+    "item_faerie_fire",
+    "item_magic_stick",
+    "item_tango",
+    "item_circlet",
+    "item_ward_observer",
+    "item_ward_sentry",
+    "item_ward_dispenser"
+   ]
+  },
+  "lina": {
+   "early": [
+    "item_boots",
+    "item_bottle",
+    "item_null_talisman",
+    "item_travel_boots",
+    "item_staff_of_wizardry",
+    "item_falcon_blade",
+    "item_javelin",
+    "item_power_treads",
+    "item_mithril_hammer",
+    "item_maelstrom"
+   ],
+   "late": [
+    "item_black_king_bar",
+    "item_demon_edge",
+    "item_yasha",
+    "item_yasha_and_kaya",
+    "item_blink",
+    "item_lesser_crit",
+    "item_travel_boots_2",
+    "item_mystic_staff",
+    "item_dagon",
+    "item_reaver"
+   ],
+   "mid": [
+    "item_staff_of_wizardry",
+    "item_blade_of_alacrity",
+    "item_ogre_axe",
+    "item_kaya",
+    "item_travel_boots",
+    "item_point_booster",
+    "item_yasha",
+    "item_yasha_and_kaya",
+    "item_ultimate_scepter",
+    "item_mithril_hammer"
+   ],
+   "start": [
+    "item_branches",
+    "item_faerie_fire",
+    "item_tango",
+    "item_ward_observer",
+    "item_circlet",
+    "item_magic_stick",
+    "item_quelling_blade",
+    "item_mantle",
+    "item_magic_wand",
+    "item_ward_sentry"
+   ]
+  },
+  "lion": {
+   "early": [
+    "item_boots",
+    "item_tranquil_boots",
+    "item_power_treads",
+    "item_bracer",
+    "item_null_talisman",
+    "item_chainmail",
+    "item_hand_of_midas"
+   ],
+   "late": [
+    "item_force_staff",
+    "item_glimmer_cape",
+    "item_blink",
+    "item_aether_lens",
+    "item_aeon_disk",
+    "item_invis_sword",
+    "item_cyclone",
+    "item_ultimate_scepter",
+    "item_black_king_bar",
+    "item_echo_sabre"
+   ],
+   "mid": [
+    "item_blink",
+    "item_staff_of_wizardry",
+    "item_ghost",
+    "item_force_staff",
+    "item_blitz_knuckles",
+    "item_claymore",
+    "item_ogre_axe",
+    "item_power_treads",
+    "item_invis_sword",
+    "item_broadsword"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_blood_grenade",
+    "item_ward_dispenser",
+    "item_faerie_fire",
+    "item_ward_sentry",
+    "item_magic_stick",
+    "item_circlet",
+    "item_smoke_of_deceit",
+    "item_wind_lace"
+   ]
+  },
+  "lone_druid": {
+   "early": [
+    "item_boots",
+    "item_power_treads",
+    "item_javelin",
+    "item_mithril_hammer",
+    "item_maelstrom",
+    "item_orb_of_corrosion",
+    "item_chainmail",
+    "item_phase_boots"
+   ],
+   "late": [
+    "item_demon_edge",
+    "item_black_king_bar",
+    "item_eagle",
+    "item_silver_edge",
+    "item_butterfly",
+    "item_invis_sword",
+    "item_blink",
+    "item_ultimate_scepter_2",
+    "item_swift_blink",
+    "item_monkey_king_bar"
+   ],
+   "mid": [
+    "item_ogre_axe",
+    "item_blade_of_alacrity",
+    "item_staff_of_wizardry",
+    "item_hyperstone",
+    "item_mjollnir",
+    "item_point_booster",
+    "item_ultimate_scepter",
+    "item_maelstrom",
+    "item_blitz_knuckles",
+    "item_mithril_hammer"
+   ],
+   "start": [
+    "item_branches",
+    "item_faerie_fire",
+    "item_blight_stone",
+    "item_tango",
+    "item_quelling_blade",
+    "item_orb_of_frost",
+    "item_magic_stick",
+    "item_circlet",
+    "item_ward_dispenser"
+   ]
+  },
+  "luna": {
+   "early": [
+    "item_boots",
+    "item_power_treads",
+    "item_lifesteal",
+    "item_broadsword",
+    "item_mask_of_madness",
+    "item_blade_of_alacrity",
+    "item_wraith_band",
+    "item_dragon_lance",
+    "item_bracer",
+    "item_yasha"
+   ],
+   "late": [
+    "item_eagle",
+    "item_black_king_bar",
+    "item_reaver",
+    "item_butterfly",
+    "item_satanic",
+    "item_blink",
+    "item_demon_edge",
+    "item_swift_blink",
+    "item_lesser_crit",
+    "item_greater_crit"
+   ],
+   "mid": [
+    "item_blade_of_alacrity",
+    "item_diadem",
+    "item_yasha",
+    "item_manta",
+    "item_ogre_axe",
+    "item_mithril_hammer",
+    "item_mask_of_madness",
+    "item_black_king_bar",
+    "item_dragon_lance",
+    "item_claymore"
+   ],
+   "start": [
+    "item_branches",
+    "item_faerie_fire",
+    "item_circlet",
+    "item_tango",
+    "item_magic_stick",
+    "item_magic_wand",
+    "item_quelling_blade",
+    "item_slippers",
+    "item_ward_observer",
+    "item_flask"
+   ]
+  },
+  "lycan": {
+   "early": [
+    "item_helm_of_iron_will",
+    "item_helm_of_the_dominator",
+    "item_boots"
+   ],
+   "late": [
+    "item_black_king_bar",
+    "item_relic",
+    "item_nullifier",
+    "item_blink",
+    "item_ultimate_scepter",
+    "item_assault",
+    "item_mystic_staff",
+    "item_sheepstick",
+    "item_hyperstone",
+    "item_reaver"
+   ],
+   "mid": [
+    "item_ultimate_orb",
+    "item_helm_of_the_overlord",
+    "item_aghanims_shard",
+    "item_hyperstone",
+    "item_platemail",
+    "item_assault",
+    "item_ogre_axe",
+    "item_helm_of_the_dominator",
+    "item_mithril_hammer",
+    "item_relic"
+   ],
+   "start": [
+    "item_branches",
+    "item_sobi_mask",
+    "item_tango",
+    "item_quelling_blade",
+    "item_faerie_fire",
+    "item_magic_stick",
+    "item_gauntlets",
+    "item_magic_wand",
+    "item_blight_stone",
+    "item_ward_observer"
+   ]
+  },
+  "magnataur": {
+   "early": [
+    "item_boots",
+    "item_power_treads",
+    "item_bracer",
+    "item_wraith_band",
+    "item_broadsword",
+    "item_bottle",
+    "item_lifesteal",
+    "item_ogre_axe",
+    "item_mask_of_madness",
+    "item_blink"
+   ],
+   "late": [
+    "item_black_king_bar",
+    "item_harpoon",
+    "item_refresher",
+    "item_invis_sword",
+    "item_ultimate_scepter",
+    "item_ultimate_orb",
+    "item_demon_edge",
+    "item_eagle",
+    "item_reaver",
+    "item_shivas_guard"
+   ],
+   "mid": [
+    "item_ogre_axe",
+    "item_blink",
+    "item_broadsword",
+    "item_echo_sabre",
+    "item_mithril_hammer",
+    "item_diadem",
+    "item_staff_of_wizardry",
+    "item_black_king_bar",
+    "item_blade_of_alacrity",
+    "item_harpoon"
+   ],
+   "start": [
+    "item_branches",
+    "item_circlet",
+    "item_tango",
+    "item_gauntlets",
+    "item_quelling_blade",
+    "item_ward_observer",
+    "item_faerie_fire",
+    "item_magic_stick",
+    "item_boots",
+    "item_magic_wand"
+   ]
+  },
+  "marci": {
+   "early": [
+    "item_boots",
+    "item_chainmail",
+    "item_phase_boots",
+    "item_bracer",
+    "item_helm_of_iron_will",
+    "item_bottle",
+    "item_helm_of_the_dominator",
+    "item_ogre_axe",
+    "item_wraith_band",
+    "item_power_treads"
+   ],
+   "late": [
+    "item_blink",
+    "item_basher",
+    "item_black_king_bar",
+    "item_sange",
+    "item_abyssal_blade",
+    "item_relic",
+    "item_nullifier",
+    "item_solar_crest",
+    "item_glimmer_cape",
+    "item_vladmir"
+   ],
+   "mid": [
+    "item_ogre_axe",
+    "item_mithril_hammer",
+    "item_phase_boots",
+    "item_black_king_bar",
+    "item_pavise",
+    "item_solar_crest",
+    "item_staff_of_wizardry",
+    "item_point_booster",
+    "item_blade_of_alacrity",
+    "item_blink"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_blood_grenade",
+    "item_ward_sentry",
+    "item_circlet",
+    "item_ward_dispenser",
+    "item_faerie_fire",
+    "item_magic_stick",
+    "item_ward_observer",
+    "item_quelling_blade"
+   ]
+  },
+  "mars": {
+   "early": [
+    "item_bracer",
+    "item_boots",
+    "item_chainmail",
+    "item_soul_ring",
+    "item_phase_boots",
+    "item_lifesteal",
+    "item_bottle",
+    "item_blink",
+    "item_helm_of_iron_will",
+    "item_arcane_boots"
+   ],
+   "late": [
+    "item_black_king_bar",
+    "item_mystic_staff",
+    "item_sheepstick",
+    "item_reaver",
+    "item_refresher",
+    "item_ultimate_scepter",
+    "item_shivas_guard",
+    "item_overwhelming_blink",
+    "item_cyclone",
+    "item_soul_booster"
+   ],
+   "mid": [
+    "item_blink",
+    "item_aghanims_shard",
+    "item_mithril_hammer",
+    "item_ogre_axe",
+    "item_phase_boots",
+    "item_staff_of_wizardry",
+    "item_cyclone",
+    "item_black_king_bar",
+    "item_desolator",
+    "item_platemail"
+   ],
+   "start": [
+    "item_branches",
+    "item_gauntlets",
+    "item_tango",
+    "item_quelling_blade",
+    "item_circlet",
+    "item_magic_stick",
+    "item_faerie_fire",
+    "item_ward_observer",
+    "item_ring_of_protection",
+    "item_flask"
+   ]
+  },
+  "medusa": {
+   "early": [
+    "item_boots",
+    "item_power_treads",
+    "item_null_talisman",
+    "item_blade_of_alacrity",
+    "item_yasha",
+    "item_falcon_blade",
+    "item_diadem",
+    "item_wraith_band",
+    "item_javelin"
+   ],
+   "late": [
+    "item_ultimate_orb",
+    "item_demon_edge",
+    "item_skadi",
+    "item_lesser_crit",
+    "item_greater_crit",
+    "item_eagle",
+    "item_blink",
+    "item_black_king_bar",
+    "item_disperser",
+    "item_butterfly"
+   ],
+   "mid": [
+    "item_manta",
+    "item_diadem",
+    "item_yasha",
+    "item_claymore",
+    "item_eagle",
+    "item_talisman_of_evasion",
+    "item_butterfly",
+    "item_blade_of_alacrity",
+    "item_ultimate_orb",
+    "item_blitz_knuckles"
+   ],
+   "start": [
+    "item_branches",
+    "item_magic_stick",
+    "item_circlet",
+    "item_enchanted_mango",
+    "item_magic_wand",
+    "item_quelling_blade",
+    "item_faerie_fire",
+    "item_mantle",
+    "item_sobi_mask",
+    "item_ward_observer"
+   ]
+  },
+  "meepo": {
+   "early": [
+    "item_wraith_band",
+    "item_boots",
+    "item_power_treads",
+    "item_blade_of_alacrity",
+    "item_yasha",
+    "item_diffusal_blade",
+    "item_ogre_axe",
+    "item_bracer",
+    "item_dragon_lance",
+    "item_blink"
+   ],
+   "late": [
+    "item_ultimate_orb",
+    "item_eagle",
+    "item_skadi",
+    "item_blink",
+    "item_ultimate_scepter",
+    "item_butterfly",
+    "item_disperser",
+    "item_swift_blink",
+    "item_ultimate_scepter_2",
+    "item_mystic_staff"
+   ],
+   "mid": [
+    "item_ogre_axe",
+    "item_blade_of_alacrity",
+    "item_sange_and_yasha",
+    "item_sange",
+    "item_staff_of_wizardry",
+    "item_point_booster",
+    "item_yasha",
+    "item_ultimate_orb",
+    "item_ultimate_scepter",
+    "item_aghanims_shard"
+   ],
+   "start": [
+    "item_branches",
+    "item_circlet",
+    "item_slippers",
+    "item_tango",
+    "item_quelling_blade",
+    "item_ward_observer",
+    "item_faerie_fire",
+    "item_magic_wand",
+    "item_gauntlets",
+    "item_magic_stick"
+   ]
+  },
+  "mirana": {
+   "early": [
+    "item_boots",
+    "item_urn_of_shadows",
+    "item_tranquil_boots",
+    "item_chainmail",
+    "item_arcane_boots",
+    "item_void_stone",
+    "item_null_talisman"
+   ],
+   "late": [
+    "item_ultimate_scepter",
+    "item_cyclone",
+    "item_consecrated_wraps",
+    "item_mystic_staff",
+    "item_force_staff",
+    "item_blink",
+    "item_solar_crest",
+    "item_wind_waker",
+    "item_ultimate_orb",
+    "item_soul_booster"
+   ],
+   "mid": [
+    "item_staff_of_wizardry",
+    "item_essence_distiller",
+    "item_arcane_boots",
+    "item_cyclone",
+    "item_point_booster",
+    "item_ogre_axe",
+    "item_pavise",
+    "item_vitality_booster",
+    "item_solar_crest",
+    "item_blade_of_alacrity"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_blood_grenade",
+    "item_faerie_fire",
+    "item_ward_dispenser",
+    "item_ward_sentry",
+    "item_smoke_of_deceit",
+    "item_circlet",
+    "item_magic_stick",
+    "item_ward_observer"
+   ]
+  },
+  "monkey_king": {
+   "early": [
+    "item_boots",
+    "item_power_treads",
+    "item_wraith_band",
+    "item_blade_of_alacrity",
+    "item_void_stone",
+    "item_ring_of_health",
+    "item_broadsword",
+    "item_pers",
+    "item_ogre_axe",
+    "item_mithril_hammer"
+   ],
+   "late": [
+    "item_ultimate_orb",
+    "item_black_king_bar",
+    "item_demon_edge",
+    "item_skadi",
+    "item_basher",
+    "item_harpoon",
+    "item_relic",
+    "item_eagle",
+    "item_nullifier",
+    "item_monkey_king_bar"
+   ],
+   "mid": [
+    "item_mithril_hammer",
+    "item_ogre_axe",
+    "item_broadsword",
+    "item_desolator",
+    "item_black_king_bar",
+    "item_blade_of_alacrity",
+    "item_diffusal_blade",
+    "item_echo_sabre",
+    "item_diadem",
+    "item_aghanims_shard"
+   ],
+   "start": [
+    "item_branches",
+    "item_circlet",
+    "item_tango",
+    "item_faerie_fire",
+    "item_quelling_blade",
+    "item_slippers",
+    "item_ward_observer",
+    "item_magic_stick",
+    "item_magic_wand",
+    "item_orb_of_frost"
+   ]
+  },
+  "morphling": {
+   "early": [
+    "item_boots",
+    "item_power_treads",
+    "item_lifesteal",
+    "item_vladmir",
+    "item_wraith_band",
+    "item_blade_of_alacrity",
+    "item_falcon_blade",
+    "item_ring_of_health",
+    "item_void_stone",
+    "item_pers"
+   ],
+   "late": [
+    "item_ultimate_orb",
+    "item_butterfly",
+    "item_black_king_bar",
+    "item_eagle",
+    "item_demon_edge",
+    "item_hydras_breath",
+    "item_skadi",
+    "item_reaver",
+    "item_satanic",
+    "item_specialists_array"
+   ],
+   "mid": [
+    "item_blade_of_alacrity",
+    "item_diadem",
+    "item_yasha",
+    "item_manta",
+    "item_vladmir",
+    "item_dragon_lance",
+    "item_claymore",
+    "item_eagle",
+    "item_talisman_of_evasion",
+    "item_broadsword"
+   ],
+   "start": [
+    "item_branches",
+    "item_circlet",
+    "item_magic_wand",
+    "item_faerie_fire",
+    "item_tango",
+    "item_magic_stick",
+    "item_slippers",
+    "item_quelling_blade",
+    "item_ward_observer",
+    "item_boots_of_elves"
+   ]
+  },
+  "muerta": {
+   "early": [
+    "item_boots",
+    "item_power_treads",
+    "item_falcon_blade",
+    "item_null_talisman",
+    "item_javelin",
+    "item_lifesteal",
+    "item_broadsword",
+    "item_bottle",
+    "item_mithril_hammer",
+    "item_wraith_band"
+   ],
+   "late": [
+    "item_demon_edge",
+    "item_black_king_bar",
+    "item_lesser_crit",
+    "item_blink",
+    "item_hyperstone",
+    "item_greater_crit",
+    "item_hurricane_pike",
+    "item_force_staff",
+    "item_eagle",
+    "item_mjollnir"
+   ],
+   "mid": [
+    "item_mithril_hammer",
+    "item_maelstrom",
+    "item_blade_of_alacrity",
+    "item_dragon_lance",
+    "item_staff_of_wizardry",
+    "item_hyperstone",
+    "item_mjollnir",
+    "item_mask_of_madness",
+    "item_broadsword",
+    "item_force_staff"
+   ],
+   "start": [
+    "item_branches",
+    "item_faerie_fire",
+    "item_magic_wand",
+    "item_tango",
+    "item_circlet",
+    "item_magic_stick",
+    "item_quelling_blade",
+    "item_blood_grenade",
+    "item_ward_sentry",
+    "item_ward_dispenser"
+   ]
+  },
+  "naga_siren": {
+   "early": [
+    "item_boots",
+    "item_wraith_band",
+    "item_power_treads",
+    "item_blade_of_alacrity",
+    "item_yasha",
+    "item_broadsword",
+    "item_ogre_axe",
+    "item_null_talisman",
+    "item_diadem"
+   ],
+   "late": [
+    "item_ultimate_orb",
+    "item_eagle",
+    "item_bloodthorn",
+    "item_butterfly",
+    "item_heart",
+    "item_skadi",
+    "item_reaver",
+    "item_hyperstone",
+    "item_blink",
+    "item_mystic_staff"
+   ],
+   "mid": [
+    "item_claymore",
+    "item_diadem",
+    "item_manta",
+    "item_blitz_knuckles",
+    "item_oblivion_staff",
+    "item_yasha",
+    "item_orchid",
+    "item_reaver",
+    "item_ring_of_tarrasque",
+    "item_heart"
+   ],
+   "start": [
+    "item_branches",
+    "item_circlet",
+    "item_slippers",
+    "item_tango",
+    "item_quelling_blade",
+    "item_magic_stick",
+    "item_faerie_fire",
+    "item_magic_wand",
+    "item_ward_sentry",
+    "item_ward_observer"
+   ]
+  },
+  "necrolyte": {
+   "early": [
+    "item_boots",
+    "item_travel_boots",
+    "item_bracer",
+    "item_null_talisman",
+    "item_talisman_of_evasion",
+    "item_relic",
+    "item_urn_of_shadows",
+    "item_diadem"
+   ],
+   "late": [
+    "item_heart",
+    "item_reaver",
+    "item_black_king_bar",
+    "item_shivas_guard",
+    "item_travel_boots_2",
+    "item_ultimate_scepter",
+    "item_ultimate_scepter_2",
+    "item_manta",
+    "item_ultimate_orb",
+    "item_cyclone"
+   ],
+   "mid": [
+    "item_radiance",
+    "item_relic",
+    "item_talisman_of_evasion",
+    "item_aghanims_shard",
+    "item_travel_boots",
+    "item_ogre_axe",
+    "item_mithril_hammer",
+    "item_blade_of_alacrity",
+    "item_yasha",
+    "item_vitality_booster"
+   ],
+   "start": [
+    "item_branches",
+    "item_circlet",
+    "item_faerie_fire",
+    "item_tango",
+    "item_magic_stick",
+    "item_ward_observer",
+    "item_quelling_blade",
+    "item_magic_wand",
+    "item_mantle",
+    "item_gauntlets"
+   ]
+  },
+  "nevermore": {
+   "early": [
+    "item_boots",
+    "item_power_treads",
+    "item_falcon_blade",
+    "item_lifesteal",
+    "item_broadsword",
+    "item_blade_of_alacrity",
+    "item_mask_of_madness",
+    "item_wraith_band",
+    "item_bottle",
+    "item_staff_of_wizardry"
+   ],
+   "late": [
+    "item_demon_edge",
+    "item_lesser_crit",
+    "item_reaver",
+    "item_greater_crit",
+    "item_satanic",
+    "item_black_king_bar",
+    "item_eagle",
+    "item_silver_edge",
+    "item_monkey_king_bar",
+    "item_invis_sword"
+   ],
+   "mid": [
+    "item_blade_of_alacrity",
+    "item_dragon_lance",
+    "item_yasha",
+    "item_manta",
+    "item_diadem",
+    "item_staff_of_wizardry",
+    "item_mask_of_madness",
+    "item_ogre_axe",
+    "item_force_staff",
+    "item_hurricane_pike"
+   ],
+   "start": [
+    "item_faerie_fire",
+    "item_branches",
+    "item_tango",
+    "item_magic_wand",
+    "item_circlet",
+    "item_magic_stick",
+    "item_quelling_blade",
+    "item_ward_observer",
+    "item_enchanted_mango",
+    "item_slippers"
+   ]
+  },
+  "night_stalker": {
+   "early": [
+    "item_boots",
+    "item_chainmail",
+    "item_phase_boots",
+    "item_bracer",
+    "item_power_treads",
+    "item_soul_ring",
+    "item_ancient_janggo",
+    "item_ogre_axe",
+    "item_broadsword",
+    "item_void_stone"
+   ],
+   "late": [
+    "item_black_king_bar",
+    "item_nullifier",
+    "item_relic",
+    "item_hyperstone",
+    "item_sange",
+    "item_basher",
+    "item_assault",
+    "item_abyssal_blade",
+    "item_yasha",
+    "item_reaver"
+   ],
+   "mid": [
+    "item_blink",
+    "item_ogre_axe",
+    "item_mithril_hammer",
+    "item_aghanims_shard",
+    "item_ancient_janggo",
+    "item_black_king_bar",
+    "item_broadsword",
+    "item_echo_sabre",
+    "item_talisman_of_evasion",
+    "item_relic"
+   ],
+   "start": [
+    "item_gauntlets",
+    "item_branches",
+    "item_tango",
+    "item_circlet",
+    "item_magic_stick",
+    "item_quelling_blade",
+    "item_ward_observer",
+    "item_faerie_fire",
+    "item_ring_of_regen",
+    "item_ring_of_protection"
+   ]
+  },
+  "nyx_assassin": {
+   "early": [
+    "item_boots",
+    "item_tranquil_boots",
+    "item_urn_of_shadows",
+    "item_arcane_boots",
+    "item_bottle",
+    "item_point_booster",
+    "item_null_talisman",
+    "item_power_treads",
+    "item_bracer",
+    "item_soul_ring"
+   ],
+   "late": [
+    "item_blink",
+    "item_cyclone",
+    "item_aeon_disk",
+    "item_ultimate_scepter",
+    "item_force_staff",
+    "item_consecrated_wraps",
+    "item_mystic_staff",
+    "item_soul_booster",
+    "item_wind_waker",
+    "item_solar_crest"
+   ],
+   "mid": [
+    "item_blink",
+    "item_essence_distiller",
+    "item_staff_of_wizardry",
+    "item_arcane_boots",
+    "item_cyclone",
+    "item_aghanims_shard",
+    "item_point_booster",
+    "item_vitality_booster",
+    "item_consecrated_wraps",
+    "item_dagon"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_ward_dispenser",
+    "item_blood_grenade",
+    "item_ward_sentry",
+    "item_boots",
+    "item_faerie_fire",
+    "item_ward_observer",
+    "item_circlet",
+    "item_enchanted_mango"
+   ]
+  },
+  "obsidian_destroyer": {
+   "early": [
+    "item_null_talisman",
+    "item_boots",
+    "item_power_treads",
+    "item_staff_of_wizardry",
+    "item_kaya",
+    "item_meteor_hammer",
+    "item_blitz_knuckles",
+    "item_blade_of_alacrity",
+    "item_oblivion_staff",
+    "item_bracer"
+   ],
+   "late": [
+    "item_mystic_staff",
+    "item_hurricane_pike",
+    "item_sheepstick",
+    "item_black_king_bar",
+    "item_ultimate_scepter",
+    "item_devastator",
+    "item_witch_blade",
+    "item_force_staff",
+    "item_blink",
+    "item_ultimate_orb"
+   ],
+   "mid": [
+    "item_staff_of_wizardry",
+    "item_blink",
+    "item_blade_of_alacrity",
+    "item_force_staff",
+    "item_dragon_lance",
+    "item_kaya",
+    "item_witch_blade",
+    "item_oblivion_staff",
+    "item_power_treads",
+    "item_hurricane_pike"
+   ],
+   "start": [
+    "item_branches",
+    "item_circlet",
+    "item_ward_observer",
+    "item_tango",
+    "item_faerie_fire",
+    "item_mantle",
+    "item_magic_stick",
+    "item_quelling_blade",
+    "item_magic_wand",
+    "item_ward_sentry"
+   ]
+  },
+  "ogre_magi": {
+   "early": [
+    "item_boots",
+    "item_soul_ring",
+    "item_arcane_boots",
+    "item_hand_of_midas",
+    "item_bracer",
+    "item_chainmail",
+    "item_bottle",
+    "item_phase_boots",
+    "item_power_treads",
+    "item_null_talisman"
+   ],
+   "late": [
+    "item_glimmer_cape",
+    "item_mystic_staff",
+    "item_sheepstick",
+    "item_blink",
+    "item_black_king_bar",
+    "item_force_staff",
+    "item_reaver",
+    "item_hand_of_midas",
+    "item_solar_crest",
+    "item_heart"
+   ],
+   "mid": [
+    "item_arcane_boots",
+    "item_hand_of_midas",
+    "item_ogre_axe",
+    "item_staff_of_wizardry",
+    "item_blink",
+    "item_blade_of_alacrity",
+    "item_point_booster",
+    "item_ultimate_scepter",
+    "item_pavise",
+    "item_solar_crest"
+   ],
+   "start": [
+    "item_gauntlets",
+    "item_tango",
+    "item_branches",
+    "item_ward_dispenser",
+    "item_blood_grenade",
+    "item_ward_sentry",
+    "item_smoke_of_deceit",
+    "item_magic_stick",
+    "item_enchanted_mango",
+    "item_faerie_fire"
+   ]
+  },
+  "omniknight": {
+   "early": [
+    "item_boots",
+    "item_chainmail",
+    "item_phase_boots",
+    "item_bracer",
+    "item_soul_ring",
+    "item_ogre_axe",
+    "item_bottle",
+    "item_broadsword",
+    "item_arcane_boots",
+    "item_ancient_janggo"
+   ],
+   "late": [
+    "item_black_king_bar",
+    "item_blink",
+    "item_ultimate_scepter",
+    "item_soul_booster",
+    "item_octarine_core",
+    "item_ultimate_orb",
+    "item_pipe",
+    "item_force_staff",
+    "item_yasha",
+    "item_echo_sabre"
+   ],
+   "mid": [
+    "item_ogre_axe",
+    "item_echo_sabre",
+    "item_broadsword",
+    "item_diadem",
+    "item_harpoon",
+    "item_blink",
+    "item_arcane_boots",
+    "item_relic",
+    "item_talisman_of_evasion",
+    "item_radiance"
+   ],
+   "start": [
+    "item_branches",
+    "item_gauntlets",
+    "item_tango",
+    "item_ward_dispenser",
+    "item_faerie_fire",
+    "item_magic_stick",
+    "item_blood_grenade",
+    "item_quelling_blade",
+    "item_circlet",
+    "item_smoke_of_deceit"
+   ]
+  },
+  "oracle": {
+   "early": [
+    "item_boots",
+    "item_arcane_boots",
+    "item_urn_of_shadows",
+    "item_bottle",
+    "item_soul_ring",
+    "item_holy_locket"
+   ],
+   "late": [
+    "item_blink",
+    "item_aether_lens",
+    "item_glimmer_cape",
+    "item_guardian_greaves",
+    "item_aeon_disk",
+    "item_force_staff",
+    "item_invis_sword",
+    "item_ultimate_scepter",
+    "item_holy_locket",
+    "item_cyclone"
+   ],
+   "mid": [
+    "item_arcane_boots",
+    "item_blink",
+    "item_ghost",
+    "item_glimmer_cape",
+    "item_mekansm",
+    "item_staff_of_wizardry",
+    "item_aether_lens",
+    "item_holy_locket",
+    "item_essence_distiller",
+    "item_point_booster"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_blood_grenade",
+    "item_ward_dispenser",
+    "item_magic_stick",
+    "item_smoke_of_deceit",
+    "item_faerie_fire",
+    "item_ward_sentry",
+    "item_enchanted_mango",
+    "item_circlet"
+   ]
+  },
+  "pangolier": {
+   "early": [
+    "item_boots",
+    "item_bottle",
+    "item_power_treads",
+    "item_blade_of_alacrity",
+    "item_falcon_blade",
+    "item_bracer",
+    "item_null_talisman",
+    "item_diffusal_blade",
+    "item_wraith_band",
+    "item_ring_of_health"
+   ],
+   "late": [
+    "item_ultimate_scepter",
+    "item_basher",
+    "item_soul_booster",
+    "item_octarine_core",
+    "item_eagle",
+    "item_disperser",
+    "item_shivas_guard",
+    "item_ultimate_orb",
+    "item_refresher",
+    "item_sphere"
+   ],
+   "mid": [
+    "item_blade_of_alacrity",
+    "item_diffusal_blade",
+    "item_blink",
+    "item_aghanims_shard",
+    "item_point_booster",
+    "item_ogre_axe",
+    "item_staff_of_wizardry",
+    "item_ultimate_scepter",
+    "item_power_treads",
+    "item_platemail"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_ward_observer",
+    "item_faerie_fire",
+    "item_circlet",
+    "item_quelling_blade",
+    "item_magic_stick",
+    "item_ward_sentry",
+    "item_slippers",
+    "item_sobi_mask"
+   ]
+  },
+  "phantom_assassin": {
+   "early": [
+    "item_boots",
+    "item_ring_of_health",
+    "item_power_treads",
+    "item_broadsword",
+    "item_void_stone",
+    "item_pers",
+    "item_wraith_band",
+    "item_bracer",
+    "item_lifesteal",
+    "item_bfury"
+   ],
+   "late": [
+    "item_basher",
+    "item_reaver",
+    "item_satanic",
+    "item_black_king_bar",
+    "item_sange",
+    "item_relic",
+    "item_abyssal_blade",
+    "item_demon_edge",
+    "item_desolator",
+    "item_rapier"
+   ],
+   "mid": [
+    "item_mithril_hammer",
+    "item_broadsword",
+    "item_bfury",
+    "item_desolator",
+    "item_pers",
+    "item_ogre_axe",
+    "item_black_king_bar",
+    "item_blade_of_alacrity",
+    "item_power_treads",
+    "item_yasha"
+   ],
+   "start": [
+    "item_branches",
+    "item_quelling_blade",
+    "item_tango",
+    "item_magic_stick",
+    "item_faerie_fire",
+    "item_circlet",
+    "item_slippers",
+    "item_magic_wand",
+    "item_blight_stone",
+    "item_ward_observer"
+   ]
+  },
+  "phantom_lancer": {
+   "early": [
+    "item_boots",
+    "item_power_treads",
+    "item_blade_of_alacrity",
+    "item_wraith_band",
+    "item_yasha",
+    "item_diadem",
+    "item_bracer",
+    "item_urn_of_shadows"
+   ],
+   "late": [
+    "item_ultimate_orb",
+    "item_skadi",
+    "item_orchid",
+    "item_bloodthorn",
+    "item_reaver",
+    "item_heart",
+    "item_eagle",
+    "item_ultimate_scepter_2",
+    "item_butterfly",
+    "item_diffusal_blade"
+   ],
+   "mid": [
+    "item_blade_of_alacrity",
+    "item_ogre_axe",
+    "item_manta",
+    "item_staff_of_wizardry",
+    "item_point_booster",
+    "item_diadem",
+    "item_ultimate_scepter",
+    "item_yasha",
+    "item_ultimate_orb",
+    "item_blitz_knuckles"
+   ],
+   "start": [
+    "item_branches",
+    "item_quelling_blade",
+    "item_tango",
+    "item_faerie_fire",
+    "item_circlet",
+    "item_magic_stick",
+    "item_magic_wand",
+    "item_slippers",
+    "item_ward_sentry",
+    "item_clarity"
+   ]
+  },
+  "phoenix": {
+   "early": [
+    "item_boots",
+    "item_tranquil_boots",
+    "item_urn_of_shadows",
+    "item_bracer",
+    "item_diadem",
+    "item_chainmail",
+    "item_bottle",
+    "item_spirit_vessel"
+   ],
+   "late": [
+    "item_refresher",
+    "item_shivas_guard",
+    "item_mystic_staff",
+    "item_aeon_disk",
+    "item_sheepstick",
+    "item_force_staff",
+    "item_ultimate_scepter",
+    "item_black_king_bar",
+    "item_blink",
+    "item_lotus_orb"
+   ],
+   "mid": [
+    "item_aghanims_shard",
+    "item_spirit_vessel",
+    "item_platemail",
+    "item_diadem",
+    "item_staff_of_wizardry",
+    "item_shivas_guard",
+    "item_pavise",
+    "item_solar_crest",
+    "item_cyclone",
+    "item_essence_distiller"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_faerie_fire",
+    "item_blood_grenade",
+    "item_ward_sentry",
+    "item_smoke_of_deceit",
+    "item_ward_dispenser",
+    "item_circlet",
+    "item_magic_stick",
+    "item_gauntlets"
+   ]
+  },
+  "primal_beast": {
+   "early": [
+    "item_chainmail",
+    "item_boots",
+    "item_phase_boots",
+    "item_soul_ring",
+    "item_bottle",
+    "item_bracer",
+    "item_tranquil_boots",
+    "item_vitality_booster",
+    "item_ogre_axe",
+    "item_staff_of_wizardry"
+   ],
+   "late": [
+    "item_ultimate_scepter",
+    "item_shivas_guard",
+    "item_black_king_bar",
+    "item_reaver",
+    "item_soul_booster",
+    "item_ultimate_orb",
+    "item_heart",
+    "item_ultimate_scepter_2",
+    "item_sphere",
+    "item_overwhelming_blink"
+   ],
+   "mid": [
+    "item_ogre_axe",
+    "item_blink",
+    "item_mithril_hammer",
+    "item_black_king_bar",
+    "item_aghanims_shard",
+    "item_staff_of_wizardry",
+    "item_point_booster",
+    "item_blade_of_alacrity",
+    "item_ultimate_scepter",
+    "item_platemail"
+   ],
+   "start": [
+    "item_branches",
+    "item_gauntlets",
+    "item_tango",
+    "item_ward_observer",
+    "item_magic_stick",
+    "item_quelling_blade",
+    "item_faerie_fire",
+    "item_circlet",
+    "item_ring_of_protection",
+    "item_boots"
+   ]
+  },
+  "puck": {
+   "early": [
+    "item_bottle",
+    "item_boots",
+    "item_power_treads",
+    "item_null_talisman",
+    "item_blitz_knuckles",
+    "item_wraith_band",
+    "item_oblivion_staff",
+    "item_chainmail",
+    "item_falcon_blade"
+   ],
+   "late": [
+    "item_mystic_staff",
+    "item_devastator",
+    "item_octarine_core",
+    "item_soul_booster",
+    "item_sphere",
+    "item_ultimate_orb",
+    "item_reaver",
+    "item_overwhelming_blink",
+    "item_aeon_disk",
+    "item_ultimate_scepter"
+   ],
+   "mid": [
+    "item_witch_blade",
+    "item_blink",
+    "item_oblivion_staff",
+    "item_blitz_knuckles",
+    "item_aghanims_shard",
+    "item_staff_of_wizardry",
+    "item_vitality_booster",
+    "item_mystic_staff",
+    "item_devastator",
+    "item_cyclone"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_ward_observer",
+    "item_faerie_fire",
+    "item_circlet",
+    "item_magic_stick",
+    "item_ward_sentry",
+    "item_mantle"
+   ]
+  },
+  "pudge": {
+   "early": [
+    "item_boots",
+    "item_bracer",
+    "item_chainmail",
+    "item_phase_boots",
+    "item_tranquil_boots",
+    "item_ogre_axe",
+    "item_power_treads",
+    "item_soul_ring",
+    "item_bottle",
+    "item_ring_of_health"
+   ],
+   "late": [
+    "item_black_king_bar",
+    "item_shivas_guard",
+    "item_blink",
+    "item_ultimate_scepter",
+    "item_travel_boots",
+    "item_reaver",
+    "item_soul_booster",
+    "item_aether_lens",
+    "item_heart",
+    "item_crellas_crozier"
+   ],
+   "mid": [
+    "item_blink",
+    "item_ogre_axe",
+    "item_staff_of_wizardry",
+    "item_point_booster",
+    "item_ultimate_scepter",
+    "item_blade_of_alacrity",
+    "item_vitality_booster",
+    "item_mithril_hammer",
+    "item_consecrated_wraps",
+    "item_black_king_bar"
+   ],
+   "start": [
+    "item_branches",
+    "item_gauntlets",
+    "item_tango",
+    "item_ward_dispenser",
+    "item_circlet",
+    "item_blood_grenade",
+    "item_magic_stick",
+    "item_enchanted_mango",
+    "item_clarity",
+    "item_ward_observer"
+   ]
+  },
+  "pugna": {
+   "early": [
+    "item_boots",
+    "item_arcane_boots",
+    "item_null_talisman",
+    "item_staff_of_wizardry",
+    "item_bottle",
+    "item_tranquil_boots",
+    "item_kaya",
+    "item_void_stone",
+    "item_energy_booster",
+    "item_soul_ring"
+   ],
+   "late": [
+    "item_aether_lens",
+    "item_glimmer_cape",
+    "item_blink",
+    "item_force_staff",
+    "item_ultimate_scepter",
+    "item_aeon_disk",
+    "item_cyclone",
+    "item_guardian_greaves",
+    "item_ultimate_orb",
+    "item_mystic_staff"
+   ],
+   "mid": [
+    "item_arcane_boots",
+    "item_glimmer_cape",
+    "item_aether_lens",
+    "item_staff_of_wizardry",
+    "item_kaya",
+    "item_ogre_axe",
+    "item_force_staff",
+    "item_aghanims_shard",
+    "item_blink",
+    "item_point_booster"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_ward_dispenser",
+    "item_blood_grenade",
+    "item_faerie_fire",
+    "item_magic_stick",
+    "item_ward_sentry",
+    "item_circlet",
+    "item_ward_observer",
+    "item_smoke_of_deceit"
+   ]
+  },
+  "queenofpain": {
+   "early": [
+    "item_boots",
+    "item_bottle",
+    "item_power_treads",
+    "item_null_talisman",
+    "item_soul_ring",
+    "item_staff_of_wizardry",
+    "item_kaya",
+    "item_bracer",
+    "item_urn_of_shadows",
+    "item_arcane_boots"
+   ],
+   "late": [
+    "item_soul_booster",
+    "item_shivas_guard",
+    "item_black_king_bar",
+    "item_octarine_core",
+    "item_ultimate_scepter",
+    "item_bloodstone",
+    "item_kaya_and_sange",
+    "item_sange",
+    "item_hyperstone",
+    "item_ultimate_orb"
+   ],
+   "mid": [
+    "item_ogre_axe",
+    "item_staff_of_wizardry",
+    "item_kaya",
+    "item_point_booster",
+    "item_blade_of_alacrity",
+    "item_sange",
+    "item_ultimate_scepter",
+    "item_kaya_and_sange",
+    "item_mithril_hammer",
+    "item_aghanims_shard"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_ward_observer",
+    "item_faerie_fire",
+    "item_circlet",
+    "item_ward_sentry",
+    "item_mantle",
+    "item_magic_stick",
+    "item_enchanted_mango",
+    "item_ward_dispenser"
+   ]
+  },
+  "rattletrap": {
+   "early": [
+    "item_boots",
+    "item_tranquil_boots",
+    "item_urn_of_shadows",
+    "item_staff_of_wizardry",
+    "item_bracer"
+   ],
+   "late": [
+    "item_blink",
+    "item_force_staff",
+    "item_cyclone",
+    "item_glimmer_cape",
+    "item_solar_crest",
+    "item_aeon_disk",
+    "item_mystic_staff",
+    "item_consecrated_wraps",
+    "item_ultimate_orb",
+    "item_wind_waker"
+   ],
+   "mid": [
+    "item_essence_distiller",
+    "item_staff_of_wizardry",
+    "item_blink",
+    "item_force_staff",
+    "item_pavise",
+    "item_solar_crest",
+    "item_cyclone",
+    "item_glimmer_cape",
+    "item_ghost",
+    "item_vitality_booster"
+   ],
+   "start": [
+    "item_ward_dispenser",
+    "item_tango",
+    "item_branches",
+    "item_blood_grenade",
+    "item_boots",
+    "item_smoke_of_deceit",
+    "item_ward_sentry",
+    "item_faerie_fire",
+    "item_wind_lace",
+    "item_ward_observer"
+   ]
+  },
+  "razor": {
+   "early": [
+    "item_boots",
+    "item_power_treads",
+    "item_wraith_band",
+    "item_falcon_blade",
+    "item_blade_of_alacrity",
+    "item_void_stone",
+    "item_ring_of_health",
+    "item_bottle",
+    "item_pers",
+    "item_bracer"
+   ],
+   "late": [
+    "item_reaver",
+    "item_satanic",
+    "item_black_king_bar",
+    "item_eagle",
+    "item_blink",
+    "item_butterfly",
+    "item_relic",
+    "item_sphere",
+    "item_nullifier",
+    "item_ultimate_orb"
+   ],
+   "mid": [
+    "item_ogre_axe",
+    "item_yasha",
+    "item_blade_of_alacrity",
+    "item_mithril_hammer",
+    "item_diadem",
+    "item_black_king_bar",
+    "item_manta",
+    "item_sange_and_yasha",
+    "item_sange",
+    "item_mage_slayer"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_circlet",
+    "item_magic_stick",
+    "item_faerie_fire",
+    "item_slippers",
+    "item_magic_wand",
+    "item_ward_observer",
+    "item_quelling_blade",
+    "item_ward_dispenser"
+   ]
+  },
+  "riki": {
+   "early": [
+    "item_boots",
+    "item_power_treads",
+    "item_wraith_band",
+    "item_blade_of_alacrity",
+    "item_orb_of_corrosion",
+    "item_ring_of_health",
+    "item_void_stone",
+    "item_pers",
+    "item_diadem",
+    "item_bottle"
+   ],
+   "late": [
+    "item_eagle",
+    "item_manta",
+    "item_disperser",
+    "item_basher",
+    "item_black_king_bar",
+    "item_ultimate_orb",
+    "item_lesser_crit",
+    "item_yasha",
+    "item_butterfly",
+    "item_demon_edge"
+   ],
+   "mid": [
+    "item_blade_of_alacrity",
+    "item_diffusal_blade",
+    "item_yasha",
+    "item_diadem",
+    "item_manta",
+    "item_ogre_axe",
+    "item_power_treads",
+    "item_point_booster",
+    "item_aghanims_shard",
+    "item_staff_of_wizardry"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_quelling_blade",
+    "item_circlet",
+    "item_ward_observer",
+    "item_magic_stick",
+    "item_slippers",
+    "item_faerie_fire",
+    "item_magic_wand",
+    "item_ward_dispenser"
+   ]
+  },
+  "ringmaster": {
+   "early": [
+    "item_boots",
+    "item_urn_of_shadows",
+    "item_arcane_boots",
+    "item_staff_of_wizardry"
+   ],
+   "late": [
+    "item_blink",
+    "item_aether_lens",
+    "item_ultimate_scepter",
+    "item_force_staff",
+    "item_aeon_disk",
+    "item_glimmer_cape",
+    "item_cyclone",
+    "item_lotus_orb",
+    "item_solar_crest",
+    "item_guardian_greaves"
+   ],
+   "mid": [
+    "item_arcane_boots",
+    "item_staff_of_wizardry",
+    "item_blink",
+    "item_essence_distiller",
+    "item_cyclone",
+    "item_vitality_booster",
+    "item_glimmer_cape",
+    "item_rod_of_atos",
+    "item_pavise",
+    "item_force_staff"
+   ],
+   "start": [
+    "item_branches",
+    "item_faerie_fire",
+    "item_ward_dispenser",
+    "item_tango",
+    "item_blood_grenade",
+    "item_ward_sentry",
+    "item_smoke_of_deceit",
+    "item_circlet",
+    "item_magic_stick",
+    "item_ward_observer"
+   ]
+  },
+  "rubick": {
+   "early": [
+    "item_boots",
+    "item_urn_of_shadows",
+    "item_bottle",
+    "item_chainmail",
+    "item_ring_of_health",
+    "item_void_stone",
+    "item_tranquil_boots",
+    "item_pers",
+    "item_arcane_boots",
+    "item_diadem"
+   ],
+   "late": [
+    "item_blink",
+    "item_aether_lens",
+    "item_ultimate_scepter",
+    "item_aeon_disk",
+    "item_cyclone",
+    "item_consecrated_wraps",
+    "item_force_staff",
+    "item_mystic_staff",
+    "item_travel_boots",
+    "item_soul_booster"
+   ],
+   "mid": [
+    "item_essence_distiller",
+    "item_blink",
+    "item_aghanims_shard",
+    "item_arcane_boots",
+    "item_staff_of_wizardry",
+    "item_vitality_booster",
+    "item_consecrated_wraps",
+    "item_ghost",
+    "item_cyclone",
+    "item_diadem"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_ward_dispenser",
+    "item_faerie_fire",
+    "item_blood_grenade",
+    "item_circlet",
+    "item_ward_sentry",
+    "item_magic_stick",
+    "item_ward_observer",
+    "item_boots"
+   ]
+  },
+  "sand_king": {
+   "early": [
+    "item_boots",
+    "item_bottle",
+    "item_chainmail",
+    "item_phase_boots",
+    "item_blink",
+    "item_urn_of_shadows",
+    "item_power_treads",
+    "item_bracer",
+    "item_soul_ring",
+    "item_diadem"
+   ],
+   "late": [
+    "item_black_king_bar",
+    "item_shivas_guard",
+    "item_basher",
+    "item_ultimate_scepter",
+    "item_sange",
+    "item_abyssal_blade",
+    "item_reaver",
+    "item_refresher",
+    "item_soul_booster",
+    "item_ultimate_scepter_2"
+   ],
+   "mid": [
+    "item_ogre_axe",
+    "item_blink",
+    "item_staff_of_wizardry",
+    "item_point_booster",
+    "item_blade_of_alacrity",
+    "item_ultimate_scepter",
+    "item_mithril_hammer",
+    "item_black_king_bar",
+    "item_spirit_vessel",
+    "item_aghanims_shard"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_ward_observer",
+    "item_faerie_fire",
+    "item_ward_sentry",
+    "item_magic_stick",
+    "item_quelling_blade",
+    "item_gauntlets",
+    "item_ward_dispenser",
+    "item_circlet"
+   ]
+  },
+  "shadow_demon": {
+   "early": [
+    "item_boots",
+    "item_tranquil_boots",
+    "item_urn_of_shadows",
+    "item_arcane_boots"
+   ],
+   "late": [
+    "item_blink",
+    "item_ultimate_scepter",
+    "item_aether_lens",
+    "item_aeon_disk",
+    "item_glimmer_cape",
+    "item_force_staff",
+    "item_solar_crest",
+    "item_guardian_greaves",
+    "item_travel_boots",
+    "item_consecrated_wraps"
+   ],
+   "mid": [
+    "item_arcane_boots",
+    "item_blink",
+    "item_aghanims_shard",
+    "item_glimmer_cape",
+    "item_essence_distiller",
+    "item_aether_lens",
+    "item_staff_of_wizardry",
+    "item_pavise",
+    "item_ogre_axe",
+    "item_point_booster"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_blood_grenade",
+    "item_faerie_fire",
+    "item_ward_dispenser",
+    "item_ward_sentry",
+    "item_smoke_of_deceit",
+    "item_circlet",
+    "item_magic_stick",
+    "item_enchanted_mango"
+   ]
+  },
+  "shadow_shaman": {
+   "early": [
+    "item_boots",
+    "item_tranquil_boots",
+    "item_arcane_boots",
+    "item_void_stone"
+   ],
+   "late": [
+    "item_aether_lens",
+    "item_blink",
+    "item_force_staff",
+    "item_glimmer_cape",
+    "item_black_king_bar",
+    "item_cyclone",
+    "item_refresher",
+    "item_travel_boots",
+    "item_ultimate_scepter",
+    "item_guardian_greaves"
+   ],
+   "mid": [
+    "item_blink",
+    "item_arcane_boots",
+    "item_aether_lens",
+    "item_staff_of_wizardry",
+    "item_aghanims_shard",
+    "item_glimmer_cape",
+    "item_ogre_axe",
+    "item_force_staff",
+    "item_mithril_hammer",
+    "item_ghost"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_blood_grenade",
+    "item_ward_dispenser",
+    "item_faerie_fire",
+    "item_ward_sentry",
+    "item_magic_stick",
+    "item_smoke_of_deceit",
+    "item_enchanted_mango",
+    "item_clarity"
+   ]
+  },
+  "shredder": {
+   "early": [
+    "item_boots",
+    "item_soul_ring",
+    "item_bracer",
+    "item_chainmail",
+    "item_phase_boots",
+    "item_staff_of_wizardry",
+    "item_bottle",
+    "item_power_treads",
+    "item_ring_of_health",
+    "item_kaya"
+   ],
+   "late": [
+    "item_reaver",
+    "item_shivas_guard",
+    "item_heart",
+    "item_black_king_bar",
+    "item_mystic_staff",
+    "item_blink",
+    "item_soul_booster",
+    "item_overwhelming_blink",
+    "item_sheepstick",
+    "item_octarine_core"
+   ],
+   "mid": [
+    "item_ogre_axe",
+    "item_kaya",
+    "item_sange",
+    "item_kaya_and_sange",
+    "item_staff_of_wizardry",
+    "item_mithril_hammer",
+    "item_platemail",
+    "item_blink",
+    "item_black_king_bar",
+    "item_pers"
+   ],
+   "start": [
+    "item_branches",
+    "item_gauntlets",
+    "item_tango",
+    "item_circlet",
+    "item_magic_stick",
+    "item_quelling_blade",
+    "item_faerie_fire",
+    "item_ward_observer",
+    "item_ring_of_protection",
+    "item_wind_lace"
+   ]
+  },
+  "silencer": {
+   "early": [
+    "item_boots",
+    "item_null_talisman",
+    "item_arcane_boots",
+    "item_power_treads",
+    "item_urn_of_shadows",
+    "item_bottle",
+    "item_hand_of_midas",
+    "item_tranquil_boots"
+   ],
+   "late": [
+    "item_refresher",
+    "item_glimmer_cape",
+    "item_force_staff",
+    "item_ultimate_scepter",
+    "item_solar_crest",
+    "item_mystic_staff",
+    "item_hyperstone",
+    "item_cyclone",
+    "item_soul_booster",
+    "item_octarine_core"
+   ],
+   "mid": [
+    "item_arcane_boots",
+    "item_staff_of_wizardry",
+    "item_force_staff",
+    "item_glimmer_cape",
+    "item_pavise",
+    "item_solar_crest",
+    "item_ancient_janggo",
+    "item_blade_of_alacrity",
+    "item_ghost",
+    "item_point_booster"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_blood_grenade",
+    "item_faerie_fire",
+    "item_ward_dispenser",
+    "item_ward_sentry",
+    "item_smoke_of_deceit",
+    "item_magic_stick",
+    "item_circlet",
+    "item_enchanted_mango"
+   ]
+  },
+  "skeleton_king": {
+   "early": [
+    "item_boots",
+    "item_chainmail",
+    "item_phase_boots",
+    "item_bracer",
+    "item_helm_of_iron_will",
+    "item_power_treads",
+    "item_soul_ring",
+    "item_armlet",
+    "item_ogre_axe",
+    "item_null_talisman"
+   ],
+   "late": [
+    "item_hyperstone",
+    "item_black_king_bar",
+    "item_blink",
+    "item_assault",
+    "item_demon_edge",
+    "item_orchid",
+    "item_ultimate_scepter",
+    "item_basher",
+    "item_sange",
+    "item_desolator"
+   ],
+   "mid": [
+    "item_relic",
+    "item_radiance",
+    "item_talisman_of_evasion",
+    "item_blink",
+    "item_mithril_hammer",
+    "item_armlet",
+    "item_blitz_knuckles",
+    "item_aghanims_shard",
+    "item_claymore",
+    "item_desolator"
+   ],
+   "start": [
+    "item_branches",
+    "item_quelling_blade",
+    "item_tango",
+    "item_gauntlets",
+    "item_magic_stick",
+    "item_circlet",
+    "item_faerie_fire",
+    "item_blood_grenade",
+    "item_blades_of_attack",
+    "item_magic_wand"
+   ]
+  },
+  "skywrath_mage": {
+   "early": [
+    "item_null_talisman",
+    "item_boots",
+    "item_staff_of_wizardry",
+    "item_urn_of_shadows",
+    "item_arcane_boots",
+    "item_bottle",
+    "item_vitality_booster"
+   ],
+   "late": [
+    "item_blink",
+    "item_mystic_staff",
+    "item_force_staff",
+    "item_sheepstick",
+    "item_kaya",
+    "item_ultimate_scepter",
+    "item_glimmer_cape",
+    "item_travel_boots",
+    "item_invis_sword",
+    "item_cyclone"
+   ],
+   "mid": [
+    "item_staff_of_wizardry",
+    "item_arcane_boots",
+    "item_vitality_booster",
+    "item_rod_of_atos",
+    "item_kaya",
+    "item_aghanims_shard",
+    "item_ghost",
+    "item_essence_distiller",
+    "item_blink",
+    "item_glimmer_cape"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_circlet",
+    "item_blood_grenade",
+    "item_ward_dispenser",
+    "item_mantle",
+    "item_ward_sentry",
+    "item_faerie_fire",
+    "item_magic_stick",
+    "item_ward_observer"
+   ]
+  },
+  "slardar": {
+   "early": [
+    "item_boots",
+    "item_power_treads",
+    "item_bracer",
+    "item_soul_ring",
+    "item_bottle",
+    "item_chainmail",
+    "item_phase_boots",
+    "item_blink",
+    "item_lifesteal"
+   ],
+   "late": [
+    "item_black_king_bar",
+    "item_relic",
+    "item_nullifier",
+    "item_ultimate_scepter",
+    "item_hyperstone",
+    "item_assault",
+    "item_reaver",
+    "item_echo_sabre",
+    "item_harpoon",
+    "item_heart"
+   ],
+   "mid": [
+    "item_blink",
+    "item_ogre_axe",
+    "item_aghanims_shard",
+    "item_mithril_hammer",
+    "item_black_king_bar",
+    "item_broadsword",
+    "item_echo_sabre",
+    "item_power_treads",
+    "item_point_booster",
+    "item_staff_of_wizardry"
+   ],
+   "start": [
+    "item_branches",
+    "item_gauntlets",
+    "item_tango",
+    "item_circlet",
+    "item_ward_observer",
+    "item_faerie_fire",
+    "item_quelling_blade",
+    "item_magic_stick",
+    "item_flask",
+    "item_ward_sentry"
+   ]
+  },
+  "slark": {
+   "early": [
+    "item_boots",
+    "item_power_treads",
+    "item_blade_of_alacrity",
+    "item_soul_ring",
+    "item_bracer",
+    "item_wraith_band",
+    "item_void_stone",
+    "item_ring_of_health",
+    "item_pers",
+    "item_falcon_blade"
+   ],
+   "late": [
+    "item_ultimate_orb",
+    "item_black_king_bar",
+    "item_eagle",
+    "item_disperser",
+    "item_ultimate_scepter",
+    "item_skadi",
+    "item_demon_edge",
+    "item_orchid",
+    "item_basher",
+    "item_blink"
+   ],
+   "mid": [
+    "item_blade_of_alacrity",
+    "item_ogre_axe",
+    "item_diffusal_blade",
+    "item_point_booster",
+    "item_staff_of_wizardry",
+    "item_ultimate_scepter",
+    "item_vitality_booster",
+    "item_consecrated_wraps",
+    "item_mithril_hammer",
+    "item_pers"
+   ],
+   "start": [
+    "item_branches",
+    "item_circlet",
+    "item_tango",
+    "item_faerie_fire",
+    "item_magic_stick",
+    "item_quelling_blade",
+    "item_ward_observer",
+    "item_gauntlets",
+    "item_slippers",
+    "item_ward_dispenser"
+   ]
+  },
+  "snapfire": {
+   "early": [
+    "item_boots",
+    "item_bottle",
+    "item_soul_ring",
+    "item_travel_boots",
+    "item_bracer",
+    "item_staff_of_wizardry",
+    "item_arcane_boots",
+    "item_blink",
+    "item_tranquil_boots",
+    "item_vitality_booster"
+   ],
+   "late": [
+    "item_black_king_bar",
+    "item_yasha",
+    "item_yasha_and_kaya",
+    "item_shivas_guard",
+    "item_refresher",
+    "item_mystic_staff",
+    "item_sheepstick",
+    "item_travel_boots_2",
+    "item_blink",
+    "item_demon_edge"
+   ],
+   "mid": [
+    "item_aghanims_shard",
+    "item_blink",
+    "item_staff_of_wizardry",
+    "item_kaya",
+    "item_travel_boots",
+    "item_ogre_axe",
+    "item_mithril_hammer",
+    "item_arcane_boots",
+    "item_blade_of_alacrity",
+    "item_yasha"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_ward_observer",
+    "item_faerie_fire",
+    "item_ward_dispenser",
+    "item_blood_grenade",
+    "item_gauntlets",
+    "item_ward_sentry",
+    "item_magic_stick",
+    "item_circlet"
+   ]
+  },
+  "sniper": {
+   "early": [
+    "item_wraith_band",
+    "item_boots",
+    "item_power_treads",
+    "item_blade_of_alacrity",
+    "item_javelin",
+    "item_lifesteal",
+    "item_broadsword",
+    "item_mask_of_madness",
+    "item_dragon_lance",
+    "item_mithril_hammer"
+   ],
+   "late": [
+    "item_demon_edge",
+    "item_black_king_bar",
+    "item_lesser_crit",
+    "item_greater_crit",
+    "item_hyperstone",
+    "item_hydras_breath",
+    "item_ultimate_orb",
+    "item_hurricane_pike",
+    "item_invis_sword",
+    "item_force_staff"
+   ],
+   "mid": [
+    "item_blade_of_alacrity",
+    "item_dragon_lance",
+    "item_mithril_hammer",
+    "item_staff_of_wizardry",
+    "item_maelstrom",
+    "item_broadsword",
+    "item_force_staff",
+    "item_claymore",
+    "item_hurricane_pike",
+    "item_hyperstone"
+   ],
+   "start": [
+    "item_branches",
+    "item_circlet",
+    "item_slippers",
+    "item_ward_observer",
+    "item_tango",
+    "item_faerie_fire",
+    "item_wraith_band",
+    "item_magic_stick",
+    "item_quelling_blade",
+    "item_magic_wand"
+   ]
+  },
+  "spectre": {
+   "early": [
+    "item_boots",
+    "item_power_treads",
+    "item_urn_of_shadows",
+    "item_wraith_band",
+    "item_bracer",
+    "item_broadsword",
+    "item_hand_of_midas",
+    "item_blade_of_alacrity",
+    "item_diffusal_blade",
+    "item_blitz_knuckles"
+   ],
+   "late": [
+    "item_ultimate_orb",
+    "item_skadi",
+    "item_manta",
+    "item_basher",
+    "item_sange",
+    "item_black_king_bar",
+    "item_abyssal_blade",
+    "item_orchid",
+    "item_eagle",
+    "item_butterfly"
+   ],
+   "mid": [
+    "item_relic",
+    "item_talisman_of_evasion",
+    "item_radiance",
+    "item_blade_of_alacrity",
+    "item_yasha",
+    "item_diadem",
+    "item_manta",
+    "item_hand_of_midas",
+    "item_blade_mail",
+    "item_broadsword"
+   ],
+   "start": [
+    "item_branches",
+    "item_quelling_blade",
+    "item_magic_stick",
+    "item_tango",
+    "item_faerie_fire",
+    "item_circlet",
+    "item_slippers",
+    "item_ward_sentry",
+    "item_ring_of_regen",
+    "item_ward_observer"
+   ]
+  },
+  "spirit_breaker": {
+   "early": [
+    "item_chainmail",
+    "item_phase_boots",
+    "item_boots",
+    "item_urn_of_shadows",
+    "item_bracer",
+    "item_bottle",
+    "item_blitz_knuckles",
+    "item_diadem"
+   ],
+   "late": [
+    "item_invis_sword",
+    "item_black_king_bar",
+    "item_cyclone",
+    "item_kaya",
+    "item_yasha",
+    "item_soul_booster",
+    "item_octarine_core",
+    "item_yasha_and_kaya",
+    "item_mystic_staff",
+    "item_ultimate_scepter"
+   ],
+   "mid": [
+    "item_phase_boots",
+    "item_blitz_knuckles",
+    "item_ancient_janggo",
+    "item_claymore",
+    "item_invis_sword",
+    "item_ogre_axe",
+    "item_staff_of_wizardry",
+    "item_mithril_hammer",
+    "item_aghanims_shard",
+    "item_cyclone"
+   ],
+   "start": [
+    "item_tango",
+    "item_boots",
+    "item_blood_grenade",
+    "item_ward_dispenser",
+    "item_ward_sentry",
+    "item_branches",
+    "item_ward_observer",
+    "item_wind_lace",
+    "item_faerie_fire",
+    "item_smoke_of_deceit"
+   ]
+  },
+  "storm_spirit": {
+   "early": [
+    "item_boots",
+    "item_bottle",
+    "item_power_treads",
+    "item_soul_ring",
+    "item_null_talisman",
+    "item_arcane_boots",
+    "item_blitz_knuckles",
+    "item_staff_of_wizardry",
+    "item_oblivion_staff",
+    "item_chainmail"
+   ],
+   "late": [
+    "item_mystic_staff",
+    "item_devastator",
+    "item_witch_blade",
+    "item_ultimate_orb",
+    "item_black_king_bar",
+    "item_ultimate_scepter",
+    "item_sange",
+    "item_kaya_and_sange",
+    "item_sphere",
+    "item_shivas_guard"
+   ],
+   "mid": [
+    "item_ogre_axe",
+    "item_staff_of_wizardry",
+    "item_kaya",
+    "item_blitz_knuckles",
+    "item_oblivion_staff",
+    "item_sange",
+    "item_kaya_and_sange",
+    "item_mithril_hammer",
+    "item_witch_blade",
+    "item_black_king_bar"
+   ],
+   "start": [
+    "item_branches",
+    "item_faerie_fire",
+    "item_tango",
+    "item_ward_observer",
+    "item_circlet",
+    "item_magic_wand",
+    "item_ward_sentry",
+    "item_mantle",
+    "item_magic_stick"
+   ]
+  },
+  "sven": {
+   "early": [
+    "item_boots",
+    "item_power_treads",
+    "item_lifesteal",
+    "item_broadsword",
+    "item_mask_of_madness",
+    "item_ogre_axe",
+    "item_bracer",
+    "item_void_stone",
+    "item_echo_sabre"
+   ],
+   "late": [
+    "item_demon_edge",
+    "item_greater_crit",
+    "item_harpoon",
+    "item_eagle",
+    "item_reaver",
+    "item_satanic",
+    "item_swift_blink",
+    "item_lesser_crit",
+    "item_monkey_king_bar",
+    "item_hyperstone"
+   ],
+   "mid": [
+    "item_ogre_axe",
+    "item_broadsword",
+    "item_echo_sabre",
+    "item_blink",
+    "item_mithril_hammer",
+    "item_black_king_bar",
+    "item_claymore",
+    "item_lesser_crit",
+    "item_mask_of_madness",
+    "item_diadem"
+   ],
+   "start": [
+    "item_gauntlets",
+    "item_branches",
+    "item_quelling_blade",
+    "item_tango",
+    "item_magic_stick",
+    "item_faerie_fire",
+    "item_circlet",
+    "item_ward_sentry",
+    "item_ward_observer",
+    "item_magic_wand"
+   ]
+  },
+  "techies": {
+   "early": [
+    "item_boots",
+    "item_tranquil_boots",
+    "item_arcane_boots",
+    "item_urn_of_shadows",
+    "item_bracer",
+    "item_null_talisman"
+   ],
+   "late": [
+    "item_force_staff",
+    "item_consecrated_wraps",
+    "item_mystic_staff",
+    "item_soul_booster",
+    "item_sheepstick",
+    "item_solar_crest",
+    "item_octarine_core",
+    "item_cyclone",
+    "item_glimmer_cape",
+    "item_ultimate_scepter"
+   ],
+   "mid": [
+    "item_arcane_boots",
+    "item_vitality_booster",
+    "item_consecrated_wraps",
+    "item_pavise",
+    "item_solar_crest",
+    "item_staff_of_wizardry",
+    "item_glimmer_cape",
+    "item_force_staff",
+    "item_mekansm",
+    "item_essence_distiller"
+   ],
+   "start": [
+    "item_branches",
+    "item_ward_dispenser",
+    "item_tango",
+    "item_blood_grenade",
+    "item_faerie_fire",
+    "item_smoke_of_deceit",
+    "item_ward_sentry",
+    "item_circlet",
+    "item_magic_stick",
+    "item_quelling_blade"
+   ]
+  },
+  "templar_assassin": {
+   "early": [
+    "item_boots",
+    "item_power_treads",
+    "item_falcon_blade",
+    "item_blade_of_alacrity",
+    "item_mithril_hammer",
+    "item_dragon_lance",
+    "item_wraith_band",
+    "item_broadsword",
+    "item_null_talisman"
+   ],
+   "late": [
+    "item_demon_edge",
+    "item_eagle",
+    "item_greater_crit",
+    "item_black_king_bar",
+    "item_swift_blink",
+    "item_lesser_crit",
+    "item_monkey_king_bar",
+    "item_hyperstone",
+    "item_force_staff",
+    "item_hurricane_pike"
+   ],
+   "mid": [
+    "item_mithril_hammer",
+    "item_blink",
+    "item_desolator",
+    "item_dragon_lance",
+    "item_blade_of_alacrity",
+    "item_staff_of_wizardry",
+    "item_force_staff",
+    "item_hurricane_pike",
+    "item_claymore",
+    "item_lesser_crit"
+   ],
+   "start": [
+    "item_branches",
+    "item_faerie_fire",
+    "item_magic_wand",
+    "item_tango",
+    "item_circlet",
+    "item_magic_stick",
+    "item_quelling_blade",
+    "item_blades_of_attack",
+    "item_slippers",
+    "item_blight_stone"
+   ]
+  },
+  "terrorblade": {
+   "early": [
+    "item_boots",
+    "item_power_treads",
+    "item_falcon_blade",
+    "item_blade_of_alacrity",
+    "item_wraith_band",
+    "item_yasha",
+    "item_dragon_lance",
+    "item_null_talisman"
+   ],
+   "late": [
+    "item_ultimate_orb",
+    "item_demon_edge",
+    "item_black_king_bar",
+    "item_skadi",
+    "item_eagle",
+    "item_lesser_crit",
+    "item_butterfly",
+    "item_greater_crit",
+    "item_hurricane_pike",
+    "item_force_staff"
+   ],
+   "mid": [
+    "item_blade_of_alacrity",
+    "item_diadem",
+    "item_manta",
+    "item_yasha",
+    "item_ultimate_orb",
+    "item_dragon_lance",
+    "item_aghanims_shard",
+    "item_skadi",
+    "item_staff_of_wizardry",
+    "item_force_staff"
+   ],
+   "start": [
+    "item_branches",
+    "item_circlet",
+    "item_tango",
+    "item_faerie_fire",
+    "item_quelling_blade",
+    "item_magic_stick",
+    "item_slippers",
+    "item_magic_wand",
+    "item_ward_sentry",
+    "item_ward_observer"
+   ]
+  },
+  "tidehunter": {
+   "early": [
+    "item_boots",
+    "item_chainmail",
+    "item_phase_boots",
+    "item_bracer",
+    "item_soul_ring",
+    "item_lifesteal",
+    "item_ring_of_health",
+    "item_void_stone",
+    "item_pers",
+    "item_tranquil_boots"
+   ],
+   "late": [
+    "item_ultimate_scepter",
+    "item_mystic_staff",
+    "item_shivas_guard",
+    "item_black_king_bar",
+    "item_sheepstick",
+    "item_soul_booster",
+    "item_reaver",
+    "item_refresher",
+    "item_crellas_crozier",
+    "item_blink"
+   ],
+   "mid": [
+    "item_blink",
+    "item_staff_of_wizardry",
+    "item_ogre_axe",
+    "item_point_booster",
+    "item_aghanims_shard",
+    "item_blade_of_alacrity",
+    "item_ultimate_scepter",
+    "item_consecrated_wraps",
+    "item_vitality_booster",
+    "item_vladmir"
+   ],
+   "start": [
+    "item_gauntlets",
+    "item_branches",
+    "item_tango",
+    "item_quelling_blade",
+    "item_magic_stick",
+    "item_circlet",
+    "item_faerie_fire",
+    "item_ring_of_protection",
+    "item_flask",
+    "item_enchanted_mango"
+   ]
+  },
+  "tinker": {
+   "early": [
+    "item_bottle",
+    "item_staff_of_wizardry",
+    "item_kaya",
+    "item_blink",
+    "item_null_talisman",
+    "item_ogre_axe",
+    "item_boots",
+    "item_power_treads"
+   ],
+   "late": [
+    "item_mystic_staff",
+    "item_shivas_guard",
+    "item_aether_lens",
+    "item_sange",
+    "item_black_king_bar",
+    "item_kaya_and_sange",
+    "item_sheepstick",
+    "item_cyclone",
+    "item_dagon",
+    "item_ultimate_orb"
+   ],
+   "mid": [
+    "item_ogre_axe",
+    "item_point_booster",
+    "item_staff_of_wizardry",
+    "item_blink",
+    "item_blade_of_alacrity",
+    "item_ultimate_scepter",
+    "item_sange",
+    "item_kaya_and_sange",
+    "item_aghanims_shard",
+    "item_aether_lens"
+   ],
+   "start": [
+    "item_branches",
+    "item_ward_observer",
+    "item_tango",
+    "item_faerie_fire",
+    "item_circlet",
+    "item_mantle",
+    "item_magic_stick",
+    "item_quelling_blade",
+    "item_magic_wand",
+    "item_enchanted_mango"
+   ]
+  },
+  "tiny": {
+   "early": [
+    "item_boots",
+    "item_power_treads",
+    "item_ogre_axe",
+    "item_broadsword",
+    "item_void_stone",
+    "item_bottle",
+    "item_wraith_band",
+    "item_echo_sabre",
+    "item_soul_ring",
+    "item_chainmail"
+   ],
+   "late": [
+    "item_demon_edge",
+    "item_black_king_bar",
+    "item_lesser_crit",
+    "item_harpoon",
+    "item_greater_crit",
+    "item_hyperstone",
+    "item_eagle",
+    "item_silver_edge",
+    "item_swift_blink",
+    "item_assault"
+   ],
+   "mid": [
+    "item_blink",
+    "item_echo_sabre",
+    "item_ogre_axe",
+    "item_broadsword",
+    "item_mithril_hammer",
+    "item_blitz_knuckles",
+    "item_diadem",
+    "item_claymore",
+    "item_invis_sword",
+    "item_black_king_bar"
+   ],
+   "start": [
+    "item_branches",
+    "item_gauntlets",
+    "item_magic_stick",
+    "item_tango",
+    "item_circlet",
+    "item_quelling_blade",
+    "item_faerie_fire",
+    "item_ward_observer",
+    "item_slippers",
+    "item_ward_sentry"
+   ]
+  },
+  "treant": {
+   "early": [
+    "item_boots",
+    "item_urn_of_shadows",
+    "item_arcane_boots",
+    "item_tranquil_boots",
+    "item_chainmail"
+   ],
+   "late": [
+    "item_blink",
+    "item_ultimate_scepter",
+    "item_force_staff",
+    "item_cyclone",
+    "item_solar_crest",
+    "item_vladmir",
+    "item_mystic_staff",
+    "item_lotus_orb",
+    "item_wind_waker",
+    "item_travel_boots"
+   ],
+   "mid": [
+    "item_blink",
+    "item_arcane_boots",
+    "item_essence_distiller",
+    "item_pavise",
+    "item_solar_crest",
+    "item_staff_of_wizardry",
+    "item_force_staff",
+    "item_ancient_janggo",
+    "item_point_booster",
+    "item_glimmer_cape"
+   ],
+   "start": [
+    "item_boots",
+    "item_blood_grenade",
+    "item_ward_dispenser",
+    "item_smoke_of_deceit",
+    "item_ward_sentry",
+    "item_ward_observer",
+    "item_tango",
+    "item_branches",
+    "item_wind_lace",
+    "item_faerie_fire"
+   ]
+  },
+  "troll_warlord": {
+   "early": [
+    "item_boots",
+    "item_power_treads",
+    "item_ring_of_health",
+    "item_void_stone",
+    "item_broadsword",
+    "item_pers",
+    "item_wraith_band",
+    "item_javelin",
+    "item_chainmail",
+    "item_phase_boots"
+   ],
+   "late": [
+    "item_black_king_bar",
+    "item_demon_edge",
+    "item_basher",
+    "item_sange",
+    "item_blink",
+    "item_eagle",
+    "item_monkey_king_bar",
+    "item_reaver",
+    "item_ultimate_scepter",
+    "item_sange_and_yasha"
+   ],
+   "mid": [
+    "item_ogre_axe",
+    "item_broadsword",
+    "item_blade_of_alacrity",
+    "item_bfury",
+    "item_yasha",
+    "item_mithril_hammer",
+    "item_sange",
+    "item_sange_and_yasha",
+    "item_diadem",
+    "item_black_king_bar"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_quelling_blade",
+    "item_magic_stick",
+    "item_faerie_fire",
+    "item_circlet",
+    "item_magic_wand",
+    "item_slippers",
+    "item_ward_observer",
+    "item_enchanted_mango"
+   ]
+  },
+  "tusk": {
+   "early": [
+    "item_boots",
+    "item_tranquil_boots",
+    "item_chainmail",
+    "item_urn_of_shadows",
+    "item_bracer"
+   ],
+   "late": [
+    "item_cyclone",
+    "item_black_king_bar",
+    "item_force_staff",
+    "item_ultimate_scepter",
+    "item_blink",
+    "item_aeon_disk",
+    "item_solar_crest",
+    "item_glimmer_cape",
+    "item_vladmir",
+    "item_lotus_orb"
+   ],
+   "mid": [
+    "item_blink",
+    "item_phase_boots",
+    "item_staff_of_wizardry",
+    "item_ogre_axe",
+    "item_aghanims_shard",
+    "item_arcane_boots",
+    "item_point_booster",
+    "item_cyclone",
+    "item_mithril_hammer",
+    "item_ghost"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_ward_dispenser",
+    "item_blood_grenade",
+    "item_ward_sentry",
+    "item_faerie_fire",
+    "item_smoke_of_deceit",
+    "item_boots",
+    "item_wind_lace",
+    "item_magic_stick"
+   ]
+  },
+  "undying": {
+   "early": [
+    "item_boots",
+    "item_chainmail",
+    "item_soul_ring",
+    "item_phase_boots",
+    "item_bracer",
+    "item_arcane_boots",
+    "item_bottle",
+    "item_null_talisman",
+    "item_ring_of_health",
+    "item_void_stone"
+   ],
+   "late": [
+    "item_blink",
+    "item_black_king_bar",
+    "item_ultimate_scepter",
+    "item_soul_booster",
+    "item_force_staff",
+    "item_reaver",
+    "item_glimmer_cape",
+    "item_lotus_orb",
+    "item_crellas_crozier",
+    "item_travel_boots"
+   ],
+   "mid": [
+    "item_aghanims_shard",
+    "item_blink",
+    "item_vitality_booster",
+    "item_point_booster",
+    "item_soul_booster",
+    "item_arcane_boots",
+    "item_tiara_of_selemene",
+    "item_octarine_core",
+    "item_ogre_axe",
+    "item_mithril_hammer"
+   ],
+   "start": [
+    "item_branches",
+    "item_enchanted_mango",
+    "item_ward_dispenser",
+    "item_blood_grenade",
+    "item_tango",
+    "item_gauntlets",
+    "item_smoke_of_deceit",
+    "item_magic_stick",
+    "item_ward_sentry",
+    "item_sobi_mask"
+   ]
+  },
+  "ursa": {
+   "early": [
+    "item_boots",
+    "item_ring_of_health",
+    "item_chainmail",
+    "item_phase_boots",
+    "item_void_stone",
+    "item_pers",
+    "item_broadsword",
+    "item_power_treads",
+    "item_bracer",
+    "item_wraith_band"
+   ],
+   "late": [
+    "item_abyssal_blade",
+    "item_sange",
+    "item_basher",
+    "item_eagle",
+    "item_black_king_bar",
+    "item_demon_edge",
+    "item_monkey_king_bar",
+    "item_swift_blink",
+    "item_ultimate_scepter",
+    "item_ultimate_scepter_2"
+   ],
+   "mid": [
+    "item_broadsword",
+    "item_mithril_hammer",
+    "item_blink",
+    "item_bfury",
+    "item_ogre_axe",
+    "item_pers",
+    "item_black_king_bar",
+    "item_basher",
+    "item_blade_of_alacrity",
+    "item_point_booster"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_quelling_blade",
+    "item_faerie_fire",
+    "item_magic_stick",
+    "item_circlet",
+    "item_ward_observer",
+    "item_gauntlets",
+    "item_slippers",
+    "item_tpscroll"
+   ]
+  },
+  "vengefulspirit": {
+   "early": [
+    "item_boots",
+    "item_power_treads",
+    "item_wraith_band",
+    "item_blade_of_alacrity",
+    "item_tranquil_boots",
+    "item_bracer",
+    "item_broadsword",
+    "item_ogre_axe",
+    "item_lifesteal",
+    "item_bottle"
+   ],
+   "late": [
+    "item_eagle",
+    "item_manta",
+    "item_hydras_breath",
+    "item_butterfly",
+    "item_ultimate_scepter",
+    "item_yasha",
+    "item_demon_edge",
+    "item_black_king_bar",
+    "item_lesser_crit",
+    "item_greater_crit"
+   ],
+   "mid": [
+    "item_blade_of_alacrity",
+    "item_specialists_array",
+    "item_staff_of_wizardry",
+    "item_broadsword",
+    "item_ogre_axe",
+    "item_point_booster",
+    "item_ultimate_scepter",
+    "item_yasha",
+    "item_diadem",
+    "item_pavise"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_faerie_fire",
+    "item_circlet",
+    "item_magic_stick",
+    "item_ward_dispenser",
+    "item_blood_grenade",
+    "item_quelling_blade",
+    "item_slippers",
+    "item_smoke_of_deceit"
+   ]
+  },
+  "venomancer": {
+   "early": [
+    "item_boots",
+    "item_urn_of_shadows",
+    "item_arcane_boots",
+    "item_tranquil_boots",
+    "item_power_treads",
+    "item_chainmail",
+    "item_bracer",
+    "item_null_talisman",
+    "item_javelin",
+    "item_staff_of_wizardry"
+   ],
+   "late": [
+    "item_force_staff",
+    "item_ultimate_scepter",
+    "item_glimmer_cape",
+    "item_blink",
+    "item_mystic_staff",
+    "item_pipe",
+    "item_lotus_orb",
+    "item_guardian_greaves",
+    "item_solar_crest",
+    "item_sheepstick"
+   ],
+   "mid": [
+    "item_arcane_boots",
+    "item_staff_of_wizardry",
+    "item_diadem",
+    "item_spirit_vessel",
+    "item_glimmer_cape",
+    "item_force_staff",
+    "item_pavise",
+    "item_solar_crest",
+    "item_mekansm",
+    "item_guardian_greaves"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_blood_grenade",
+    "item_ward_dispenser",
+    "item_faerie_fire",
+    "item_ward_sentry",
+    "item_smoke_of_deceit",
+    "item_magic_stick",
+    "item_circlet",
+    "item_boots"
+   ]
+  },
+  "viper": {
+   "early": [
+    "item_boots",
+    "item_wraith_band",
+    "item_power_treads",
+    "item_null_talisman",
+    "item_bracer",
+    "item_blade_of_alacrity",
+    "item_ring_of_health",
+    "item_travel_boots",
+    "item_cloak",
+    "item_void_stone"
+   ],
+   "late": [
+    "item_ultimate_orb",
+    "item_black_king_bar",
+    "item_skadi",
+    "item_hurricane_pike",
+    "item_force_staff",
+    "item_manta",
+    "item_eagle",
+    "item_sphere",
+    "item_mystic_staff",
+    "item_butterfly"
+   ],
+   "mid": [
+    "item_blade_of_alacrity",
+    "item_dragon_lance",
+    "item_staff_of_wizardry",
+    "item_force_staff",
+    "item_hurricane_pike",
+    "item_yasha",
+    "item_diadem",
+    "item_manta",
+    "item_ogre_axe",
+    "item_mage_slayer"
+   ],
+   "start": [
+    "item_branches",
+    "item_circlet",
+    "item_tango",
+    "item_faerie_fire",
+    "item_ward_observer",
+    "item_enchanted_mango",
+    "item_slippers",
+    "item_quelling_blade",
+    "item_magic_stick",
+    "item_magic_wand"
+   ]
+  },
+  "visage": {
+   "early": [
+    "item_boots",
+    "item_null_talisman",
+    "item_tranquil_boots",
+    "item_ancient_janggo",
+    "item_bracer",
+    "item_lifesteal",
+    "item_power_treads",
+    "item_ring_of_health",
+    "item_void_stone",
+    "item_pers"
+   ],
+   "late": [
+    "item_assault",
+    "item_ultimate_scepter",
+    "item_hyperstone",
+    "item_mystic_staff",
+    "item_sheepstick",
+    "item_boots_of_bearing",
+    "item_pipe",
+    "item_orchid",
+    "item_bloodthorn",
+    "item_crimson_guard"
+   ],
+   "mid": [
+    "item_ancient_janggo",
+    "item_vladmir",
+    "item_ring_of_tarrasque",
+    "item_aghanims_shard",
+    "item_boots_of_bearing",
+    "item_platemail",
+    "item_ogre_axe",
+    "item_staff_of_wizardry",
+    "item_oblivion_staff",
+    "item_blitz_knuckles"
+   ],
+   "start": [
+    "item_branches",
+    "item_circlet",
+    "item_enchanted_mango",
+    "item_tango",
+    "item_faerie_fire",
+    "item_magic_stick",
+    "item_ward_observer",
+    "item_mantle",
+    "item_magic_wand",
+    "item_ward_sentry"
+   ]
+  },
+  "void_spirit": {
+   "early": [
+    "item_boots",
+    "item_bottle",
+    "item_urn_of_shadows",
+    "item_diadem",
+    "item_power_treads",
+    "item_chainmail",
+    "item_phase_boots",
+    "item_bracer",
+    "item_null_talisman",
+    "item_void_stone"
+   ],
+   "late": [
+    "item_ultimate_scepter",
+    "item_black_king_bar",
+    "item_yasha",
+    "item_soul_booster",
+    "item_yasha_and_kaya",
+    "item_ultimate_orb",
+    "item_octarine_core",
+    "item_witch_blade",
+    "item_mystic_staff",
+    "item_shivas_guard"
+   ],
+   "mid": [
+    "item_staff_of_wizardry",
+    "item_spirit_vessel",
+    "item_aghanims_shard",
+    "item_kaya",
+    "item_ogre_axe",
+    "item_blade_of_alacrity",
+    "item_diadem",
+    "item_point_booster",
+    "item_power_treads",
+    "item_cyclone"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_ward_observer",
+    "item_faerie_fire",
+    "item_circlet",
+    "item_quelling_blade",
+    "item_magic_stick",
+    "item_ward_dispenser",
+    "item_blood_grenade",
+    "item_mantle"
+   ]
+  },
+  "warlock": {
+   "early": [
+    "item_boots",
+    "item_arcane_boots",
+    "item_null_talisman"
+   ],
+   "late": [
+    "item_ultimate_scepter",
+    "item_blink",
+    "item_glimmer_cape",
+    "item_force_staff",
+    "item_refresher",
+    "item_solar_crest",
+    "item_travel_boots",
+    "item_aeon_disk",
+    "item_vladmir",
+    "item_guardian_greaves"
+   ],
+   "mid": [
+    "item_arcane_boots",
+    "item_glimmer_cape",
+    "item_pavise",
+    "item_aghanims_shard",
+    "item_solar_crest",
+    "item_staff_of_wizardry",
+    "item_point_booster",
+    "item_hand_of_midas",
+    "item_ghost",
+    "item_force_staff"
+   ],
+   "start": [
+    "item_branches",
+    "item_blood_grenade",
+    "item_tango",
+    "item_ward_dispenser",
+    "item_smoke_of_deceit",
+    "item_ward_sentry",
+    "item_magic_stick",
+    "item_faerie_fire",
+    "item_enchanted_mango",
+    "item_sobi_mask"
+   ]
+  },
+  "weaver": {
+   "early": [
+    "item_boots",
+    "item_falcon_blade",
+    "item_power_treads",
+    "item_urn_of_shadows",
+    "item_wraith_band",
+    "item_diadem",
+    "item_javelin",
+    "item_mithril_hammer",
+    "item_void_stone",
+    "item_blade_of_alacrity"
+   ],
+   "late": [
+    "item_demon_edge",
+    "item_lesser_crit",
+    "item_greater_crit",
+    "item_black_king_bar",
+    "item_ultimate_orb",
+    "item_hyperstone",
+    "item_force_staff",
+    "item_reaver",
+    "item_relic",
+    "item_satanic"
+   ],
+   "mid": [
+    "item_mithril_hammer",
+    "item_aghanims_shard",
+    "item_blade_of_alacrity",
+    "item_dragon_lance",
+    "item_desolator",
+    "item_spirit_vessel",
+    "item_ogre_axe",
+    "item_staff_of_wizardry",
+    "item_maelstrom",
+    "item_diadem"
+   ],
+   "start": [
+    "item_branches",
+    "item_faerie_fire",
+    "item_tango",
+    "item_circlet",
+    "item_magic_stick",
+    "item_magic_wand",
+    "item_blood_grenade",
+    "item_ward_dispenser",
+    "item_ward_sentry",
+    "item_quelling_blade"
+   ]
+  },
+  "windrunner": {
+   "early": [
+    "item_boots",
+    "item_power_treads",
+    "item_null_talisman",
+    "item_javelin",
+    "item_urn_of_shadows",
+    "item_bracer",
+    "item_blade_of_alacrity",
+    "item_bottle",
+    "item_chainmail",
+    "item_mithril_hammer"
+   ],
+   "late": [
+    "item_blink",
+    "item_demon_edge",
+    "item_lesser_crit",
+    "item_greater_crit",
+    "item_consecrated_wraps",
+    "item_force_staff",
+    "item_reaver",
+    "item_black_king_bar",
+    "item_satanic",
+    "item_ultimate_orb"
+   ],
+   "mid": [
+    "item_essence_distiller",
+    "item_mithril_hammer",
+    "item_maelstrom",
+    "item_ogre_axe",
+    "item_hyperstone",
+    "item_mjollnir",
+    "item_black_king_bar",
+    "item_blink",
+    "item_vitality_booster",
+    "item_blade_of_alacrity"
+   ],
+   "start": [
+    "item_branches",
+    "item_circlet",
+    "item_tango",
+    "item_blood_grenade",
+    "item_faerie_fire",
+    "item_ward_dispenser",
+    "item_ward_sentry",
+    "item_magic_stick",
+    "item_ward_observer",
+    "item_quelling_blade"
+   ]
+  },
+  "winter_wyvern": {
+   "early": [
+    "item_boots",
+    "item_power_treads",
+    "item_null_talisman"
+   ],
+   "late": [
+    "item_force_staff",
+    "item_glimmer_cape",
+    "item_blink",
+    "item_aeon_disk",
+    "item_invis_sword",
+    "item_consecrated_wraps",
+    "item_black_king_bar",
+    "item_aether_lens",
+    "item_cyclone",
+    "item_lotus_orb"
+   ],
+   "mid": [
+    "item_blink",
+    "item_power_treads",
+    "item_arcane_boots",
+    "item_staff_of_wizardry",
+    "item_vitality_booster",
+    "item_force_staff",
+    "item_glimmer_cape",
+    "item_consecrated_wraps"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_faerie_fire",
+    "item_blood_grenade",
+    "item_ward_dispenser",
+    "item_smoke_of_deceit",
+    "item_ward_sentry",
+    "item_magic_stick",
+    "item_circlet",
+    "item_quelling_blade"
+   ]
+  },
+  "wisp": {
+   "early": [
+    "item_helm_of_iron_will",
+    "item_helm_of_the_dominator",
+    "item_soul_ring",
+    "item_staff_of_wizardry",
+    "item_bottle",
+    "item_null_talisman",
+    "item_ogre_axe",
+    "item_point_booster",
+    "item_chainmail",
+    "item_urn_of_shadows"
+   ],
+   "late": [
+    "item_hyperstone",
+    "item_reaver",
+    "item_shivas_guard",
+    "item_mjollnir",
+    "item_satanic",
+    "item_demon_edge",
+    "item_maelstrom",
+    "item_mystic_staff",
+    "item_black_king_bar",
+    "item_lesser_crit"
+   ],
+   "mid": [
+    "item_ogre_axe",
+    "item_mithril_hammer",
+    "item_blade_of_alacrity",
+    "item_ultimate_scepter",
+    "item_point_booster",
+    "item_staff_of_wizardry",
+    "item_black_king_bar",
+    "item_platemail",
+    "item_maelstrom",
+    "item_aghanims_shard"
+   ],
+   "start": [
+    "item_branches",
+    "item_gauntlets",
+    "item_tango",
+    "item_sobi_mask",
+    "item_magic_stick",
+    "item_faerie_fire",
+    "item_ward_observer",
+    "item_circlet",
+    "item_ring_of_regen",
+    "item_ward_sentry"
+   ]
+  },
+  "witch_doctor": {
+   "early": [
+    "item_boots",
+    "item_arcane_boots",
+    "item_urn_of_shadows",
+    "item_null_talisman"
+   ],
+   "late": [
+    "item_blink",
+    "item_force_staff",
+    "item_glimmer_cape",
+    "item_consecrated_wraps",
+    "item_solar_crest",
+    "item_ultimate_scepter",
+    "item_aeon_disk",
+    "item_black_king_bar",
+    "item_holy_locket",
+    "item_vladmir"
+   ],
+   "mid": [
+    "item_arcane_boots",
+    "item_pavise",
+    "item_glimmer_cape",
+    "item_aghanims_shard",
+    "item_staff_of_wizardry",
+    "item_solar_crest",
+    "item_blink",
+    "item_vitality_booster",
+    "item_force_staff",
+    "item_holy_locket"
+   ],
+   "start": [
+    "item_branches",
+    "item_ward_dispenser",
+    "item_tango",
+    "item_blood_grenade",
+    "item_smoke_of_deceit",
+    "item_faerie_fire",
+    "item_ward_sentry",
+    "item_enchanted_mango",
+    "item_magic_stick",
+    "item_circlet"
+   ]
+  },
+  "zuus": {
+   "early": [
+    "item_boots",
+    "item_arcane_boots",
+    "item_bottle",
+    "item_staff_of_wizardry",
+    "item_null_talisman",
+    "item_kaya",
+    "item_void_stone",
+    "item_soul_ring",
+    "item_power_treads",
+    "item_ring_of_health"
+   ],
+   "late": [
+    "item_refresher",
+    "item_relic",
+    "item_soul_booster",
+    "item_demon_edge",
+    "item_rapier",
+    "item_octarine_core",
+    "item_ultimate_scepter",
+    "item_yasha",
+    "item_yasha_and_kaya",
+    "item_kaya"
+   ],
+   "mid": [
+    "item_staff_of_wizardry",
+    "item_ogre_axe",
+    "item_point_booster",
+    "item_blade_of_alacrity",
+    "item_aghanims_shard",
+    "item_ultimate_scepter",
+    "item_kaya",
+    "item_arcane_boots",
+    "item_tiara_of_selemene",
+    "item_ring_of_tarrasque"
+   ],
+   "start": [
+    "item_branches",
+    "item_tango",
+    "item_ward_observer",
+    "item_faerie_fire",
+    "item_enchanted_mango",
+    "item_blood_grenade",
+    "item_ward_dispenser",
+    "item_ward_sentry",
+    "item_circlet",
+    "item_magic_stick"
+   ]
+  }
+ },
+ "note": "Up to 10 most bought items per hero and game stage, most bought first.",
+ "patch": "7.41f",
+ "source": "OpenDota /api/heroes/{id}/itemPopularity (public aggregate stats of recent public matches)"
+}
