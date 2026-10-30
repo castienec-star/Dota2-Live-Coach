@@ -6,8 +6,12 @@ shows you. These rules only point at it at the right moment.
 
 from __future__ import annotations
 
-from ..heroes import HeroIndex
+from collections.abc import Callable
+from dataclasses import dataclass
+
+from ..heroes import HeroIndex, HeroInfo
 from ..items import ItemInfo, load_items, lookup
+from ..situational import _keys, _names, _singular
 from ..state import MatchState, Snapshot
 from . import PositionOf
 
@@ -245,11 +249,12 @@ class ItemReady(HeroRule):
     """Says when you can afford the next item on your build list for this hero.
 
     The build is the first that exists of: "<hero>_pos<N>" for your position,
-    "<hero>", the hero's popular items from OpenDota (coach/popularity.py,
-    after `py -m coach refresh-items`), "pos<N>", then "default_support" for
+    "<hero>", "pos<N>", the hero's popular items from OpenDota
+    (coach/popularity.py, coach/data/item_popularity.json), then "default_support" for
     positions 4 and 5 (or, while the position is not known, for heroes that
     are a support and not also a carry by OpenDota's hero roles), otherwise
-    "default".
+    "default". The popular items mix every position, so a support skips them
+    when they look like a carry's build.
     """
 
     name = "item_ready"
@@ -263,11 +268,11 @@ class ItemReady(HeroRule):
     ) -> None:
         super().__init__(0)
         self.builds = builds
-        if popular is None:
-            from ..popularity import popular_builds
+        # coach/popularity.py imports this module, so it is imported here.
+        from ..popularity import carry_build, popular_builds
 
-            popular = popular_builds(load_items())
-        self.popular = popular
+        self.popular = popular if popular is not None else popular_builds(load_items())
+        self.carry_build = carry_build
         self.heroes = heroes
         self.position = position
         self._announced: set[str] = set()
@@ -280,9 +285,9 @@ class ItemReady(HeroRule):
         for key in (f"{hero}_pos{position}", hero, f"pos{position}"):
             if key in self.builds:
                 return self.builds[key]
-            if key == hero and hero in self.popular:
-                return self.popular[hero]
         support = position in (4, 5) if position else self.is_support(hero)
+        if hero in self.popular and not (support and self.carry_build(self.popular[hero])):
+            return self.popular[hero]
         if "default_support" in self.builds and support:
             return self.builds["default_support"]
         return self.builds.get("default", [])
@@ -308,12 +313,52 @@ class ItemReady(HeroRule):
 STAT_ITEMS = {"str": "item_bracer", "agi": "item_wraith_band", "int": "item_null_talisman"}
 
 
+@dataclass(frozen=True)
+class CheapCounter:
+    item: str  # item key
+    reason: str  # said after the hero names, e.g. "cast a lot of spells"
+    heroes: frozenset[str]  # hero keys
+    after: int = 0  # game clock seconds before the shop sells it
+    until: int | None = None  # game clock seconds after which it no longer helps
+
+
+# Cheap items against the enemy heroes you told the coach, checked before the
+# "items" list and in this order. One enemy hero is enough. See
+# docs/strategy/cheap-items.md for where each comes from.
+CHEAP_COUNTERS = [
+    CheapCounter(
+        "item_infused_raindrop",
+        "do a lot of magic damage",
+        _keys("lina lion zuus leshrac skywrath_mage queenofpain tinker nevermore"),
+        after=180,
+        until=720,  # later nukes are well over the 120 block
+    ),
+    CheapCounter(
+        "item_magic_wand",
+        "cast a lot of spells",
+        _keys(
+            "bristleback skywrath_mage batrider zuus shredder leshrac venomancer"
+            " storm_spirit queenofpain tinker ogre_magi jakiro razor"
+        ),
+    ),
+]
+
+
+def _with_article(name: str) -> str:
+    """"a Magic Wand", "an Orb of Venom", but "Infused Raindrops"."""
+    if name.endswith("s"):
+        return name
+    return ("an " if name[0] in "AEIOU" else "a ") + name
+
+
 class WorthBuying(ItemReady):
     """Suggests a cheap item while you save up for a big one.
 
     Said when the next item on your build is still at least "far" gold away
     and you can afford one of "items" you don't own yet. Each item is
     suggested at most once a match, and nothing after "until_minute".
+    With the enemy heroes you told the coach (enemies()), a cheap counter to
+    them comes first and the line says why (CHEAP_COUNTERS).
     """
 
     name = "worth_buying"
@@ -327,13 +372,33 @@ class WorthBuying(ItemReady):
         until_minute: int = 25,
         cooldown: int = 180,
         position: PositionOf | None = None,
+        enemies: Callable[[], list[HeroInfo]] | None = None,
     ) -> None:
         super().__init__(builds, heroes, position)
         self.cooldown = cooldown
+        self.enemies = enemies or (lambda: [])
         self.items = items or []
         self.far = far
         self.until_clock = until_minute * 60
         self._all_items: dict[str, ItemInfo] | None = None
+
+    def _item(self, key: str) -> ItemInfo:
+        if self._all_items is None:
+            self._all_items = load_items()
+        return self._all_items[key]
+
+    def counters(self, clock: int) -> list[tuple[ItemInfo, str]]:
+        """Cheap counters to the told enemy lineup that help at this minute,
+        with why, e.g. "Lina and Lion do a lot of magic damage"."""
+        enemies = self.enemies()
+        found = []
+        for counter in CHEAP_COUNTERS:
+            heroes = [h for h in enemies if h.key in counter.heroes]
+            if not heroes or clock < counter.after or (counter.until is not None and clock >= counter.until):
+                continue
+            verb = counter.reason if len(heroes) > 1 else _singular(counter.reason)
+            found.append((self._item(counter.item), f"{_names(heroes)} {verb}"))
+        return found
 
     def candidates(self, hero: str) -> list[ItemInfo]:
         found = []
@@ -343,9 +408,7 @@ class WorthBuying(ItemReady):
                 key = STAT_ITEMS.get(info.primary_attr) if info else None
                 if key is None:
                     continue
-                if self._all_items is None:
-                    self._all_items = load_items()
-                item = self._all_items[key]
+                item = self._item(key)
             found.append(item)
         return found
 
@@ -358,12 +421,14 @@ class WorthBuying(ItemReady):
         if target is None or target.cost - snap.gold < self.far:
             return None
         hero = (snap.hero_name or "").removeprefix("npc_dota_hero_")
-        for item in self.candidates(hero):
+        plain = [(item, "") for item in self.candidates(hero)]
+        for item, why in self.counters(snap.clock_time) + plain:
             if item.key in self._announced or snap.has_item(item.key) or item.cost > snap.gold:
                 continue
             self._announced.add(item.key)
-            article = "an" if item.name[0] in "AEIOU" else "a"
-            return f"Buy {article} {item.name} now, you'll get your {target.name} later."
+            if why:
+                return f"Buy {_with_article(item.name)} now: {why}."
+            return f"Buy {_with_article(item.name)} now, you'll get your {target.name} later."
         return None
 
 
@@ -452,9 +517,11 @@ def build(
     settings: dict[str, dict],
     builds: dict[str, list[str]],
     position: PositionOf | None = None,
+    enemies: Callable[[], list[HeroInfo]] | None = None,
 ) -> list[HeroRule]:
     """Make hero rules from the [reminders.*] and [builds] config tables.
-    position() gives the player's position, for per-position builds."""
+    position() gives the player's position, for per-position builds;
+    enemies() the enemy heroes the player told the coach."""
     rules: list[HeroRule] = []
     for name, cls in RULES.items():
         options = dict(settings.get(name, {}))
@@ -468,5 +535,5 @@ def build(
         items = load_items()
         names = worth.pop("items", ["Magic Wand", "stats"])
         cheap = [name if name == "stats" else _find(items, name, "worth_buying") for name in names]
-        rules.append(WorthBuying(parse_builds(builds, items), HeroIndex(), cheap, position=position, **worth))
+        rules.append(WorthBuying(parse_builds(builds, items), HeroIndex(), cheap, position=position, enemies=enemies, **worth))
     return rules

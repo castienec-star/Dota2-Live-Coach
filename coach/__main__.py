@@ -140,7 +140,7 @@ def make_coach(
     power_windows = windows.build(reminders)
     rules = (
         timers.build(reminders)
-        + hero.build(reminders, cfg.builds, position)
+        + hero.build(reminders, cfg.builds, position, enemies)
         + power_windows
         + game_check.build(
             reminders,

@@ -23,7 +23,7 @@ from typing import Any
 
 from .heroes import HeroInfo
 from .items import ItemInfo
-from .rules.hero import BOOTS
+from .rules.hero import BOOTS, TRAVEL
 
 log = logging.getLogger(__name__)
 
@@ -41,6 +41,41 @@ TOP = 10  # items kept per stage
 # Items cheaper than this are components or utility, not build items.
 MIN_COST = 2000
 BUILD_SIZE = 5  # boots plus four big items
+# Expensive parts nobody should be told to buy as an item of their own.
+COMPONENTS = {
+    "item_ultimate_orb", "item_mystic_staff", "item_reaver", "item_eagle", "item_soul_booster",
+    "item_hyperstone", "item_demon_edge", "item_relic", "item_lesser_crit",
+    # Dropped when you die: too risky to suggest to a new player.
+    "item_rapier",
+    # Aghanim's Blessing is bought by consuming a Scepter, which "buy it next"
+    # doesn't explain to someone without one.
+    "item_ultimate_scepter_2",
+}
+# Items only a farming core should buy. Popular lists mix every position, so
+# a build with these isn't one for a support (see carry_build).
+CARRY_ONLY = {
+    "item_butterfly", "item_abyssal_blade", "item_bloodthorn", "item_greater_crit", "item_satanic",
+    "item_manta", "item_skadi", "item_mjollnir", "item_radiance", "item_bfury",
+    "item_monkey_king_bar", "item_disperser", "item_basher", "item_orchid", "item_desolator",
+}
+# A support build's big items cost about this much on average at most.
+SUPPORT_AVERAGE = 3500
+# Items left out when the build also has what they turn into.
+PARTS = {
+    "item_yasha": ("item_sange_and_yasha", "item_yasha_and_kaya", "item_manta"),
+    "item_kaya": ("item_kaya_and_sange", "item_yasha_and_kaya"),
+    "item_sange": ("item_sange_and_yasha", "item_kaya_and_sange", "item_heavens_halberd"),
+    "item_orchid": ("item_bloodthorn",),
+    "item_force_staff": ("item_hurricane_pike",),
+    "item_dragon_lance": ("item_hurricane_pike",),
+    "item_maelstrom": ("item_mjollnir", "item_gungir"),
+    "item_basher": ("item_abyssal_blade",),
+    "item_diffusal_blade": ("item_disperser",),
+    "item_echo_sabre": ("item_harpoon",),
+    "item_blink": ("item_overwhelming_blink", "item_swift_blink", "item_arcane_blink"),
+    "item_invis_sword": ("item_silver_edge",),
+    "item_cyclone": ("item_wind_waker",),
+}
 
 
 def top_items(counts: dict[str, int], item_ids: dict[str, str], top: int = TOP) -> list[str]:
@@ -104,20 +139,31 @@ def load(path: Path = POPULARITY_FILE) -> dict[str, dict[str, list[str]]]:
 
 
 def popular_build(stages: dict[str, list[str]], items: dict[str, ItemInfo]) -> list[ItemInfo]:
-    """Boots, then the most bought big items of the mid and late game. [] when
-    there are too few to call it a build."""
-    boots = next(
-        (k for k in stages.get("early", []) + stages.get("mid", []) if k in BOOTS and k in items),
-        None,
-    )
+    """Boots, then the most bought big items of the mid and late game, leaving
+    out bare components and an item whose upgrade is also on the list. []
+    when there are too few to call it a build."""
+    early = stages.get("early", []) + stages.get("mid", [])
+    # Boots of Travel come later; the first boots are a pair you can buy early.
+    boots = next((k for k in early if k in BOOTS and k not in TRAVEL and k in items), None)
     big: list[str] = []
     for key in stages.get("mid", []) + stages.get("late", []):
-        if key in items and key not in BOOTS and items[key].cost >= MIN_COST and key not in big:
-            big.append(key)
+        if key in items and key not in BOOTS and key not in COMPONENTS and items[key].cost >= MIN_COST:
+            if key not in big:
+                big.append(key)
+    big = [k for k in big if not set(PARTS.get(k, ())) & set(big)]
     if len(big) < 2:
         return []
     keys = ([boots] if boots else []) + big
     return [items[k] for k in keys[:BUILD_SIZE]]
+
+
+def carry_build(build: list[ItemInfo]) -> bool:
+    """True for a build a pos 4 or 5 shouldn't follow: more than one
+    carry-only item, or big items that cost over SUPPORT_AVERAGE on average."""
+    big = [i for i in build if i.key not in BOOTS]
+    if sum(i.key in CARRY_ONLY for i in big) > 1:
+        return True
+    return bool(big) and sum(i.cost for i in big) / len(big) > SUPPORT_AVERAGE
 
 
 def popular_builds(

@@ -107,7 +107,7 @@ camp is alive, already stacked or blocked, so the coach cannot check that.
 | Reminder | When |
 | --- | --- |
 | You have gold for (item) | You can afford the next item on your build list |
-| Buy a (cheap item) now, you'll get your (item) later | Before 25:00, you are still 600+ gold short of the next build item (boots included) and you can afford a Magic Wand or your hero's Bracer, Wraith Band or Null Talisman that you don't own. Each one at most once a match |
+| Buy a (cheap item) now, you'll get your (item) later | Before 25:00, you are still 600+ gold short of the next build item (boots included) and you can afford a Magic Wand or your hero's Bracer, Wraith Band or Null Talisman that you don't own. Each one at most once a match. If you told the coach the enemy heroes, a cheap counter comes first with the reason: "Buy Infused Raindrops now: Lina does a lot of magic damage" (3:00 to 12:00) or "Buy a Magic Wand now: Bristleback casts a lot of spells" |
 | You're ahead / about even / behind for (minutes) ... | At 15:00 and 25:00, your gold, experience and last hits per minute against public numbers for your hero, with what to do about it (see "How am I doing?" below). It also names one item to get, the same pick as "What should I buy?" (a counter to the enemy heroes you told it, a defensive item, your next build item or a late-game item). Change the minutes in `[reminders.game_check]` |
 | Low health, back off | Health drops under 25% (again after you heal over 40%), once a burst of damage has stopped |
 | Go heal | Health stays under 40% for 10 s without taking damage; names a Salve, Bottle, Tango or Faerie Fire you carry |
@@ -122,20 +122,25 @@ comes with simple builds for heroes popular from Herald to Ancient (Axe,
 Bristleback, Drow Ranger, Juggernaut, Legion Commander, Lion, Luna, Ogre Magi,
 Phantom Assassin, Pudge, Slark, Sniper, Viper, Witch Doctor, Wraith King and
 Zeus). Any other hero gets the items real players build on it most, from
-OpenDota's public item popularity (boots first, then the most bought big
-items of the mid and late game), once that data is saved with:
+OpenDota's public item popularity bundled in `coach/data/item_popularity.json`
+(fetched 2026-10-30, patch 7.41f): boots first, then the most bought big
+items of the mid and late game, leaving out bare components (Ultimate Orb,
+Mystic Staff), Divine Rapier, Aghanim's Blessing, and an item whose upgrade
+is also on the list. The numbers mix every position, so in positions 4 and 5
+a hero whose popular items are a carry's (expensive, or several of Butterfly,
+Manta, Bloodthorn and the like) gets the support build instead.
+To read fresher numbers (about three minutes, public aggregate numbers only):
 
 ```
 py -m coach refresh-items
 ```
 
-It takes about three minutes, reads only public aggregate numbers, and saves
-`coach/data/item_popularity.json`. Without it, or for a hero with too little
-data, any other hero gets a support build in positions 4 and 5, otherwise a
-core build (`default_support` and `default`); while your position isn't known,
-it goes by the hero's usual role. Builds can also depend on your position:
+A hero with too little data gets a support build in positions 4 and 5
+(`default_support`), otherwise a core build (`default`); while your position
+isn't known, it goes by the hero's usual role. Builds can also depend on your position:
 `pudge_pos2 = [...]` is Pudge's build when you play mid, and `pos3 = [...]` is
-for any hero without its own list when you play offlane. Put `pudge = []` in
+for any hero without its own list when you play offlane (it comes before the
+popular items). Put `pudge = []` in
 your own `coach.toml` to turn the reminder off for one hero.
 
 Any reminder can be limited to some positions, e.g. `positions = [4, 5]` under
