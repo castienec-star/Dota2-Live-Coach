@@ -65,3 +65,10 @@ def test_report_sums_each_run(capsys):
 def test_main_stops_when_ollama_is_not_running(capsys):
     assert evals.main(["--url", "http://127.0.0.1:9", "--timeout", "2"]) == 1
     assert "did not answer" in capsys.readouterr().out
+
+
+def test_progress_is_reported_as_each_answer_comes_in():
+    cases = evals.load_cases()[:2]
+    seen = []
+    evals.run(cases, asks(), cards=True, runs=2, progress=seen.append)
+    assert [r.case for r in seen] == [cases[0]["name"]] * 2 + [cases[1]["name"]] * 2
