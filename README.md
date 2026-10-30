@@ -166,6 +166,14 @@ you cast under 35% health just before dying. "You died with your Shadow Blade
 ready. Press it as soon as the fight turns." beats a general tip, and the model
 gets the same facts.
 
+After three deaths within six minutes, the tip is one calm line instead:
+"That's 3 deaths in 4 minutes. Take a breath: farm near your towers until
+your team groups up and get Black King Bar before anything greedy." The item
+is the first defensive item for your role you don't own yet (Black King Bar
+for a core, Glimmer Cape or Force Staff for a support). It is said once per
+streak; `streak` and `streak_window` under `[reminders.death_tip]` change
+it, and `streak = 0` turns it off.
+
 Choose where tips come from with `provider` in `[reminders.death_tip]`:
 
 | Provider | Cost | Needs |

@@ -16,9 +16,11 @@ import time
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 
-from .. import knowledge, llm
+from .. import knowledge, llm, situational
+from ..benchmarks import is_support
 from ..game_questions import Notes
 from ..grounding import Grounding
+from ..heroes import HeroIndex
 from ..items import ItemInfo, load_items
 from ..lineup import POSITIONS
 from ..state import MatchState, Snapshot
@@ -219,6 +221,16 @@ class BuiltinTips:
         return tip
 
 
+def streak_tip(snap: Snapshot, deaths: int, minutes: int, items: dict[str, ItemInfo], role_name: str) -> str:
+    """One calm line after several deaths close together: stop the spiral."""
+    pick = situational.defensive(snap, role_name, items)
+    buy = f" and get {pick.item.name} before anything greedy" if pick is not None else ""
+    return (
+        f"That's {deaths} deaths in {minutes} minutes. Take a breath: farm near your "
+        f"towers until your team groups up{buy}."
+    )
+
+
 class DeathTip:
     name = "death_tip"
 
@@ -231,7 +243,11 @@ class DeathTip:
         fallback: Callable[[Snapshot], str] | None = None,
         position: PositionOf | None = None,
         notes: Callable[[], Notes | None] | None = None,
+        streak: int = 3,
+        streak_window: int = 360,
     ) -> None:
+        """streak deaths within streak_window game seconds get the calm
+        streak line instead of a tip (streak = 0 turns it off)."""
         self.say = say
         self.ask = ask
         self.notes = notes or (lambda: None)
@@ -243,18 +259,45 @@ class DeathTip:
         self._death = 0  # bumped on each death and new match, to drop stale tips
         self._grounding: Grounding | None = None  # loaded on the first model tip
         self._recent = Recent()  # the last seconds alive, for what led to a death
+        self.streak = streak
+        self.streak_window = streak_window
+        self._deaths: list[int] = []  # game clock of each death this match
+        self._streak_after = -1  # deaths up to this clock already had the streak line
+        self._heroes: HeroIndex | None = None
 
     def check(self, state: MatchState) -> list[str]:
         cur, prev = state.current, state.previous
+        if prev.alive and not cur.alive and cur.clock_time is not None:
+            self._deaths.append(cur.clock_time)
         if prev.alive and not cur.alive and cur.respawn_seconds >= self.min_respawn:
             self._death += 1
             deadline = time.monotonic() + cur.respawn_seconds
-            moments = notice(self._recent.snaps, self.items)
-            self._pool.submit(self._tip, state, cur, self._death, deadline, moments)
+            streak = self._streak_line(cur)
+            if streak is not None:
+                # Said at once: it needs no model, and it matters more than a tip.
+                self.say(streak)
+            else:
+                moments = notice(self._recent.snaps, self.items)
+                self._pool.submit(self._tip, state, cur, self._death, deadline, moments)
         if not cur.alive:
             self._recent.clear()
         self._recent.add(cur)
         return []
+
+    def _streak_line(self, snap: Snapshot) -> str | None:
+        """The streak line if this death completes a streak not yet talked about."""
+        if not self.streak or snap.clock_time is None:
+            return None
+        recent = [t for t in self._deaths if t > self._streak_after and snap.clock_time - t <= self.streak_window]
+        if len(recent) < self.streak:
+            return None
+        self._streak_after = snap.clock_time
+        if self._heroes is None:
+            self._heroes = HeroIndex()
+        position = self.position(snap) if self.position else 0
+        role_name = situational.role(position, is_support(self._heroes.by_key(snap.hero_name), position))
+        minutes = max(1, -(-(snap.clock_time - recent[0]) // 60))
+        return streak_tip(snap, len(recent), minutes, self.items, role_name)
 
     def _tip(
         self, state: MatchState, snap: Snapshot, death: int, deadline: float, moments: Moments | None = None
@@ -296,6 +339,8 @@ class DeathTip:
     def reset(self) -> None:
         self._death += 1
         self._recent.clear()
+        self._deaths.clear()
+        self._streak_after = -1
 
     def close(self) -> None:
         self._pool.shutdown(wait=True)

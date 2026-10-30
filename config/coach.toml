@@ -170,6 +170,11 @@ effort = "low"
 timeout = 8
 # Only give a tip when the death timer is at least this long.
 min_respawn = 10
+# After "streak" deaths within "streak_window" game seconds, say one calm
+# line (farm near your towers, get a defensive item) instead of a tip, once
+# per streak. streak = 0 turns it off.
+streak = 3
+streak_window = 360
 
 [reminders.item_ready]
 enabled = true
