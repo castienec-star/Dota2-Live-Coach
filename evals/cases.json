@@ -1,0 +1,110 @@
+{
+ "about": "Game moments for py -m coach.evals. expect: phrases a good tip or briefing would use (any one counts). best: the item keys a good buy would be. Hero and item keys are dotaconstants names without the npc_dota_hero_ and item_ prefixes.",
+ "cases": [
+  {
+   "name": "Anti-Mage hexed and burst by Lion",
+   "kind": "tip", "hero": "antimage", "position": 1, "minute": 16, "level": 14,
+   "gold": 2900, "kda": [2, 4, 1], "last_hits": 140,
+   "items": ["power_treads", "bfury", "magic_wand", "tpscroll"],
+   "told": {"lane": "even", "trouble": "lion"},
+   "expect": ["counterspell", "black king bar", "bkb", "blink away", "blink out"]
+  },
+  {
+   "name": "Lion support keeps dying to Phantom Assassin",
+   "kind": "tip", "hero": "lion", "position": 5, "minute": 14, "level": 9,
+   "gold": 700, "kda": [1, 5, 6], "last_hits": 12,
+   "items": ["tranquil_boots", "magic_wand", "blink", "tpscroll"],
+   "told": {"trouble": "phantom_assassin", "fights": "lost"},
+   "expect": ["hex", "earth spike", "blink", "behind your team", "stay back", "with your team"]
+  },
+  {
+   "name": "Sniper caught alone by Spirit Breaker",
+   "kind": "tip", "hero": "sniper", "position": 2, "minute": 22, "level": 17,
+   "gold": 1800, "kda": [5, 5, 4], "last_hits": 190,
+   "items": ["power_treads", "dragon_lance", "maelstrom", "force_staff", "tpscroll"],
+   "told": {"trouble": "spirit_breaker"},
+   "expect": ["force staff", "concussive grenade", "grenade", "behind your team", "with your team", "near your team"]
+  },
+  {
+   "name": "Late game, buyback not affordable",
+   "kind": "tip", "hero": "juggernaut", "position": 1, "minute": 38, "level": 25,
+   "gold": 900, "buyback_cost": 2400, "kda": [9, 7, 8], "last_hits": 380,
+   "items": ["phase_boots", "bfury", "manta", "basher", "black_king_bar", "tpscroll"],
+   "expect": ["buyback", "buy back"]
+  },
+  {
+   "name": "Laning phase death on Drow Ranger",
+   "kind": "tip", "hero": "drow_ranger", "position": 1, "minute": 6, "level": 5,
+   "gold": 350, "kda": [0, 2, 0], "last_hits": 22, "respawn": 14,
+   "items": ["tango", "magic_stick", "boots", "tpscroll"],
+   "expect": ["frost arrow", "gust", "tower", "last hit", "careful", "behind your creeps"]
+  },
+  {
+   "name": "Wraith King died with Reincarnation down",
+   "kind": "tip", "hero": "skeleton_king", "position": 1, "minute": 27, "level": 20,
+   "gold": 1500, "kda": [6, 4, 7], "last_hits": 230,
+   "items": ["phase_boots", "armlet", "radiance", "blink", "tpscroll"],
+   "told": {"fights": "even"},
+   "expect": ["reincarnation", "ultimate"]
+  },
+  {
+   "name": "Core against Lion, Lina and Axe",
+   "kind": "item", "hero": "antimage", "position": 1, "minute": 18, "level": 15,
+   "gold": 3000, "gpm": 520, "kda": [3, 4, 2], "last_hits": 160,
+   "items": ["power_treads", "bfury", "magic_wand"],
+   "enemies": ["lion", "lina", "axe", "phantom_assassin", "witch_doctor"],
+   "candidates": ["manta", "black_king_bar", "abyssal_blade"],
+   "best": ["black_king_bar"]
+  },
+  {
+   "name": "Core against evasion",
+   "kind": "item", "hero": "juggernaut", "position": 1, "minute": 24, "level": 18,
+   "gold": 4500, "gpm": 560, "kda": [5, 3, 4], "last_hits": 250,
+   "items": ["phase_boots", "bfury", "manta"],
+   "enemies": ["phantom_assassin", "troll_warlord", "crystal_maiden"],
+   "candidates": ["butterfly", "monkey_king_bar", "abyssal_blade"],
+   "best": ["monkey_king_bar"]
+  },
+  {
+   "name": "Core against Bristleback's passive",
+   "kind": "item", "hero": "sven", "position": 1, "minute": 26, "level": 19,
+   "gold": 5000, "gpm": 580, "kda": [6, 3, 5], "last_hits": 260,
+   "items": ["power_treads", "echo_sabre", "black_king_bar"],
+   "enemies": ["bristleback", "lion", "ogre_magi"],
+   "candidates": ["satanic", "silver_edge", "greater_crit"],
+   "best": ["silver_edge"]
+  },
+  {
+   "name": "Support against magic burst",
+   "kind": "item", "hero": "lion", "position": 5, "minute": 17, "level": 11,
+   "gold": 2000, "gpm": 260, "kda": [1, 5, 7], "last_hits": 15,
+   "items": ["tranquil_boots", "magic_wand", "blink"],
+   "enemies": ["zuus", "lina", "skywrath_mage", "lion"],
+   "candidates": ["force_staff", "glimmer_cape", "aether_lens"],
+   "best": ["glimmer_cape"]
+  },
+  {
+   "name": "Support against a healing carry",
+   "kind": "item", "hero": "crystal_maiden", "position": 5, "minute": 20, "level": 12,
+   "gold": 2000, "gpm": 250, "kda": [1, 4, 9], "last_hits": 10,
+   "items": ["tranquil_boots", "magic_wand", "glimmer_cape"],
+   "enemies": ["huskar", "necrolyte", "alchemist"],
+   "candidates": ["spirit_vessel", "force_staff", "ghost"],
+   "best": ["spirit_vessel"]
+  },
+  {
+   "name": "Briefing against Enigma and Faceless Void",
+   "kind": "briefing", "hero": "juggernaut", "position": 1,
+   "allies": ["crystal_maiden", "earthshaker", "lion", "storm_spirit"],
+   "enemies": ["enigma", "faceless_void", "lina", "pudge", "witch_doctor"],
+   "expect": ["black hole", "chronosphere", "spread out", "don't group", "don't stand together"]
+  },
+  {
+   "name": "Briefing against Axe and Lion",
+   "kind": "briefing", "hero": "phantom_assassin", "position": 1,
+   "allies": ["witch_doctor", "sniper", "tidehunter", "lich"],
+   "enemies": ["axe", "lion", "lina", "antimage", "shadow_shaman"],
+   "expect": ["berserker's call", "culling blade", "hex", "finger of death", "black king bar", "bkb"]
+  }
+ ]
+}

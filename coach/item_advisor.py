@@ -27,7 +27,7 @@ import threading
 from collections.abc import Callable
 from concurrent.futures import Future, ThreadPoolExecutor
 
-from . import llm, situational
+from . import knowledge, llm, situational
 from .benchmarks import Benchmarks, Verdict, is_support
 from .game_questions import Notes
 from .grounding import Grounding
@@ -47,7 +47,8 @@ to buy next. Choose exactly one item from the candidates given, using only the \
 player's own data and what they told you. Reply with JSON only: \
 {"item": "<candidate key>", "why": "<reason>"}. The reason is said out loud \
 after the item's name: one short clause of at most 15 words, plain spoken \
-English, no numbers, and only name heroes listed in the data."""
+English, no numbers, and only name heroes listed in the data. What the items \
+and enemy ultimates do is correct for this patch: weigh it."""
 
 # The longest reason spoken; a longer one is cut to the rule's own reason.
 MAX_WORDS = 18
@@ -118,12 +119,16 @@ def describe(
         lines.append("Enemy heroes: " + "; ".join(
             f"{h.name} ({h.attack_type.lower()}, {', '.join(h.roles)})" for h in enemies
         ))
+        # Their ultimates, and whether those go through a Black King Bar.
+        lines += [f"- {card}" for card in knowledge.hero_cards(enemies, ultimate_only=True)]
     told = notes.told() if notes is not None else []
     if told:
         lines.append(f"The player told you: {'; '.join(told)}")
     lines.append("Candidates:")
     for pick in picks:
         line = f"- {pick.item.key}: {pick.item.name}, {pick.item.cost} gold"
+        if what := knowledge.item_line(pick.item):
+            line += f"; {what}"
         if pick.reason:
             line += f" (rule: {pick.reason})"
         lines.append(line)

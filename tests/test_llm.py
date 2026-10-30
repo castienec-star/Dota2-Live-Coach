@@ -45,7 +45,10 @@ def test_unload_asks_ollama_to_drop_the_model(fake_ollama):
 def test_load_asks_ollama_to_load_the_model_without_a_prompt(fake_ollama):
     url, received = fake_ollama
     assert llm.load("llama3.2:3b", url)
-    assert received == [("/api/generate", {"model": "llama3.2:3b", "keep_alive": llm.KEEP_ALIVE})]
+    # The same context size as every question, so the model isn't loaded twice.
+    assert received == [("/api/generate", {
+        "model": "llama3.2:3b", "keep_alive": llm.KEEP_ALIVE, "options": {"num_ctx": llm.CONTEXT}
+    })]
 
 
 def test_unload_without_ollama_is_quiet():

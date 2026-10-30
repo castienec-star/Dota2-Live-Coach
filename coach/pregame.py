@@ -14,7 +14,7 @@ from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-from . import llm
+from . import knowledge, llm
 from .grounding import Grounding
 from .draft import Analysis, Draft, analyse
 from .heroes import HeroIndex, HeroInfo
@@ -40,7 +40,9 @@ Strict rules, because the player will hear any mistake:
 - Use only numbers that appear in the facts. Never make up a time to fight or push.
 - Dota has no junglers. Don't give anyone a role the facts don't give.
 - The game hasn't started: never say something already happened in it.
-- Don't invent strengths, weaknesses, items or habits that the facts don't state."""
+- Don't invent strengths, weaknesses, items or habits that the facts don't state.
+- "What the heroes do" is correct for this patch: use it to judge threats, and \
+name only abilities listed there."""
 
 def facts(
     snap: Snapshot, draft: Draft, analysis: Analysis, personal: list[str], position: int = 0
@@ -61,6 +63,12 @@ def facts(
     if personal:
         lines.append("About the player's own games:")
         lines += personal
+    # The player's hero and the enemies in full; for allies, their ultimates.
+    cards = knowledge.hero_cards([draft.me, *draft.enemies])
+    cards += knowledge.hero_cards([h for h in draft.allies if h != draft.me], ultimate_only=True)
+    if cards:
+        lines.append("What the heroes do:")
+        lines += cards
     return "\n".join(lines)
 
 
