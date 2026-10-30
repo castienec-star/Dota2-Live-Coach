@@ -173,8 +173,10 @@ def test_prompt_has_only_own_hero_data(payload):
     assert "Hero: antimage, level 11" in text
     assert "Battle Fury" in text and "Magic Wand" in text
     assert "Gold: 1640; buyback costs 865 (affordable)" in text
-    # GSI in player mode has no enemy data, and the prompt adds none.
-    assert "enemy" not in text.lower()
+    # GSI in player mode has no enemy data, and the prompt adds none (the
+    # cards on what your own abilities and items do may say "enemy").
+    facts = [line for line in text.splitlines() if not line.startswith(("Abilities:", "What the items do:"))]
+    assert "enemy" not in "\n".join(facts).lower()
 
 
 def test_prompt_names_the_game_phase_and_position(payload):
