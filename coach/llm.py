@@ -15,6 +15,11 @@ log = logging.getLogger(__name__)
 
 DEFAULT_MODEL = "llama3.1:8b"
 DEFAULT_URL = "http://127.0.0.1:11434"
+# Room for the knowledge cards: a briefing with ten heroes' cards is about
+# 1600 tokens, and older Ollama versions cut prompts at 2048 from the start,
+# losing the instructions. Every caller asks with the same size, so the
+# model stays loaded once instead of reloading for each size.
+CONTEXT = 4096
 POST_GAME = "DOTA_GAMERULES_STATE_POST_GAME"
 # Loading the model while the player drafts makes the briefing and the first
 # tip arrive on time.
@@ -56,7 +61,7 @@ def ollama_asker(
             "stream": False,
             # Keep the model loaded between calls so answers come back fast.
             "keep_alive": KEEP_ALIVE,
-            "options": {"num_predict": num_predict, "temperature": temperature},
+            "options": {"num_predict": num_predict, "temperature": temperature, "num_ctx": CONTEXT},
         }
         if fmt is not None:
             body["format"] = fmt
@@ -100,7 +105,8 @@ def unload(model: str, url: str, timeout: float = 5) -> bool:
 def load(model: str, url: str, timeout: float = 60) -> bool:
     """Ask Ollama to load a model now (a request with no prompt), so the first
     real question doesn't wait for it. False if Ollama isn't running."""
-    return _generate({"model": model, "keep_alive": KEEP_ALIVE}, url, timeout)
+    body = {"model": model, "keep_alive": KEEP_ALIVE, "options": {"num_ctx": CONTEXT}}
+    return _generate(body, url, timeout)
 
 
 def _generate(body: dict, url: str, timeout: float) -> bool:

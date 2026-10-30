@@ -16,7 +16,7 @@ import time
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 
-from .. import llm
+from .. import knowledge, llm
 from ..game_questions import Notes
 from ..grounding import Grounding
 from ..items import ItemInfo, load_items
@@ -36,7 +36,8 @@ you. Do not guess where enemies are or what they are doing, and never name a \
 hero that isn't in the data below. Dota has no junglers. Fit the tip to the \
 game phase given: last hits, denies and lane tips only in the laning phase; \
 after that, talk about farming the map, fighting with the team, objectives, \
-items or buyback. Reply with the tip only, without quotes."""
+items or buyback. What the abilities and items do is correct for this patch: \
+a tip about using one of them well is welcome. Reply with the tip only, without quotes."""
 
 # After the laning phase a tip about denies or the lane is out of date.
 LANING_ONLY = ("deny", "denies", "denying", "your lane", "in lane", "the lane")
@@ -80,9 +81,22 @@ def describe(
     ]
     if position in POSITIONS:
         lines.insert(1, f"Position: {position} ({POSITIONS[position]})")
+    # What the hero and items do, so the tip can be about using them well.
+    if abilities := knowledge.described(snap.hero_name):
+        lines.append(f"Abilities: {abilities}")
+    uses = []
+    for item in snap.items:
+        info = items.get(item.name)
+        if info is not None and (line := knowledge.item_line(info)):
+            uses.append(f"{info.name}: {line}")
+    if uses:
+        lines.append(f"What the items do: {'; '.join(uses)}")
     told = notes.told() if notes is not None else []
     if told:
         lines.append(f"The player told you: {'; '.join(told)}")
+    if notes is not None and notes.trouble is not None:
+        if what := knowledge.described(notes.trouble):
+            lines.append(f"What {notes.trouble.name} does: {what}")
     seen = moments.facts() if moments is not None else []
     if seen:
         lines.append(f"In the seconds before dying: {'; '.join(seen)}")
@@ -247,10 +261,23 @@ class DeathTip:
     ) -> None:
         position = self.position(snap) if self.position else 0
         prompt = describe(snap, self.items, position, self.notes(), moments)
-        tip = self.ask(prompt) if self.ask else None
+        tip = self.checked(self.ask(prompt) if self.ask else None, snap, prompt)
+        # What led to this death beats a general tip.
+        tip = tip or (moments.tip() if moments is not None else None) or self.fallback(snap)
+        # Only speak while still in the same death, with time left to hear it.
+        if (
+            tip
+            and death == self._death
+            and not state.current.alive
+            and time.monotonic() < deadline - 2
+        ):
+            self.say(tip)
+
+    def checked(self, tip: str | None, snap: Snapshot, prompt: str) -> str | None:
+        """The model's tip, or None when it is out of date or names a hero it shouldn't."""
         if tip and not fits(tip, snap):
             log.info("Dropped an out-of-date tip: %s", tip)
-            tip = None
+            return None
         if tip:
             if self._grounding is None:
                 self._grounding = Grounding()
@@ -263,17 +290,8 @@ class DeathTip:
             )
             if problem:
                 log.info("Death tip from the model dropped (it %s): %s", problem, tip)
-                tip = None
-        # What led to this death beats a general tip.
-        tip = tip or (moments.tip() if moments is not None else None) or self.fallback(snap)
-        # Only speak while still in the same death, with time left to hear it.
-        if (
-            tip
-            and death == self._death
-            and not state.current.alive
-            and time.monotonic() < deadline - 2
-        ):
-            self.say(tip)
+                return None
+        return tip
 
     def reset(self) -> None:
         self._death += 1

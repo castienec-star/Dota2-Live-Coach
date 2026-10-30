@@ -157,7 +157,7 @@ for your next life, if it is ready before you respawn. The tip is based only on
 your own hero's stats and items, plus what you answered to the coach's
 questions this match (for example "find Pudge on the minimap before you
 fight" after you said Pudge gives you trouble). The coach never looks up
-anything about enemies.
+anything about the enemies in your game.
 
 Tips also look at your own last 15 seconds alive: a save or escape item that
 was ready (Black King Bar, Shadow Blade, Blink Dagger, Force Staff, Glimmer
@@ -207,6 +207,17 @@ memory as soon as the match is over: at the victory or defeat screen, when
 you leave or abandon the match, when Dota has sent nothing for three minutes
 (closed or crashed), and when you close the coach. Set
 `free_after_match = false` under `[items]` to leave it to Ollama.
+
+**What the model knows about Dota.** Small local models know little about
+the current patch and guess what heroes and items do. So every question to
+the model carries short cards from the bundled patch data
+(`coach/data/knowledge.json`, built from OpenDota's public dotaconstants): for
+a death tip, your own abilities, your items and the hero you said gives you
+trouble; for item advice, what each candidate does and the enemy ultimates
+(and whether they go through a Black King Bar); for the briefing, every
+hero's abilities in the draft you gave. The cards carry no numbers, so the
+coach's checks still catch invented timings. To see which model does best on
+your PC, run the test set in [Development](#development).
 
 **Claude instead:** set `provider = "claude"` and your key, then open a new
 Command Prompt:
@@ -377,6 +388,21 @@ Settings live in `config/coach.toml`; copy it to
 py -m pip install -e ".[dev]"
 py -m pytest
 ```
+
+**Which model coaches best?** `evals/cases.json` holds a fixed set of game
+moments (deaths, item questions, briefings) with what a good answer contains.
+With Ollama running, this asks the model each one through the real prompts
+and checks, with and without the knowledge cards, and prints a score:
+
+```
+py -m coach.evals --model llama3.1:8b
+py -m coach.evals --model qwen3:14b --runs 3
+```
+
+A point when the line would be spoken (it passed the coach's checks), and one
+when it is on point. Add a case whenever the coach says something wrong in a
+game. After a patch refresh, rebuild the cards from a dotaconstants checkout
+with `py -m coach.knowledge path/to/dotaconstants/build`.
 
 Where the project is heading: [VISION.md](VISION.md) (who it is for and the
 path to a paid app) and [ROADMAP.md](ROADMAP.md) (what gets built next).
