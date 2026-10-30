@@ -4,7 +4,7 @@
 questions, so it goes to the same model as the death tips (Ollama on your PC
 by default, or Claude). The prompt holds only your own hero's GSI numbers,
 your build and what to buy now, the ahead/behind verdict, the heroes you told
-the coach and your answers to its in-match questions, plus the last few
+the coach (and what you said they have) and your answers to its in-match questions, plus the last few
 questions of this match so "and after that?" works.
 
 The model must answer in a sentence or two. A reply that names a hero nobody
@@ -100,8 +100,10 @@ class Chat:
         current: Callable[[], Snapshot] | None = None,
         items: dict[str, ItemInfo] | None = None,
         off: str = OFF,
+        enemy_items: Callable[[], list[str]] | None = None,
     ) -> None:
-        """current() is the latest snapshot, checked once the reply is back."""
+        """current() is the latest snapshot, checked once the reply is back;
+        enemy_items() what the player said the enemies have."""
         self.ask = ask
         self.advice = advice
         self.position = position
@@ -111,6 +113,7 @@ class Chat:
         self.current = current
         self.items = items if items is not None else load_items()
         self.off = off
+        self.enemy_items = enemy_items or list
         self.history: list[tuple[str, str]] = []
         self._match: tuple | None = None
         self._grounding: Grounding | None = None  # loaded on the first reply
@@ -185,7 +188,7 @@ class Chat:
         lines.append("Teammates: " + (", ".join(h.name for h in others) if others else "not known"))
         lines.append("Enemies: " + (", ".join(h.name for h in enemies) if enemies else "not known"))
         notes = self.notes()
-        told = notes.told() if notes is not None else []
+        told = (notes.told() if notes is not None else []) + self.enemy_items()
         if told:
             lines.append(f"The player told you: {'; '.join(told)}")
         if self.history:
@@ -223,6 +226,7 @@ def build(
     enemies: Callable[[], list[HeroInfo]] | None = None,
     notes: Callable[[], Notes | None] | None = None,
     current: Callable[[], Snapshot] | None = None,
+    enemy_items: Callable[[], list[str]] | None = None,
 ) -> Chat | None:
     """[listen] chat, with the death tips' model and provider; None when off."""
     if not listen.get("chat", True):
@@ -254,4 +258,4 @@ def build(
         )
     else:
         ask = None
-    return Chat(ask, advice, position, allies, enemies, notes, current, off=off)
+    return Chat(ask, advice, position, allies, enemies, notes, current, off=off, enemy_items=enemy_items)

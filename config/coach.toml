@@ -90,8 +90,6 @@ lead = 15
 thin_after = 1200
 
 [reminders.wisdom_shrine]
-# The XP runes at the wisdom shrines, for every position. The first call of a
-# match says both names; set message / first_message to change the words.
 first = 420
 every = 420
 lead = 20

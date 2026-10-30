@@ -94,7 +94,7 @@ built-in voice. Defaults follow patch 7.41:
 | --- | --- |
 | Power rune | 15 s before 6:00, then every 2 minutes; after 20:00 every 4 minutes |
 | Gold (bounty) runes | 15 s before 4:00, then every 4 minutes; after 20:00 every 8 minutes |
-| XP runes (wisdom shrines) | 20 s before 7:00, then every 7 minutes, all positions |
+| Wisdom shrines | 20 s before 7:00, then every 7 minutes |
 | Water rune | 10 s before 2:00 and 4:00 (mid only, once your position is known) |
 | Stack the camp | at :53 each minute until 11:53, only when your hero is near a neutral camp |
 
@@ -322,9 +322,18 @@ with a local model (see below):
 - "What's my next item?": the next item on your build and how much gold you
   still need; once the build is done, the item "What should I buy?" would
   name.
+- Tell it what an enemy has: "Lion has Glimmer and Force Staff", "enemy Sven
+  bought BKB". You see enemy items by clicking an enemy hero or on the
+  scoreboard; the coach never reads them itself. It reads back what it
+  heard ("Got it, Lion has Glimmer Cape and Force Staff."), the latest report
+  for a hero replaces the older one ("Lion has Force Staff, not Glimmer"),
+  and "forget the enemy items" clears them. Common nicknames work (bkb, mkb,
+  glimmer, force, euls, linkens, aeon, blademail, mek, aghs...). Only the
+  enemy heroes you told the coach count, and the list is gone after the
+  match. No microphone? Type the same sentence in the coach window.
 - "Can I buy back?": the buyback cost against your gold, or its cooldown.
-- "When is the next rune?" (or "next XP rune?"): the next power rune, gold
-  runes and XP runes (wisdom shrines).
+- "When is the next rune?": the next power rune, gold runes and wisdom
+  shrines.
 
 Anything else ("how do I play against Pudge?", "should I farm or push?")
 goes to the same free local model as the death tips, with only your own

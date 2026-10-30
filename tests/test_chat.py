@@ -43,6 +43,7 @@ def test_prompt_has_own_data_build_lineup_notes_and_question(snap):
         allies=lambda: heroes("antimage", "crystal_maiden"),
         enemies=lambda: heroes("lina", "lion"),
         notes=lambda: Notes(lane="lost"),
+        enemy_items=lambda: ["Lion has Glimmer Cape"],
     )
     assert chat("how do I play against Lina?", snap) == "Stay behind your creeps."
     prompt = model.prompts[0]
@@ -54,7 +55,7 @@ def test_prompt_has_own_data_build_lineup_notes_and_question(snap):
     assert "The coach suggests buying: Black King Bar" in prompt
     assert "Teammates: Crystal Maiden" in prompt
     assert "Enemies: Lina, Lion" in prompt
-    assert "their lane was lost" in prompt
+    assert "their lane was lost; Lion has Glimmer Cape" in prompt
     assert prompt.endswith("The player asks: how do I play against Lina?")
 
 

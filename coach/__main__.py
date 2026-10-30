@@ -15,7 +15,7 @@ from aiohttp import web
 
 from . import config as config_mod
 from . import chat as chat_mod
-from . import game_questions, item_advisor, situational
+from . import enemy_items, game_questions, item_advisor, situational
 from . import health as health_mod
 from . import llm
 from . import pregame as pregame_mod
@@ -132,6 +132,8 @@ def make_coach(
         enemies,
         notes_of(coach),
     )
+    coach.enemy_items = enemy_items.EnemyItems(enemies=enemies)
+    coach.listeners.append(coach.enemy_items)
     # A death tip has its own deadline too: the respawn.
     tip_say = functools.partial(speaker.say, priority=HIGH, max_delay=10)
     reminders, positions = split_positions(cfg.reminders)
@@ -216,6 +218,10 @@ def read_typed_picks(coach: Coach, questions: TypedQuestions | None = None) -> N
             continue
         if command not in ("vs", "with", "pos", "clear") and questions and questions.answer(line):
             continue
+        # What an enemy has: "lion has glimmer and force".
+        if coach.enemy_items is not None and coach.enemy_items.is_report(line):
+            print(coach.enemy_items.report(line), flush=True)
+            continue
         reply = coach.pregame.typed(line)
         if reply:
             print(reply, flush=True)
@@ -288,6 +294,7 @@ def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
         enemies,
         notes_of(coach),
         lambda: coach.state.current,
+        coach.enemy_items.facts if coach.enemy_items is not None else None,
     )
     # Keeps "what should I buy?" ready, and says when the pick changes.
     coach.listeners.append(Engine(item_advisor.watch(cfg.items, advice), speaker.say, prioritized=True))
@@ -304,6 +311,7 @@ def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
         enemies=enemies,
         notes=notes_of(coach),
         advice=advice,
+        enemy_items=coach.enemy_items,
         chat=chat,
     )
     typed = None

@@ -24,6 +24,7 @@ from . import situational
 from .benchmarks import Benchmarks, status
 from .chat import Chat
 from .game_questions import Notes
+from .enemy_items import EnemyItems
 from .heroes import HeroIndex, HeroInfo
 from .item_advisor import Advice, ItemAdvisor
 from .items import load_items
@@ -89,7 +90,7 @@ def _next_time(reminder: timers.TimedReminder, now: int) -> int | None:
 class Answers:
     """Short spoken answers built from the latest snapshot."""
 
-    RUNES = (("power_rune", "Power rune"), ("bounty_rune", "Gold runes"), ("wisdom_shrine", "XP runes"))
+    RUNES = (("power_rune", "Power rune"), ("bounty_rune", "Gold runes"), ("wisdom_shrine", "Wisdom shrines"))
 
     def __init__(
         self,
@@ -100,6 +101,7 @@ class Answers:
         enemies: Callable[[], list[HeroInfo]] | None = None,
         notes: Callable[[], Notes | None] | None = None,
         advice: Advice | None = None,
+        enemy_items: EnemyItems | None = None,
         chat: Chat | None = None,
     ) -> None:
         settings = {name: reminders.get(name, {}) for name, _ in self.RUNES}
@@ -112,10 +114,14 @@ class Answers:
         self.enemies = enemies or list
         self.notes = notes or (lambda: None)
         self.advice = advice or Advice(ItemAdvisor(None), builds, position, self.benchmarks, enemies, notes)
+        self.enemy_items = enemy_items
         self.chat = chat
 
     def answer(self, text: str, snap: Snapshot) -> str:
         """The spoken answer; "" when there is nothing to say any more."""
+        # "Lion has Glimmer": the player telling the coach, not asking.
+        if self.enemy_items is not None and self.enemy_items.is_report(text):
+            return self.enemy_items.report(text) or UNKNOWN
         kind = intent(text)
         if kind == "unknown":
             # The built-in answers are fast and exact; anything else goes to the model.
@@ -399,6 +405,7 @@ def start(
     enemies: Callable[[], list[HeroInfo]] | None = None,
     notes: Callable[[], Notes | None] | None = None,
     advice: Advice | None = None,
+    enemy_items: EnemyItems | None = None,
     chat: Chat | None = None,
 ) -> threading.Thread | None:
     """Start listening on a background thread, if [listen] is on and installed."""
@@ -420,7 +427,7 @@ def start(
     except Exception as exc:
         log.warning("Voice questions unavailable (%s)", exc)
         return None
-    answers = Answers(reminders, builds, position, benchmarks, enemies, notes, advice, chat)
+    answers = Answers(reminders, builds, position, benchmarks, enemies, notes, advice, enemy_items, chat)
     loop = VoiceLoop(
         wake,
         transcribe,
