@@ -121,7 +121,17 @@ example `luna = ["Power Treads", "Manta Style", "Black King Bar"]`. The coach
 comes with simple builds for heroes popular from Herald to Ancient (Axe,
 Bristleback, Drow Ranger, Juggernaut, Legion Commander, Lion, Luna, Ogre Magi,
 Phantom Assassin, Pudge, Slark, Sniper, Viper, Witch Doctor, Wraith King and
-Zeus). Any other hero gets a support build in positions 4 and 5, otherwise a
+Zeus). Any other hero gets the items real players build on it most, from
+OpenDota's public item popularity (boots first, then the most bought big
+items of the mid and late game), once that data is saved with:
+
+```
+py -m coach refresh-items
+```
+
+It takes about three minutes, reads only public aggregate numbers, and saves
+`coach/data/item_popularity.json`. Without it, or for a hero with too little
+data, any other hero gets a support build in positions 4 and 5, otherwise a
 core build (`default_support` and `default`); while your position isn't known,
 it goes by the hero's usual role. Builds can also depend on your position:
 `pudge_pos2 = [...]` is Pudge's build when you play mid, and `pos3 = [...]` is

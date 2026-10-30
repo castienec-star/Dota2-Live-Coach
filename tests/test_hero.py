@@ -174,18 +174,18 @@ def test_support_without_build_uses_support_default(payload):
     from coach.heroes import HeroIndex
 
     builds = parse_builds({"default": ["Battle Fury"], "default_support": ["Glimmer Cape"]}, load_items())
-    rule = ItemReady(builds, HeroIndex())
+    rule = ItemReady(builds, HeroIndex(), popular={})
     assert rule.build_for("crystal_maiden")[0].name == "Glimmer Cape"
     assert rule.build_for("antimage")[0].name == "Battle Fury"
     # Without hero roles every hero falls back to "default".
-    assert ItemReady(builds).build_for("crystal_maiden")[0].name == "Battle Fury"
+    assert ItemReady(builds, popular={}).build_for("crystal_maiden")[0].name == "Battle Fury"
 
 
 def test_empty_hero_build_turns_reminder_off(payload):
     from coach.heroes import HeroIndex
 
     builds = parse_builds({"default": ["Battle Fury"], "pudge": []}, load_items())
-    assert ItemReady(builds, HeroIndex()).build_for("pudge") == []
+    assert ItemReady(builds, HeroIndex(), popular={"pudge": [load_items()["item_blink"]]}).build_for("pudge") == []
 
 
 def test_default_builds_name_real_heroes_and_items(tmp_path):
