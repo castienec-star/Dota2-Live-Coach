@@ -21,8 +21,9 @@ import time
 from collections.abc import Callable, Iterable, Iterator
 
 from . import situational
-from .benchmarks import EARLIEST, Benchmarks, is_support, spoken
+from .benchmarks import Benchmarks, status
 from .game_questions import Notes
+from .enemy_items import EnemyItems
 from .heroes import HeroIndex, HeroInfo
 from .item_advisor import Advice, ItemAdvisor
 from .items import load_items
@@ -88,7 +89,7 @@ def _next_time(reminder: timers.TimedReminder, now: int) -> int | None:
 class Answers:
     """Short spoken answers built from the latest snapshot."""
 
-    RUNES = (("power_rune", "Power rune"), ("bounty_rune", "Gold runes"), ("wisdom_shrine", "XP runes"))
+    RUNES = (("power_rune", "Power rune"), ("bounty_rune", "Gold runes"), ("wisdom_shrine", "Wisdom shrines"))
 
     def __init__(
         self,
@@ -99,6 +100,7 @@ class Answers:
         enemies: Callable[[], list[HeroInfo]] | None = None,
         notes: Callable[[], Notes | None] | None = None,
         advice: Advice | None = None,
+        enemy_items: EnemyItems | None = None,
     ) -> None:
         settings = {name: reminders.get(name, {}) for name, _ in self.RUNES}
         self.timers = {r.name: r for r in timers.build(settings) if r.name in dict(self.RUNES)}
@@ -110,8 +112,12 @@ class Answers:
         self.enemies = enemies or list
         self.notes = notes or (lambda: None)
         self.advice = advice or Advice(ItemAdvisor(None), builds, position, self.benchmarks, enemies, notes)
+        self.enemy_items = enemy_items
 
     def answer(self, text: str, snap: Snapshot) -> str:
+        # "Lion has Glimmer": the player telling the coach, not asking.
+        if self.enemy_items is not None and self.enemy_items.is_report(text):
+            return self.enemy_items.report(text) or UNKNOWN
         kind = intent(text)
         if kind == "unknown":
             return UNKNOWN
@@ -139,15 +145,8 @@ class Answers:
         return situational.spoken(pick, verdict, snap)
 
     def how_am_i_doing(self, snap: Snapshot) -> str:
-        if (snap.clock_time or 0) < EARLIEST:
-            return "It's too early to tell. Ask me again after 8 minutes."
         hero = self.heroes.by_key(snap.hero_name)
-        support = is_support(hero, self.position(snap) if self.position else 0)
-        verdict = self.benchmarks.verdict(snap, support)
-        if verdict is None:
-            name = hero.name if hero else "this hero"
-            return f"I don't have numbers for {name} yet."
-        return spoken(verdict, support)
+        return status(self.benchmarks, snap, hero, self.position(snap) if self.position else 0)
 
     def buyback(self, snap: Snapshot) -> str:
         if snap.buyback_cost <= 0:
@@ -396,6 +395,7 @@ def start(
     enemies: Callable[[], list[HeroInfo]] | None = None,
     notes: Callable[[], Notes | None] | None = None,
     advice: Advice | None = None,
+    enemy_items: EnemyItems | None = None,
 ) -> threading.Thread | None:
     """Start listening on a background thread, if [listen] is on and installed."""
     if not settings.get("enabled", False):
@@ -416,7 +416,7 @@ def start(
     except Exception as exc:
         log.warning("Voice questions unavailable (%s)", exc)
         return None
-    answers = Answers(reminders, builds, position, benchmarks, enemies, notes, advice)
+    answers = Answers(reminders, builds, position, benchmarks, enemies, notes, advice, enemy_items)
     loop = VoiceLoop(
         wake,
         transcribe,

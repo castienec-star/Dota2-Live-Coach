@@ -83,8 +83,6 @@ lead = 15
 thin_after = 1200
 
 [reminders.wisdom_shrine]
-# The XP runes at the wisdom shrines, for every position. The first call of a
-# match says both names; set message / first_message to change the words.
 first = 420
 every = 420
 lead = 20
@@ -145,6 +143,8 @@ hold_seconds = 60
 # If the model is not running or too slow, a built-in tip is used instead.
 enabled = true
 provider = "ollama"
+# A model you pulled with "ollama pull". On a PC with little GPU memory (under
+# 8 GB) use "llama3.2:3b": item advice and the briefing use this model too.
 ollama_model = "llama3.1:8b"
 ollama_url = "http://127.0.0.1:11434"
 claude_model = "claude-opus-5-5"
@@ -198,8 +198,13 @@ lead = 10
 # If the model is not running, too slow or answers badly, the rules' pick is said.
 [items]
 advisor = "ollama"
-ollama_model = "llama3.1:8b"
-ollama_url = "http://127.0.0.1:11434"
+# Item advice and the pre-game briefing use the death tips' ollama_model
+# unless you set one here, so only one model takes GPU memory.
+# ollama_model = "llama3.2:3b"
+# Load the model while you pick your hero, and tell Ollama to drop it from
+# GPU memory when the match is over (or you leave it, or close the coach)
+# instead of holding it for 30 minutes.
+free_after_match = true
 claude_model = "claude-opus-5-5"
 effort = "low"
 # Seconds to wait for the model while you wait for the answer.
@@ -218,8 +223,8 @@ cooldown = 120
 enabled = true
 # "ollama" (free, local model) or "builtin" (written from the facts, no AI).
 provider = "ollama"
-ollama_model = "llama3.1:8b"
-ollama_url = "http://127.0.0.1:11434"
+# Uses the death tips' ollama_model unless you set one here.
+# ollama_model = "llama3.1:8b"
 # Seconds to wait for the model before using the built-in briefing.
 timeout = 20
 # Longest briefing, in words.

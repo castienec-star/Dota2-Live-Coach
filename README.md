@@ -94,7 +94,7 @@ built-in voice. Defaults follow patch 7.41:
 | --- | --- |
 | Power rune | 15 s before 6:00, then every 2 minutes; after 20:00 every 4 minutes |
 | Gold (bounty) runes | 15 s before 4:00, then every 4 minutes; after 20:00 every 8 minutes |
-| XP runes (wisdom shrines) | 20 s before 7:00, then every 7 minutes, all positions |
+| Wisdom shrines | 20 s before 7:00, then every 7 minutes |
 | Water rune | 10 s before 2:00 and 4:00 (mid only, once your position is known) |
 | Stack the camp | at :53 each minute until 11:53, only when your hero is near a neutral camp |
 
@@ -189,6 +189,25 @@ Ollama then runs in the background (tray icon) and starts with Windows. The
 death. Check it with `ollama run llama3.1:8b "say hi"`. To use another model,
 pull it and set `ollama_model`.
 
+**On a PC with less GPU memory** (under 8 GB, or if Dota's frame rate drops
+with the coach running), use the 3B model, about 2 GB:
+
+```
+ollama pull llama3.2:3b
+```
+
+and set `ollama_model = "llama3.2:3b"` under `[reminders.death_tip]`. Item
+advice and the pre-game briefing use the same model unless you give them
+their own `ollama_model`, so only one model sits in GPU memory (the coach
+warns at start if you set different ones). During a match `ollama ps` shows
+the model loaded: each question asks Ollama to keep it for 30 minutes, so
+answers come back fast. The coach loads it while you pick your hero, so the
+briefing and the first tip aren't late, and tells Ollama to drop it from GPU
+memory as soon as the match is over: at the victory or defeat screen, when
+you leave or abandon the match, when Dota has sent nothing for three minutes
+(closed or crashed), and when you close the coach. Set
+`free_after_match = false` under `[items]` to leave it to Ollama.
+
 **Claude instead:** set `provider = "claude"` and your key, then open a new
 Command Prompt:
 
@@ -268,7 +287,11 @@ the game clock and the enemy heroes you told it:
   experience and last hits per minute with public OpenDota numbers for your
   hero (supports only by experience), and what to do about it. Numbers for
   popular low-bracket heroes come with the coach; other heroes are read once
-  from OpenDota if `opendota` is on in `[pregame]`. See
+  from OpenDota if `opendota` is on in `[pregame]`, and without them the coach
+  compares you roughly with cores or supports in general and says so. Before
+  8 minutes it gives your last hits against a simple target (about 35 at
+  10 minutes for a core) and your deaths so far. No microphone? Type `how`
+  in the coach window for the same answer. See
   [docs/strategy/ahead-or-behind.md](docs/strategy/ahead-or-behind.md).
 
 - "What should I buy?": one item for right now, from how your game is going
@@ -303,9 +326,18 @@ the game clock and the enemy heroes you told it:
 - "What's my next item?": the next item on your build and how much gold you
   still need; once the build is done, the item "What should I buy?" would
   name.
+- Tell it what an enemy has: "Lion has Glimmer and Force Staff", "enemy Sven
+  bought BKB". You see enemy items by clicking an enemy hero or on the
+  scoreboard; the coach never reads them itself. It reads back what it
+  heard ("Got it, Lion has Glimmer Cape and Force Staff."), the latest report
+  for a hero replaces the older one ("Lion has Force Staff, not Glimmer"),
+  and "forget the enemy items" clears them. Common nicknames work (bkb, mkb,
+  glimmer, force, euls, linkens, aeon, blademail, mek, aghs...). Only the
+  enemy heroes you told the coach count, and the list is gone after the
+  match. No microphone? Type the same sentence in the coach window.
 - "Can I buy back?": the buyback cost against your gold, or its cooldown.
-- "When is the next rune?" (or "next XP rune?"): the next power rune, gold
-  runes and XP runes (wisdom shrines).
+- "When is the next rune?": the next power rune, gold runes and wisdom
+  shrines.
 
 Anything else gets "I can't help with that yet". It is on by default and
 needs two free speech models that run on your PC (downloaded once, about
