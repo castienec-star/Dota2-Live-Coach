@@ -82,6 +82,8 @@ class _Ask:
     until: int | None = None  # too late to ask after this
 
 
+ITEMS_CHECK = "Check the enemy items, then tell me what you see."
+
 ASKS = (
     _Ask("lane", "How did your lane go: won, even or lost?", 600, until=1080),
     _Ask("trouble", "Which enemy hero is giving you the most trouble?", 720),
@@ -107,8 +109,16 @@ class GameQuestions:
         min_respawn: int = 10,
         healthy: float = 80,
         quiet: int = 10,
+        check_items: Callable[[str], str | None] | None = None,
+        item_checks: tuple[int, ...] = (720, 1200, 1800),
+        item_check_every: int = 600,
     ) -> None:
         self.index = index
+        # Asked again and again, unlike ASKS: enemy items change all game.
+        self.check_items = check_items
+        self.item_checks = item_checks
+        self.item_check_every = item_check_every
+        self._item_check = 0  # index of the next check time
         self.enemies = enemies or list
         self.every = every
         self.min_respawn = min_respawn
@@ -129,6 +139,7 @@ class GameQuestions:
                 self.notes = Notes()
                 self._asked.clear()
                 self._last_asked = self._last_hurt = None
+                self._item_check = 0
             if not cur.in_game or cur.paused or cur.clock_time is None:
                 self._ready = None
                 return
@@ -153,7 +164,26 @@ class GameQuestions:
             if ask.until is not None and self._now > ask.until:
                 continue
             return Question(ask.text, lambda text, key=ask.key: self._answer(key, text))
+        if self.check_items is not None and self.item_checks and self._now >= self._check_time(self._item_check):
+            return Question(ITEMS_CHECK, self._answer_items)
         return None
+
+    def _check_time(self, n: int) -> int:
+        """When the n-th enemy items check is due (game clock)."""
+        if n < len(self.item_checks):
+            return self.item_checks[n]
+        return self.item_checks[-1] + (n - len(self.item_checks) + 1) * self.item_check_every
+
+    def _answer_items(self, text: str) -> str | None:
+        with self._lock:
+            self._last_asked = self._now
+            self._ready = None
+            # Skip the checks missed while busy: one question, not a backlog.
+            while self._check_time(self._item_check) <= self._now:
+                self._item_check += 1
+        if not text or _SKIP.search(_words(text)):
+            return None
+        return self.check_items(text)
 
     def pending(self) -> Question | None:
         """The question to ask now, if any; the voice loop calls this when it is free."""
@@ -220,8 +250,22 @@ def build(
     settings: dict,
     index: HeroIndex,
     enemies: Callable[[], list[HeroInfo]] | None = None,
+    check_items: Callable[[str], str | None] | None = None,
 ) -> GameQuestions | None:
-    """From [listen]: game_questions turns them on, question_every is the gap."""
+    """From [listen]: game_questions turns them on, question_every is the gap,
+    enemy_items_check / _at / _every the checks of enemy items (check_items
+    takes the answer)."""
     if not settings.get("game_questions", True):
         return None
-    return GameQuestions(index, enemies, every=int(settings.get("question_every", 300)))
+    if not settings.get("enemy_items_check", True):
+        check_items = None
+    at = tuple(int(float(m) * 60) for m in settings.get("enemy_items_at", [12, 20, 30]))
+    every = int(float(settings.get("enemy_items_every", 10)) * 60)
+    return GameQuestions(
+        index,
+        enemies,
+        every=int(settings.get("question_every", 300)),
+        check_items=check_items,
+        item_checks=at,
+        item_check_every=every,
+    )

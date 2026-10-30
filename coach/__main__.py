@@ -261,10 +261,12 @@ def make_interview(cfg: config_mod.Config, coach: Coach) -> Interview | None:
 
 
 def make_game_questions(cfg: config_mod.Config, coach: Coach) -> game_questions.GameQuestions | None:
-    """The in-match questions (lane, trouble hero, enemy carry, fights), if turned on."""
+    """The in-match questions (lane, trouble hero, enemy carry, fights, enemy
+    items), if turned on."""
+    check_items = coach.enemy_items.answer if coach.enemy_items is not None else None
     if coach.pregame is None:
-        return game_questions.build(cfg.listen, HeroIndex())
-    return game_questions.build(cfg.listen, coach.pregame.index, lambda: coach.pregame.enemies)
+        return game_questions.build(cfg.listen, HeroIndex(), check_items=check_items)
+    return game_questions.build(cfg.listen, coach.pregame.index, lambda: coach.pregame.enemies, check_items)
 
 
 def first_pending(*askers) -> Callable[[], Question | None] | None:

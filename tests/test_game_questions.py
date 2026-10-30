@@ -136,3 +136,44 @@ def test_trouble_hero_must_be_a_told_enemy(payload):
     questions = GameQuestions(INDEX)  # no lineup told: any hero
     questions._answer("trouble", "pudge")
     assert questions.notes.trouble.name == "Pudge"
+
+
+def items_game(payload, **options):
+    from coach.enemy_items import EnemyItems
+
+    enemy_items = EnemyItems(INDEX)
+    game = Game(payload, GameQuestions(INDEX, check_items=enemy_items.answer, **options))
+    game.at(0)  # the match starts
+    # The fixed questions are answered already, so only the items check is left.
+    game.questions._asked.update({"lane", "trouble", "carry_free", "fights"})
+    return game, enemy_items
+
+
+def test_asks_to_check_enemy_items_and_records_the_answer(payload):
+    game, enemy_items = items_game(payload)
+    assert game.at(700) is None
+    question = game.at(721)
+    assert question.text == "Check the enemy items, then tell me what you see."
+    assert question.answer("Lion has Glimmer, and Sven has BKB") == (
+        "Got it, Lion has Glimmer Cape and Sven has Black King Bar."
+    )
+    assert [h.name for h in enemy_items.told()] == ["Lion", "Sven"]
+    assert game.at(722) is None
+
+
+def test_enemy_items_checks_repeat_without_a_backlog(payload):
+    game, _ = items_game(payload, every=60)
+    game.at(721).answer("")  # silence still counts as asked
+    assert game.at(900) is None
+    assert game.at(1201) is not None  # 20:00
+    # Missed 30:00 and 40:00 while busy: asked once at 41:00, next at 50:00.
+    game.at(2460).answer("skip")
+    assert game.at(2700) is None
+    assert game.at(3000) is not None
+
+
+def test_enemy_items_check_settings():
+    assert build({"enemy_items_check": False}, INDEX, check_items=str).check_items is None
+    questions = build({"enemy_items_at": [10, 15], "enemy_items_every": 5}, INDEX, check_items=str)
+    assert questions.item_checks == (600, 900)
+    assert questions._check_time(2) == 1200
