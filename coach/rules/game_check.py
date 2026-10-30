@@ -69,11 +69,12 @@ class GameCheck:
         verdict = self.benchmarks.verdict(snap, support)
         if verdict is None:
             return []
+        caveat = self.benchmarks.say_rough(snap, verdict)
         if self.advice is not None:
             pick = self.advice(snap)
             if pick is not None:
-                return [f"{spoken(verdict, support, items=False)} {situational.spoken(pick, None, snap)}"]
-            return [spoken(verdict, support)]
+                return [f"{spoken(verdict, support, False, caveat)} {situational.spoken(pick, None, snap)}"]
+            return [spoken(verdict, support, caveat=caveat)]
         role = situational.role(position, support)
         notes = self.notes()
         counter = situational.against(self.enemies(), role, snap, self._items, notes.trouble if notes else None)
@@ -83,8 +84,8 @@ class GameCheck:
             if reason:
                 counter = situational.defensive(snap, role, self._items, reason)
         if counter is None:
-            return [spoken(verdict, support)]
-        return [f"{spoken(verdict, support, items=False)} {situational.spoken(counter, None, snap)}"]
+            return [spoken(verdict, support, caveat=caveat)]
+        return [f"{spoken(verdict, support, False, caveat)} {situational.spoken(counter, None, snap)}"]
 
     def reset(self) -> None:
         self._done.clear()

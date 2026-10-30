@@ -166,15 +166,29 @@ def test_spoken_verdict_for_a_support_by_position():
 
 def test_spoken_verdict_without_numbers_is_rough():
     am = Snapshot(clock_time=900, hero_name="npc_dota_hero_antimage", gpm=450, xpm=500, last_hits=75)
-    line = Answers({}, {}).answer("how am I doing", am)
+    answers = Answers({}, {})
+    line = answers.answer("how am I doing", am)
     assert line.startswith("You're about even for 15 minutes.")
     assert line.endswith("That's a rough comparison with cores in general.")
+    # Said once a match, not every time.
+    assert "rough" not in answers.answer("how am I doing", am)
+    am.match_id = "next match"
+    assert "rough" in answers.answer("how am I doing", am)
+
+
+def test_game_check_and_question_share_the_rough_caveat():
+    benchmarks = Benchmarks()
+    am = Snapshot(clock_time=900, hero_name="npc_dota_hero_antimage", gpm=450, xpm=500, last_hits=75)
+    (line,) = run_check(GameCheck(benchmarks, minutes=[15]), am)
+    assert "rough comparison" in line
+    assert "rough" not in Answers({}, {}, benchmarks=benchmarks).answer("how am I doing", am)
 
 
 @pytest.mark.parametrize(
     "clock, last_hits, deaths, expected",
     [
-        (300, 12, 0, "12 last hits at 5 minutes, aim for about 20. No deaths yet, good."),
+        (180, 6, 0, "6 last hits at 3 minutes, aim for about 10. No deaths yet, good."),
+        (300, 12, 0, "12 last hits at 5 minutes, aim for about 15. No deaths yet, good."),
         (300, 22, 1, "22 last hits at 5 minutes, that's on track. One death so far"),
         (420, 25, 3, "25 last hits at 7 minutes, that's on track. 3 deaths already"),
     ],

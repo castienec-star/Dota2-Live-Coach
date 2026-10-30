@@ -58,12 +58,12 @@ Castien asked for the unasked check on 2026-10-28.
 
 - **No numbers for the hero** (not bundled, OpenDota off or unreachable): the
   verdict uses the average of the bundled cores' curves, or the bundled
-  supports' curves, and the coach adds "That's a rough comparison with cores
-  in general." A rough answer beats "I don't know" for a beginner, as long as
-  it says it's rough.
-- **Before 8 minutes:** a core hears last hits against 3.5 per minute
-  (35 at 10:00, ROADMAP item 4), rounded to 5: "12 last hits at 5 minutes,
-  aim for about 20." Low-bracket cores often sit near half of that, and
+  supports' curves, and the first rough answer in a match adds "That's a
+  rough comparison with cores in general." A rough answer beats "I don't
+  know" for a beginner, as long as it says it's rough once.
+- **Before 8 minutes:** a core hears last hits against 3.5 per minute from
+  when the creeps meet at about 0:30 (35 at 10:00, ROADMAP item 4), rounded
+  to 5: "12 last hits at 5 minutes, aim for about 15." Low-bracket cores often sit near half of that, and
   last hitting is the biggest farm gap there. Supports hear only deaths
   and a habit (keep the core safe, stack a camp). Everyone hears deaths so
   far, since not dying is the first habit to build.
@@ -78,3 +78,5 @@ Castien asked for the unasked check on 2026-10-28.
 - Only the 16 heroes with a build have their own bundled numbers. Next:
   bundle OpenDota's public benchmarks for every hero (issue #28 point 1),
   refreshed with patch data.
+- Rough numbers are only core or support. A pos 1 carry farms more than a
+  pos 3 offlaner, so next: average by the known position (1, 2 or 3).

@@ -43,8 +43,10 @@ RAMP_START, RAMP_UNTIL = 0.6, 30 * 60
 # a fair "even" for Herald to Ancient players.
 BEHIND, AHEAD = 0.15, 0.55
 # Early last-hit target for a core: 35 at 10 minutes (ROADMAP item 4), a
-# fair lane for Herald to Ancient, not a pro one.
+# fair lane for Herald to Ancient, not a pro one. Counted from when the
+# first creep wave meets in lane, about half a minute in.
 LAST_HITS_PER_MIN = 3.5
+CREEPS_MEET = 0.5  # minutes
 
 log = logging.getLogger(__name__)
 
@@ -91,6 +93,7 @@ def role_curves() -> dict[bool, dict[str, Curve]]:
         for metric in METRICS:
             have = [c[metric] for c in members if metric in c]
             if not have or any(len(c) != len(have[0]) for c in have):
+                log.debug("Rough %s numbers skipped: the bundled %s curves differ in length", metric, metric)
                 continue
             roles[support][metric] = [
                 (have[0][i][0], sum(c[i][1] for c in have) / len(have)) for i in range(len(have[0]))
@@ -156,6 +159,7 @@ class Benchmarks:
                 log.warning("Can't read %s (%s)", BENCHMARKS_FILE, exc)
                 heroes = {}
         self.heroes = heroes
+        self._rough_said: set[str | None] = set()  # matches already told "rough"
         self.fetch = fetch
         self.hero_ids = hero_ids or {}
 
@@ -165,6 +169,14 @@ class Benchmarks:
             if fetched:
                 self.heroes[hero] = fetched
         return self.heroes.get(hero)
+
+    def say_rough(self, snap: Snapshot, verdict: Verdict) -> bool:
+        """Whether to add the "rough comparison" caveat: only the first time
+        a rough verdict is spoken in a match."""
+        if not verdict.rough or snap.match_id in self._rough_said:
+            return False
+        self._rough_said.add(snap.match_id)
+        return True
 
     def verdict(self, snap: Snapshot, support: bool = False) -> Verdict | None:
         """None before EARLIEST, or when there are no numbers at all. A hero
@@ -201,11 +213,12 @@ def is_support(hero: HeroInfo | None, position: int = 0) -> bool:
     return hero is not None and "Support" in hero.roles and "Carry" not in hero.roles
 
 
-def spoken(verdict: Verdict, support: bool, items: bool = True) -> str:
+def spoken(verdict: Verdict, support: bool, items: bool = True, caveat: bool = True) -> str:
     """The verdict as one or two short sentences, with what to do about it.
-    items=False leaves out the item advice, when a counter item is named next."""
+    items=False leaves out the item advice, when a counter item is named next;
+    caveat=False leaves out that a rough verdict is rough."""
     line = _spoken(verdict, support, items)
-    if verdict.rough:
+    if verdict.rough and caveat:
         line += f" That's a rough comparison with {'supports' if support else 'cores'} in general."
     return line
 
@@ -260,7 +273,7 @@ def early(snap: Snapshot, support: bool) -> str:
             f"It's too early to judge a support at {minute} minutes. {died} "
             "Keep your core safe and stack a camp when you can."
         )
-    target = max(5, 5 * round(LAST_HITS_PER_MIN * minute / 5))
+    target = max(5, 5 * round(LAST_HITS_PER_MIN * (minute - CREEPS_MEET) / 5))
     if snap.last_hits >= target:
         farm = f"{snap.last_hits} last hits at {minute} minutes, that's on track."
     else:
@@ -274,4 +287,4 @@ def status(benchmarks: Benchmarks, snap: Snapshot, hero: HeroInfo | None, positi
     verdict = benchmarks.verdict(snap, support)
     if verdict is None:
         return early(snap, support)
-    return spoken(verdict, support)
+    return spoken(verdict, support, caveat=benchmarks.say_rough(snap, verdict))
