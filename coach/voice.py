@@ -23,6 +23,7 @@ from collections.abc import Callable, Iterable, Iterator
 from . import situational
 from .benchmarks import Benchmarks, status
 from .game_questions import Notes
+from .enemy_items import EnemyItems
 from .heroes import HeroIndex, HeroInfo
 from .item_advisor import Advice, ItemAdvisor
 from .items import load_items
@@ -99,6 +100,7 @@ class Answers:
         enemies: Callable[[], list[HeroInfo]] | None = None,
         notes: Callable[[], Notes | None] | None = None,
         advice: Advice | None = None,
+        enemy_items: EnemyItems | None = None,
     ) -> None:
         settings = {name: reminders.get(name, {}) for name, _ in self.RUNES}
         self.timers = {r.name: r for r in timers.build(settings) if r.name in dict(self.RUNES)}
@@ -110,8 +112,12 @@ class Answers:
         self.enemies = enemies or list
         self.notes = notes or (lambda: None)
         self.advice = advice or Advice(ItemAdvisor(None), builds, position, self.benchmarks, enemies, notes)
+        self.enemy_items = enemy_items
 
     def answer(self, text: str, snap: Snapshot) -> str:
+        # "Lion has Glimmer": the player telling the coach, not asking.
+        if self.enemy_items is not None and self.enemy_items.is_report(text):
+            return self.enemy_items.report(text) or UNKNOWN
         kind = intent(text)
         if kind == "unknown":
             return UNKNOWN
@@ -389,6 +395,7 @@ def start(
     enemies: Callable[[], list[HeroInfo]] | None = None,
     notes: Callable[[], Notes | None] | None = None,
     advice: Advice | None = None,
+    enemy_items: EnemyItems | None = None,
 ) -> threading.Thread | None:
     """Start listening on a background thread, if [listen] is on and installed."""
     if not settings.get("enabled", False):
@@ -409,7 +416,7 @@ def start(
     except Exception as exc:
         log.warning("Voice questions unavailable (%s)", exc)
         return None
-    answers = Answers(reminders, builds, position, benchmarks, enemies, notes, advice)
+    answers = Answers(reminders, builds, position, benchmarks, enemies, notes, advice, enemy_items)
     loop = VoiceLoop(
         wake,
         transcribe,
