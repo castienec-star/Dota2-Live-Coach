@@ -1,15 +1,18 @@
 import pytest
 
+from coach import benchmarks as benchmarks_mod
+from coach.__main__ import main
 from coach.benchmarks import (
     Benchmarks,
     early,
+    fetch_all,
     load_benchmarks,
     parse_api,
     ramp,
     role_curves,
     share_below,
 )
-from coach.heroes import HeroIndex
+from coach.heroes import HeroIndex, load_heroes
 from coach.items import load_items
 from coach.opendota import OpenDota
 from coach.rules import game_check
@@ -125,6 +128,68 @@ def test_parse_api_reply():
     assert parse_api(reply) == {"gold_per_min": [(0.1, 300.0), (0.5, 500.0)]}
     assert parse_api({}) is None
     assert parse_api(None) is None
+
+
+PERCENTILES = [0.1, 0.5, 0.9]
+
+
+def fake_benchmarks(path):
+    """OpenDota's /benchmarks reply, made up; hero 2 (Axe) uses other percentiles."""
+    hero_id = int(path.rsplit("=", 1)[1])
+    points = [0.2, 0.5, 0.8] if hero_id == 2 else PERCENTILES
+    return {
+        "hero_id": hero_id,
+        "result": {
+            metric: [{"percentile": p, "value": base * (1 + p)} for p in points]
+            for metric, base in [("gold_per_min", 400), ("xp_per_min", 500), ("last_hits_per_min", 4.03)]
+        },
+    }
+
+
+def test_fetch_all_reads_every_hero_with_all_three_numbers():
+    heroes = load_heroes()
+    lion = next(h for h in heroes.values() if h.key == "lion")
+
+    def get(path):
+        return None if path.endswith(f"={lion.id}") else fake_benchmarks(path)
+
+    said = []
+    found = fetch_all(get, heroes, pause=0, progress=said.append)
+    assert len(found) == len(heroes) - 1 and "lion" not in found
+    assert [p for p, _ in found["juggernaut"]["gold_per_min"]] == PERCENTILES
+    assert found["juggernaut"]["gold_per_min"][1] == (0.5, 600.0)
+    assert any("Lion: no data" in line for line in said)
+
+
+def test_saved_snapshot_loads_in_the_bundled_format(tmp_path):
+    found = {k: v for k, v in fetch_all(fake_benchmarks, load_heroes(), pause=0).items()}
+    out = tmp_path / "benchmarks.json"
+    ids = {h.key: h.id for h in load_heroes().values()}
+    # Axe's curves use other percentiles, so it is left out.
+    assert benchmarks_mod.save(found, ids, out) == len(found) - 1
+    data = load_benchmarks(out)
+    assert "axe" not in data
+    assert data["juggernaut"]["last_hits_per_min"] == [(0.1, 4.43), (0.5, 6.04), (0.9, 7.66)]
+    assert data["juggernaut"]["gold_per_min"][0] == (0.1, 440)
+    assert Benchmarks(data).verdict(jugg()) is not None
+
+
+def test_refresh_benchmarks_command(tmp_path, monkeypatch):
+    monkeypatch.setattr("coach.config.user_dir", lambda: tmp_path)
+    monkeypatch.setattr("coach.opendota.OpenDota.get", lambda self, path, max_age=None: fake_benchmarks(path))
+    monkeypatch.setattr("coach.benchmarks.time.sleep", lambda s: None)
+    out = tmp_path / "benchmarks.json"
+    assert main(["--config", str(tmp_path / "none.toml"), "refresh-benchmarks", "--out", str(out)]) == 0
+    assert len(load_benchmarks(out)) == len(load_heroes()) - 1
+
+
+def test_refresh_benchmarks_saves_nothing_when_offline(tmp_path, monkeypatch):
+    monkeypatch.setattr("coach.config.user_dir", lambda: tmp_path)
+    monkeypatch.setattr("coach.opendota.OpenDota.get", lambda self, path, max_age=None: None)
+    monkeypatch.setattr("coach.benchmarks.time.sleep", lambda s: None)
+    out = tmp_path / "benchmarks.json"
+    assert main(["--config", str(tmp_path / "none.toml"), "refresh-benchmarks", "--out", str(out)]) == 1
+    assert not out.exists()
 
 
 def test_opendota_benchmarks_uses_the_cache(tmp_path):

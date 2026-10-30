@@ -1,4 +1,4 @@
-"""Command line entry point: py -m coach [run|install|replay|refresh-items|say]."""
+"""Command line entry point: py -m coach [run|install|replay|refresh-items|refresh-benchmarks|say]."""
 
 from __future__ import annotations
 
@@ -434,6 +434,30 @@ def cmd_refresh_items(cfg: config_mod.Config, args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_refresh_benchmarks(cfg: config_mod.Config, args: argparse.Namespace) -> int:
+    """Saves the public GPM, experience and last-hit numbers for every hero,
+    so "how am I doing?" never needs the network in a match."""
+    from . import benchmarks
+
+    stats = OpenDota(cfg.app_dir / "opendota", timeout=20)
+    out = args.out or benchmarks.BENCHMARKS_FILE
+
+    def get(path: str):
+        # One failed hero shouldn't make the rest skip the network.
+        stats._offline_until = 0.0
+        return stats.get(path, max_age=86400)
+
+    heroes = load_heroes()
+    print(f"Reading benchmarks for {len(heroes)} heroes from OpenDota (about 3 minutes)...")
+    found = benchmarks.fetch_all(get, heroes, progress=lambda text: print(text, flush=True))
+    if len(found) < len(heroes) // 2:
+        logging.error("Only %d of %d heroes came back; nothing saved. Try again later.", len(found), len(heroes))
+        return 1
+    saved = benchmarks.save(found, {h.key: h.id for h in heroes.values()}, out)
+    print(f"Saved {saved} heroes to {out}")
+    return 0
+
+
 def cmd_say(cfg: config_mod.Config, args: argparse.Namespace) -> int:
     speaker = make_speaker(cfg)
     speaker.say(args.text)
@@ -453,6 +477,8 @@ def main(argv: list[str] | None = None) -> int:
     p_replay.add_argument("--speed", type=float, default=0.0, help="1.0 = real time")
     p_refresh = sub.add_parser("refresh-items", help="save popular items per hero from OpenDota")
     p_refresh.add_argument("--out", type=Path, default=None, help="where to save (default: the bundled data file)")
+    p_bench = sub.add_parser("refresh-benchmarks", help="save public GPM and last-hit numbers per hero from OpenDota")
+    p_bench.add_argument("--out", type=Path, default=None, help="where to save (default: the bundled data file)")
     p_say = sub.add_parser("say", help="test the voice")
     p_say.add_argument("text", nargs="?", default="Power rune in 15 seconds.")
     args = parser.parse_args(argv)
@@ -464,6 +490,7 @@ def main(argv: list[str] | None = None) -> int:
         "install": cmd_install,
         "replay": cmd_replay,
         "refresh-items": cmd_refresh_items,
+        "refresh-benchmarks": cmd_refresh_benchmarks,
         "say": cmd_say,
     }
     return commands[args.command or "run"](cfg, args)
