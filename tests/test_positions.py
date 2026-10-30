@@ -133,5 +133,7 @@ def test_default_config_limits_water_rune_to_mid(tmp_path):
     cfg = config.load(app_dir=tmp_path)
     _, positions = split_positions(cfg.reminders)
     assert positions == {"water_rune": {2}}
+    # XP runes are for every position and on by default.
+    assert cfg.reminders["wisdom_shrine"].get("enabled", True)
     # Every rule still builds with the "positions" keys in the config.
     make_coach(cfg, Speaker(), tips=False)

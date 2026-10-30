@@ -156,3 +156,19 @@ def test_thinning_can_be_turned_off(payload):
     engine = Engine(build({"power_rune": {"thin_after": 0}}), said.append)
     rule = engine.rules[0]
     assert rule.name == "power_rune" and not rule.thinned(1320)
+
+
+def test_xp_runes_name_the_shrines_only_the_first_time(payload):
+    said = []
+    engine = Engine(build({"power_rune": {"enabled": False}, "bounty_rune": {"enabled": False}}), said.append)
+    play(MatchState(), payload, range(390, 1250), engine)
+    assert said == [
+        "XP runes, at the wisdom shrines, in 20 seconds.",  # 7:00
+        "XP runes in 20 seconds.",  # 14:00
+        "XP runes in 20 seconds.",  # 21:00, never thinned out
+    ]
+
+
+def test_first_message_can_be_set_in_config():
+    shrine = next(r for r in build({"wisdom_shrine": {"first_message": "Shrines in {lead}."}}) if r.name == "wisdom_shrine")
+    assert shrine.first_message == "Shrines in {lead}."

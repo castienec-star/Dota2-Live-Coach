@@ -30,6 +30,9 @@ class TimedReminder:
     # After this game time only every other event is said, so runes don't
     # crowd out the rest late in the game; None or 0 = all of them.
     thin_after: int | None = None
+    # Said instead of message for the first event of the match, e.g. to teach
+    # a second name for it once.
+    first_message: str | None = None
     _fired: set[int] = field(default_factory=set, repr=False)
 
     def event_times(self, start: int, end: int) -> list[int]:
@@ -60,13 +63,14 @@ class TimedReminder:
         for t in self.event_times(before, now):
             if t not in self._fired:
                 self._fired.add(t)
-                line = self.line(state.current)
+                line = self.line(state.current, first=t == self.first)
                 if line:
                     lines.append(line)
         return lines[-1:]
 
-    def line(self, snap: Snapshot) -> str | None:
-        return self.message.format(lead=self.lead)
+    def line(self, snap: Snapshot, first: bool = False) -> str | None:
+        message = self.first_message if first and self.first_message else self.message
+        return message.format(lead=self.lead)
 
     def reset(self) -> None:
         self._fired.clear()
@@ -103,7 +107,7 @@ class StackReminder(TimedReminder):
         camp = min(self.camps, key=lambda c: math.dist((c.x, c.y), (snap.x, snap.y)))
         return camp if math.dist((camp.x, camp.y), (snap.x, snap.y)) <= self.radius else None
 
-    def line(self, snap: Snapshot) -> str | None:
+    def line(self, snap: Snapshot, first: bool = False) -> str | None:
         if not snap.alive:
             return None
         camp = self.nearest(snap)
@@ -117,7 +121,14 @@ class StackReminder(TimedReminder):
 DEFAULTS: dict[str, dict] = {
     "power_rune": {"message": "Power rune in {lead} seconds.", "first": 360, "every": 120, "lead": 15, "thin_after": 1200},
     "bounty_rune": {"message": "Gold runes in {lead} seconds.", "first": 240, "every": 240, "lead": 15, "thin_after": 1200},
-    "wisdom_shrine": {"message": "Wisdom shrines in {lead} seconds.", "first": 420, "every": 420, "lead": 20},
+    # Players call the wisdom shrines' runes XP runes; the first call says both names.
+    "wisdom_shrine": {
+        "message": "XP runes in {lead} seconds.",
+        "first_message": "XP runes, at the wisdom shrines, in {lead} seconds.",
+        "first": 420,
+        "every": 420,
+        "lead": 20,
+    },
     "water_rune": {"message": "Water rune in {lead} seconds.", "first": 120, "every": 120, "until": 240, "lead": 10},
     "stack": {"message": "Stack the {camp} camp.", "first": 113, "every": 60, "until": 713, "lead": 0, "radius": 1000},
 }
