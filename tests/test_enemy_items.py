@@ -113,3 +113,16 @@ def test_told_items_reach_what_to_buy(tmp_path, payload):
     coach.enemy_items.report("Lion has Glimmer and Force Staff")
     assert "Lion has Glimmer Cape and Force Staff" in notes_of(coach)().told()
     assert "Nullifier" in what_to_buy(coach)
+
+
+@pytest.mark.parametrize(
+    "text, said",
+    [
+        ("Lion has glimmer and Sven has BKB", "Got it, Lion has Glimmer Cape and Sven has Black King Bar."),
+        ("lion glimmer and force", "Got it, Lion has Glimmer Cape and Force Staff."),
+        ("nothing new", None),
+        ("skip", None),
+    ],
+)
+def test_answer_to_the_check_question(index, matcher, text, said):
+    assert EnemyItems(index, matcher=matcher).answer(text) == said
