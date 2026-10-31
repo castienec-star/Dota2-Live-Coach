@@ -1,4 +1,4 @@
-"""Command line entry point: py -m coach [run|install|replay|refresh-items|refresh-benchmarks|review|say]."""
+"""Command line entry point: py -m coach [run|install|replay|refresh-items|refresh-benchmarks|refresh-hero-stats|review|say]."""
 
 from __future__ import annotations
 
@@ -471,6 +471,33 @@ def cmd_refresh_benchmarks(cfg: config_mod.Config, args: argparse.Namespace) -> 
     return 0
 
 
+def cmd_refresh_hero_stats(cfg: config_mod.Config, args: argparse.Namespace) -> int:
+    """Saves this patch's public picks and wins per hero and rank bracket,
+    for the free chat to quote."""
+    from . import hero_stats
+
+    stats = OpenDota(cfg.app_dir / "opendota", timeout=20)
+    out = args.out or hero_stats.STATS_FILE
+    patch = hero_stats.current_patch()
+    problem = hero_stats.check_patch(stats.get("/constants/patch", max_age=3600), patch)
+    if problem:
+        logging.error("%s; nothing saved.", problem)
+        return 1
+    heroes = load_heroes()
+    print(f"Reading this week's hero win rates (patch {patch}) from OpenDota...")
+    try:
+        found = hero_stats.fetch(lambda path: stats.get(path, max_age=3600), heroes)
+    except RuntimeError as exc:
+        logging.error("%s. Check your internet connection and try again.", exc)
+        return 1
+    if len(found) < len(heroes) // 2:
+        logging.error("Only %d of %d heroes came back; nothing saved. Try again later.", len(found), len(heroes))
+        return 1
+    hero_stats.save(found, out, patch)
+    print(f"Saved {len(found)} heroes to {out}")
+    return 0
+
+
 def cmd_review(cfg: config_mod.Config, args: argparse.Namespace) -> int:
     """Prints the post-game review of a recorded match."""
     items = load_items()
@@ -506,6 +533,8 @@ def main(argv: list[str] | None = None) -> int:
     p_refresh.add_argument("--out", type=Path, default=None, help="where to save (default: the bundled data file)")
     p_bench = sub.add_parser("refresh-benchmarks", help="save public GPM and last-hit numbers per hero from OpenDota")
     p_bench.add_argument("--out", type=Path, default=None, help="where to save (default: the bundled data file)")
+    p_stats = sub.add_parser("refresh-hero-stats", help="save this patch's public win rates per hero from OpenDota")
+    p_stats.add_argument("--out", type=Path, default=None, help="where to save (default: the bundled data file)")
     p_review = sub.add_parser("review", help="print the post-game review of a recorded match")
     p_review.add_argument("recording", type=Path)
     p_say = sub.add_parser("say", help="test the voice")
@@ -520,6 +549,7 @@ def main(argv: list[str] | None = None) -> int:
         "replay": cmd_replay,
         "refresh-items": cmd_refresh_items,
         "refresh-benchmarks": cmd_refresh_benchmarks,
+        "refresh-hero-stats": cmd_refresh_hero_stats,
         "review": cmd_review,
         "say": cmd_say,
     }
