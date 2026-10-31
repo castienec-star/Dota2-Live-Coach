@@ -2,10 +2,9 @@
 
 The baselines are OpenDota's public hero benchmarks: for each hero, the gold
 per minute, experience per minute and last hits per minute that 10%, 20%...
-99% of recent public matches reached. A snapshot for the heroes with a
-bundled build ships in coach/data/benchmarks.json, and
-`py -m coach refresh-benchmarks` rewrites it for every hero; heroes still
-missing are read once from OpenDota and cached, if it is turned on. A hero with no numbers at all is
+99% of recent public matches reached. A snapshot for every hero ships in
+coach/data/benchmarks.json (`py -m coach refresh-benchmarks` rewrites it);
+a hero added since is read once from OpenDota and cached, if it is turned on. A hero with no numbers at all is
 compared, roughly, with the average bundled core or support, and before 8
 minutes the answer is last hits against a simple target and deaths so far.
 Only your own hero's GSI numbers are compared; nothing about other players is
@@ -53,6 +52,13 @@ LAST_HITS_PER_MIN = 3.5
 CREEPS_MEET = 0.5  # minutes
 
 log = logging.getLogger(__name__)
+
+
+def last_hit_target(minute: float) -> int:
+    """Last hits a core should have at this minute, rounded to 5 (15 at 5:00,
+    35 at 10:00), and at least 5."""
+    return max(5, 5 * round(LAST_HITS_PER_MIN * (minute - CREEPS_MEET) / 5))
+
 
 Curve = list[tuple[float, float]]  # (percentile, value), rising
 Fetch = Callable[[int], dict[str, Curve] | None]
@@ -338,7 +344,7 @@ def early(snap: Snapshot, support: bool) -> str:
             f"It's too early to judge a support at {minute} minutes. {died} "
             "Keep your core safe and stack a camp when you can."
         )
-    target = max(5, 5 * round(LAST_HITS_PER_MIN * (minute - CREEPS_MEET) / 5))
+    target = last_hit_target(minute)
     if snap.last_hits >= target:
         farm = f"{snap.last_hits} last hits at {minute} minutes, that's on track."
     else:

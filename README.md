@@ -110,6 +110,7 @@ camp is alive, already stacked or blocked, so the coach cannot check that.
 | --- | --- |
 | You have gold for (item) | You can afford the next item on your build list |
 | Buy a (cheap item) now, you'll get your (item) later | Before 25:00, you are still 600+ gold short of the next build item (boots included) and you can afford a Magic Wand or your hero's Bracer, Wraith Band or Null Talisman that you don't own. Each one at most once a match. If you told the coach the enemy heroes, a cheap counter comes first with the reason: "Buy Infused Raindrops now: Lina does a lot of magic damage" (3:00 to 12:00) or "Buy a Magic Wand now: Bristleback casts a lot of spells" |
+| (n) last hits at 5 minutes ... | At 5:00 and 10:00, cores only: your last hits against a simple target (15 at 5:00, 35 at 10:00), with one thing to work on when you're well behind. Supports hear nothing. Change the minutes in `[reminders.last_hits]` |
 | You're ahead / about even / behind for (minutes) ... | At 15:00 and 25:00, your gold, experience and last hits per minute against public numbers for your hero, with what to do about it (see "How am I doing?" below). It also names one item to get, the same pick as "What should I buy?" (a counter to the enemy heroes you told it, a defensive item, your next build item or a late-game item). Change the minutes in `[reminders.game_check]` |
 | Low health, back off | Health drops under 25% (again after you heal over 40%), once a burst of damage has stopped |
 | Go heal | Health stays under 40% for 10 s without taking damage; names a Salve, Bottle, Tango or Faerie Fire you carry |
@@ -151,6 +152,23 @@ The position is the one you said or typed at the start of the game, or the one
 set in `[pregame]`; until it is known, every reminder is said. Prices come from OpenDota's
 item data; `coach/data/PATCH` names the patch the bundled data is current for
 (7.41f).
+
+### After the match: three things to work on
+
+When the match ends, the coach says up to three short points from your own
+game and saves them in `%APPDATA%\Dota2LiveCoach\reviews\`:
+
+- **Deaths:** dying twice or more before 10 minutes, three deaths within six
+  minutes, or seven or more in the game, with one habit to fix it.
+- **Last hits at 10 minutes** (cores only): under 28, against a target of 35.
+- **First big item** (over 1800 gold): later than 20 minutes for a core or 25
+  for a support, or none at all.
+
+If there is less to fix, it says what went well. Games under 5 minutes get no
+review. Read the review of any recorded match again with
+`py -m coach review "%APPDATA%\Dota2LiveCoach\recordings\<file>.jsonl"`, or
+turn it off with `enabled = false` under `[reminders.review]`. The targets are
+explained in `docs/strategy/post-game-review.md`.
 
 ### Death-timer tips
 
@@ -313,9 +331,10 @@ with a local model (see below):
   ahead, even or behind for this point of the match, comparing your gold,
   experience and last hits per minute with public OpenDota numbers for your
   hero (supports only by experience), and what to do about it. Numbers for
-  popular low-bracket heroes come with the coach; other heroes are read once
-  from OpenDota if `opendota` is on in `[pregame]`, and without them the coach
-  compares you roughly with cores or supports in general and says so. Before
+  every hero come with the coach (fetched 2026-10-30, patch 7.41f); a hero
+  added after that is read once from OpenDota if `opendota` is on in
+  `[pregame]`, and without it the coach compares you roughly with cores or
+  supports in general and says so. Before
   8 minutes it gives your last hits against a simple target (about 35 at
   10 minutes for a core) and your deaths so far. No microphone? Type `how`
   in the coach window for the same answer. See

@@ -1,4 +1,4 @@
-"""Command line entry point: py -m coach [run|install|replay|refresh-items|refresh-benchmarks|say]."""
+"""Command line entry point: py -m coach [run|install|replay|refresh-items|refresh-benchmarks|review|say]."""
 
 from __future__ import annotations
 
@@ -20,13 +20,16 @@ from . import enemy_items, game_questions, item_advisor, situational
 from . import health as health_mod
 from . import llm
 from . import pregame as pregame_mod
+from . import review as review_mod
 from . import voice
 from .benchmarks import Benchmarks, status
 from .gsi_server import Coach, make_app
 from .heroes import HeroIndex, load_heroes
 from .install import find_dota, install
+from .items import load_items
 from .lineup import Interview, Question, TypedQuestions, configured_position
 from .opendota import OpenDota
+from .profile import summarize
 from .recorder import MatchRecorder
 from .replay import replay
 from .rules import (
@@ -36,6 +39,7 @@ from .rules import (
     for_positions,
     game_check,
     hero,
+    last_hits,
     objectives,
     split_positions,
     timers,
@@ -154,6 +158,7 @@ def make_coach(
         + hero.build(reminders, cfg.builds, position, enemies)
         + power_windows
         + objectives.build(reminders)
+        + last_hits.build(reminders, position)
         + game_check.build(
             reminders,
             benchmarks,
@@ -166,6 +171,13 @@ def make_coach(
         + (death_tip.build(reminders, tip_say, position, notes_of(coach)) if tips else [])
     )
     coach.listeners.append(Engine(for_positions(rules, positions, position), speaker.say, cfg.voice_max_lines, prioritized=True))
+    if reminders.get("review", {}).get("enabled", True):
+        # The last thing said, and players often leave within seconds of the
+        # end: first in line, most useful point first; the file has the rest.
+        review_say = functools.partial(speaker.say, priority=HIGH, max_delay=5)
+        # A fast replay (no tips) only prints it.
+        folder = cfg.app_dir / "reviews" if tips else None
+        coach.listeners.append(review_mod.Review(review_say, folder, position))
     if tips:
         coach.pregame = pregame_mod.build(
             with_tip_model(cfg, cfg.pregame),
@@ -461,6 +473,20 @@ def cmd_refresh_benchmarks(cfg: config_mod.Config, args: argparse.Namespace) -> 
     return 0
 
 
+def cmd_review(cfg: config_mod.Config, args: argparse.Namespace) -> int:
+    """Prints the post-game review of a recorded match."""
+    items = load_items()
+    summary = summarize(args.recording, items)
+    if summary is None:
+        logging.error("%s holds no finished game of at least 5 minutes.", args.recording)
+        return 1
+    heroes = HeroIndex()
+    position = configured_position(cfg.pregame, summary.hero)
+    support = review_mod.is_support(heroes.by_key(summary.hero), position)
+    print(review_mod.text(summary, review_mod.points(summary, support, items), heroes), end="")
+    return 0
+
+
 def cmd_say(cfg: config_mod.Config, args: argparse.Namespace) -> int:
     speaker = make_speaker(cfg)
     speaker.say(args.text)
@@ -482,6 +508,8 @@ def main(argv: list[str] | None = None) -> int:
     p_refresh.add_argument("--out", type=Path, default=None, help="where to save (default: the bundled data file)")
     p_bench = sub.add_parser("refresh-benchmarks", help="save public GPM and last-hit numbers per hero from OpenDota")
     p_bench.add_argument("--out", type=Path, default=None, help="where to save (default: the bundled data file)")
+    p_review = sub.add_parser("review", help="print the post-game review of a recorded match")
+    p_review.add_argument("recording", type=Path)
     p_say = sub.add_parser("say", help="test the voice")
     p_say.add_argument("text", nargs="?", default="Power rune in 15 seconds.")
     args = parser.parse_args(argv)
@@ -494,6 +522,7 @@ def main(argv: list[str] | None = None) -> int:
         "replay": cmd_replay,
         "refresh-items": cmd_refresh_items,
         "refresh-benchmarks": cmd_refresh_benchmarks,
+        "review": cmd_review,
         "say": cmd_say,
     }
     return commands[args.command or "run"](cfg, args)

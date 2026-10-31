@@ -91,7 +91,11 @@ def test_item_prompt_has_what_candidates_and_enemy_ultimates_do(payload):
     snap = Snapshot.from_payload(payload)
     picks = [Pick(ITEMS["item_black_king_bar"], ""), Pick(ITEMS["item_manta"], "")]
     text = item_prompt(snap, picks, None, [HEROES.by_key("lion")], ITEMS)
-    assert "- Lion: Finger of Death (ultimate)" in text
+    lion = next(line for line in text.splitlines() if line.startswith("- Lion: "))
+    assert "Finger of Death (ultimate)" in lion and "Hex" not in lion
+    # Passives too: what a break item turns off.
+    text = item_prompt(snap, picks, None, [HEROES.by_key("bristleback")], ITEMS)
+    assert "Bristleback (passive): Bristleback takes less damage" in text
     assert (
         "- item_black_king_bar: Black King Bar, 4050 gold; for spell immunity against stuns, "
         "hexes and magic damage; Strength, Damage; active Avatar"

@@ -129,8 +129,11 @@ def run(
     """progress(result) is called as each answer comes in."""
     heroes, items = HeroIndex(), load_items()
     results = []
-    off = mock.patch.object(knowledge, "_load", lambda: NO_CARDS)
-    with contextlib.nullcontext() if cards else off:
+    off = contextlib.ExitStack()
+    if not cards:
+        off.enter_context(mock.patch.object(knowledge, "_load", lambda: NO_CARDS))
+        off.enter_context(mock.patch.object(knowledge, "ITEM_USES", {}))
+    with off:
         for case in cases:
             for _ in range(runs):
                 reply, good = run_case(case, asks[case["kind"]], heroes, items)

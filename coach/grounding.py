@@ -108,6 +108,11 @@ class Grounding:
         """Why text can't be spoken, or None when it sticks to the facts.
 
         heroes are the ones in this match that the coach knows about."""
+        # Local models sometimes drift into another language mid-sentence
+        # (qwen into Chinese); the voice would read it out as nonsense.
+        foreign = next((c for c in text if c.isalpha() and ord(c) > 0x24F), None)
+        if foreign:
+            return f'is not all in English ("{foreign}")'
         allowed = {h for h in heroes if h is not None}
         extra = self.strangers(text, allowed)
         if extra:

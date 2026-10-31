@@ -28,11 +28,11 @@ def jugg(clock=900, gpm=450, xpm=500, last_hits=75):
     )
 
 
-def test_bundled_snapshot_covers_every_hero_with_a_build():
+def test_bundled_snapshot_covers_every_hero():
     data = load_benchmarks()
-    index = HeroIndex()
-    for hero in ["axe", "juggernaut", "lion", "pudge", "skeleton_king", "zuus"]:
-        assert index.by_key(hero) is not None
+    assert set(data) == {h.key for h in load_heroes().values()}
+    for hero in data:
+        assert set(data[hero]) == {"gold_per_min", "xp_per_min", "last_hits_per_min"}
         for curve in data[hero].values():
             values = [v for _, v in curve]
             assert len(values) == 11 and values == sorted(values)
@@ -77,8 +77,12 @@ def test_no_verdict_early():
     assert Benchmarks().verdict(jugg(clock=300)) is None
 
 
+# Every bundled hero has numbers; a hero added after the snapshot has none.
+NEW_HERO = "npc_dota_hero_brand_new"
+
+
 def test_heroes_without_numbers_get_a_rough_verdict_for_their_role():
-    am = Snapshot(clock_time=900, hero_name="npc_dota_hero_antimage", gpm=450, xpm=500, last_hits=75)
+    am = Snapshot(clock_time=900, hero_name=NEW_HERO, gpm=450, xpm=500, last_hits=75)
     verdict = Benchmarks().verdict(am)
     assert verdict.rough and verdict.kind == "even"
     assert not Benchmarks().verdict(jugg()).rough
@@ -230,7 +234,7 @@ def test_spoken_verdict_for_a_support_by_position():
 
 
 def test_spoken_verdict_without_numbers_is_rough():
-    am = Snapshot(clock_time=900, hero_name="npc_dota_hero_antimage", gpm=450, xpm=500, last_hits=75)
+    am = Snapshot(clock_time=900, hero_name=NEW_HERO, gpm=450, xpm=500, last_hits=75)
     answers = Answers({}, {})
     line = answers.answer("how am I doing", am)
     assert line.startswith("You're about even for 15 minutes.")
@@ -243,7 +247,7 @@ def test_spoken_verdict_without_numbers_is_rough():
 
 def test_game_check_and_question_share_the_rough_caveat():
     benchmarks = Benchmarks()
-    am = Snapshot(clock_time=900, hero_name="npc_dota_hero_antimage", gpm=450, xpm=500, last_hits=75)
+    am = Snapshot(clock_time=900, hero_name=NEW_HERO, gpm=450, xpm=500, last_hits=75)
     (line,) = run_check(GameCheck(benchmarks, minutes=[15]), am)
     assert "rough comparison" in line
     assert "rough" not in Answers({}, {}, benchmarks=benchmarks).answer("how am I doing", am)
@@ -294,7 +298,7 @@ def test_game_check_speaks_once_at_each_minute():
 def test_game_check_skips_a_missed_minute_and_speaks_for_every_hero():
     rule = GameCheck(Benchmarks(), minutes=[15, 25])
     assert run_check(rule, jugg(clock=1000)) == []  # started the coach at 16:40
-    am = Snapshot(clock_time=1500, hero_name="npc_dota_hero_antimage", gpm=500, xpm=500)
+    am = Snapshot(clock_time=1500, hero_name=NEW_HERO, gpm=500, xpm=500)
     (line,) = run_check(rule, am)
     assert "rough comparison with cores" in line
 

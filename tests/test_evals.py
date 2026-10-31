@@ -72,3 +72,12 @@ def test_progress_is_reported_as_each_answer_comes_in():
     seen = []
     evals.run(cases, asks(), cards=True, runs=2, progress=seen.append)
     assert [r.case for r in seen] == [cases[0]["name"]] * 2 + [cases[1]["name"]] * 2
+
+
+def test_without_cards_leaves_out_the_item_uses_too():
+    case = next(c for c in evals.load_cases() if c["name"] == "Core against evasion")
+    with_cards, without = asks(), asks()
+    evals.run([case], with_cards, cards=True)
+    evals.run([case], without, cards=False)
+    assert "pierces evasion" in with_cards["item"].prompts[0]
+    assert "pierces evasion" not in without["item"].prompts[0]

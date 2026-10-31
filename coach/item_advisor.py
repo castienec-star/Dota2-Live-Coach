@@ -120,8 +120,9 @@ def describe(
         lines.append("Enemy heroes: " + "; ".join(
             f"{h.name} ({h.attack_type.lower()}, {', '.join(h.roles)})" for h in enemies
         ))
-        # Their ultimates, and whether those go through a Black King Bar.
-        lines += [f"- {card}" for card in knowledge.hero_cards(enemies, ultimate_only=True)]
+        # Their ultimates, and whether those go through a Black King Bar, and
+        # their passives, which a break item (Silver Edge) turns off.
+        lines += [f"- {card}" for card in knowledge.hero_cards(enemies, ultimate_only=True, passives=True)]
     told = notes.told() if notes is not None else []
     if told:
         lines.append(f"The player told you: {'; '.join(told)}")

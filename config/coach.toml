@@ -217,6 +217,19 @@ cooldown = 180
 enabled = true
 minutes = [15, 25]
 
+[reminders.last_hits]
+# At these minutes a core hears its last hits against a simple target (3.5 a
+# minute once the creeps meet: 15 at 5:00, 35 at 10:00) with one thing to
+# work on when behind. Supports (position 4 or 5) hear nothing.
+enabled = true
+minutes = [5, 10]
+
+[reminders.review]
+# When the match ends, say up to three things to work on (deaths and when,
+# last hits at 10 minutes, how late your first big item came) and save them
+# as a text file in the "reviews" folder next to coach.toml.
+enabled = true
+
 [reminders.power_window]
 # Says when the stretches the pre-game briefing found begin: when your lineup
 # is strongest and when the enemy's is. "lead" = seconds early.
