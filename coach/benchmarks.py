@@ -2,10 +2,9 @@
 
 The baselines are OpenDota's public hero benchmarks: for each hero, the gold
 per minute, experience per minute and last hits per minute that 10%, 20%...
-99% of recent public matches reached. A snapshot for the heroes with a
-bundled build ships in coach/data/benchmarks.json, and
-`py -m coach refresh-benchmarks` rewrites it for every hero; heroes still
-missing are read once from OpenDota and cached, if it is turned on. A hero with no numbers at all is
+99% of recent public matches reached. A snapshot for every hero ships in
+coach/data/benchmarks.json (`py -m coach refresh-benchmarks` rewrites it);
+a hero added since is read once from OpenDota and cached, if it is turned on. A hero with no numbers at all is
 compared, roughly, with the average bundled core or support, and before 8
 minutes the answer is last hits against a simple target and deaths so far.
 Only your own hero's GSI numbers are compared; nothing about other players is
