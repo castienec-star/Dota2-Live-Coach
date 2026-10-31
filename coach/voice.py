@@ -20,6 +20,7 @@ import threading
 import time
 from collections.abc import Callable, Iterable, Iterator
 
+from . import rank as rank_mod
 from . import situational
 from .benchmarks import Benchmarks, status
 from .chat import Chat
@@ -46,6 +47,14 @@ UNKNOWN = (
 # First match wins, so the narrower questions come first.
 INTENTS: list[tuple[str, re.Pattern[str]]] = [
     ("buyback", re.compile(r"\bbuy ?backs?\b")),
+    # "My rank is Archon", "my MMR is 2500", "I'm a Herald", "what's my rank?"
+    (
+        "rank",
+        re.compile(
+            r"\b(my (rank|m ?m ?r|medal)|m ?m ?r|i'?m (an? |in )?(" + "|".join(rank_mod.TIERS) + r")"
+            r"|i am (an? |in )?(" + "|".join(rank_mod.TIERS) + r")|what'?s my rank)\b"
+        ),
+    ),
     (
         "how_am_i_doing",
         re.compile(
@@ -129,6 +138,8 @@ class Answers:
                 return UNKNOWN
             reply = self.chat(text, snap)
             return self.chat.off if reply is None else reply
+        if kind == "rank":
+            return rank_mod.tell(self.benchmarks.rank, text)
         if snap.hero_name is None:
             return "I can't see your hero yet. Ask me again once the game has started."
         return getattr(self, kind)(snap)

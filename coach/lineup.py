@@ -5,7 +5,8 @@ you, out loud, what you can see on the top bar: "What position are you
 playing?", "Who's on your team?", "Who are the enemy heroes?". It reads back
 what it understood so you can correct it ("no, Lina not Lion"). Answers only
 last for the match and feed the briefing and the rest of the coaching. The
-coach never looks at your screen.
+coach never looks at your screen. While it doesn't know your rank, it also
+asks that once, ever (coach/rank.py).
 """
 
 from __future__ import annotations
@@ -18,6 +19,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 
 from .heroes import HeroIndex, HeroInfo, _fold
+from .rank import QUESTION
 from .state import IN_PROGRESS, MatchState
 
 log = logging.getLogger(__name__)
@@ -121,7 +123,8 @@ class Interview:
     what the player said: sink.heard(position=..., allies=..., enemies=...).
     Whatever sink already knows (sink.position, sink.allies, sink.enemies,
     e.g. from typed picks) is not asked again. A position set in coach.toml,
-    for all heroes or per hero, is used without asking.
+    for all heroes or per hero, is used without asking. With "rank" (a
+    coach.rank.PlayerRank) it asks the player's rank last, if it should.
     """
 
     MAX_ROUNDS = 4  # read-backs per list, so a misheard answer can't loop forever
@@ -132,9 +135,11 @@ class Interview:
         sink,
         position: int = 0,
         hero_positions: dict[str, int] | None = None,
+        rank=None,
     ) -> None:
         self.index = index
         self.sink = sink
+        self.rank = rank
         self.position = position
         self.hero_positions = hero_positions or {}
         self._lock = threading.Lock()
@@ -168,7 +173,13 @@ class Interview:
             questions.append(self._list_question("allies"))
         if not self.sink.enemies:
             questions.append(self._list_question("enemies"))
+        if self.rank is not None and self.rank.should_ask():
+            questions.append(self._ask(QUESTION, self._rank))
         return questions
+
+    def _rank(self, text: str) -> str | None:
+        self._next()
+        return self.rank.answer("" if _SKIP.search(_words(text)) else text)
 
     @property
     def busy(self) -> bool:

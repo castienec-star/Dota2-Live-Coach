@@ -42,6 +42,7 @@ class Config:
     pregame: dict = field(default_factory=dict)
     listen: dict = field(default_factory=dict)
     items: dict = field(default_factory=dict)
+    player: dict = field(default_factory=dict)
     app_dir: Path = Path()
 
     @property
@@ -136,5 +137,6 @@ def load(user_file: Path | None = None, app_dir: Path | None = None) -> Config:
         pregame=raw.get("pregame", {}),
         listen=raw.get("listen", {}),
         items=raw.get("items", {}),
+        player=raw.get("player", {}),
         app_dir=app_dir,
     )
