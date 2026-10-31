@@ -413,8 +413,26 @@ of health isn't said at all. Without Ollama running (or slower than
 `chat_timeout` seconds) you hear the list of built-in questions instead. Set
 `chat = false` under `[listen]` to turn this off; it uses the death tips'
 `provider`, so `provider = "builtin"` turns it off too. No microphone? Type
-the question in the coach window instead, e.g. `how do I play against pudge`. Voice questions are
-on by default and
+the question in the coach window instead, e.g. `how do I play against pudge`.
+
+The chat also knows this patch's win rate of your hero and every hero you
+told it about, in public games of your own rank bracket over the last week
+(a Legend player gets Legend numbers only), so "is Pudge strong right now?"
+gets a real answer. While the coach doesn't know your rank it leaves the win
+rates out rather than mix brackets, and OpenDota has none for Immortal. The numbers are OpenDota's
+public hero stats: Dotabuff has the same kind of numbers but no public API
+to read them from, and copying its pages by program isn't allowed. Save them (a few seconds,
+public aggregate numbers only) with:
+
+```
+py -m coach refresh-hero-stats
+```
+
+It refuses when OpenDota shows a newer patch than the coach's data is for
+(`coach/data/PATCH`), or one less than a week old, so the numbers never mix
+two patches, and a saved file from another patch is ignored.
+
+Voice questions are on by default and
 needs two free speech models that run on your PC (downloaded once, about
 200 MB). Install them once; until you do, the coach simply doesn't listen:
 
