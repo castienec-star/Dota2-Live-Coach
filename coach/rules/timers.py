@@ -1,4 +1,4 @@
-"""Reminders tied to the game clock: runes and camp stacking.
+"""Reminders tied to the game clock: runes, camp stacking and neutral item tiers.
 
 The clock is public to every player, so these only save you from watching it.
 Timings change between patches, which is why they live in coach.toml.
@@ -60,12 +60,12 @@ class TimedReminder:
         for t in self.event_times(before, now):
             if t not in self._fired:
                 self._fired.add(t)
-                line = self.line(state.current)
+                line = self.line(state.current, t)
                 if line:
                     lines.append(line)
         return lines[-1:]
 
-    def line(self, snap: Snapshot) -> str | None:
+    def line(self, snap: Snapshot, t: int) -> str | None:
         return self.message.format(lead=self.lead)
 
     def reset(self) -> None:
@@ -103,7 +103,7 @@ class StackReminder(TimedReminder):
         camp = min(self.camps, key=lambda c: math.dist((c.x, c.y), (snap.x, snap.y)))
         return camp if math.dist((camp.x, camp.y), (snap.x, snap.y)) <= self.radius else None
 
-    def line(self, snap: Snapshot) -> str | None:
+    def line(self, snap: Snapshot, t: int) -> str | None:
         if not snap.alive:
             return None
         camp = self.nearest(snap)
@@ -113,6 +113,28 @@ class StackReminder(TimedReminder):
         return self.message.format(lead=self.lead, camp=kind)
 
 
+@dataclass
+class NeutralTierReminder(TimedReminder):
+    """'Tier 2 neutral items are open', said once as each tier unlocks.
+
+    Neutral items are crafted from Madstone, which cleared jungle camps drop;
+    the Madstone counter in the HUD flashes when you have enough for the next
+    tier. GSI does not give the Madstone count, so the coach only says when a
+    tier opens. The first tier gets first_message, which explains how.
+    """
+
+    at: list[int] = field(default_factory=list)
+    first_message: str = ""
+
+    def event_times(self, start: int, end: int) -> list[int]:
+        return [t for t in self.at if start < t - self.lead <= end]
+
+    def line(self, snap: Snapshot, t: int) -> str | None:
+        tier = self.at.index(t) + 1
+        message = self.first_message if tier == 1 and self.first_message else self.message
+        return message.format(lead=self.lead, tier=tier)
+
+
 # Patch 7.41 timings.
 DEFAULTS: dict[str, dict] = {
     "power_rune": {"message": "Power rune in {lead} seconds.", "first": 360, "every": 120, "lead": 15, "thin_after": 1200},
@@ -120,7 +142,19 @@ DEFAULTS: dict[str, dict] = {
     "wisdom_shrine": {"message": "Wisdom shrines in {lead} seconds.", "first": 420, "every": 420, "lead": 20},
     "water_rune": {"message": "Water rune in {lead} seconds.", "first": 120, "every": 120, "until": 240, "lead": 10},
     "stack": {"message": "Stack the {camp} camp.", "first": 113, "every": 60, "until": 713, "lead": 0, "radius": 1000},
+    "neutral_items": {
+        "first_message": (
+            "Neutral items are open. Clear jungle camps to collect Madstone, "
+            "and when the Madstone counter flashes, click it and pick one."
+        ),
+        "message": "Tier {tier} neutral items are open. Click the Madstone counter when it flashes to upgrade yours.",
+        "first": 300,
+        "every": 0,
+        "at": [300, 900, 1500, 2100, 3600],
+    },
 }
+
+CLASSES: dict[str, type[TimedReminder]] = {"stack": StackReminder, "neutral_items": NeutralTierReminder}
 
 
 def build(settings: dict[str, dict]) -> list[TimedReminder]:
@@ -130,6 +164,6 @@ def build(settings: dict[str, dict]) -> list[TimedReminder]:
         merged = {**defaults, **settings.get(name, {})}
         if not merged.pop("enabled", True):
             continue
-        cls = StackReminder if name == "stack" else TimedReminder
+        cls = CLASSES.get(name, TimedReminder)
         reminders.append(cls(name=name, **merged))
     return reminders

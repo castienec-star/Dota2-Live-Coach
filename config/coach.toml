@@ -119,6 +119,13 @@ every = 60
 until = 713
 radius = 1000
 
+[reminders.neutral_items]
+# Neutral items are crafted from Madstone, which cleared jungle camps drop.
+# Said once as each tier opens (5, 15, 25, 35 and 60 minutes in patch 7.41;
+# Turbo halves these). Game State Integration doesn't give your Madstone
+# count, so this only says when a tier opens. Docs: docs/strategy/neutral-items.md
+at = [300, 900, 1500, 2100, 3600]
+
 # Reminders about your own hero. Set enabled = false to turn one off.
 [reminders.low_health]
 # "Back off" once when health drops under "below" %, again after it climbs over
