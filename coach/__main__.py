@@ -39,6 +39,7 @@ from .rules import (
     for_positions,
     game_check,
     hero,
+    last_hits,
     split_positions,
     timers,
     windows,
@@ -155,6 +156,7 @@ def make_coach(
         timers.build(reminders)
         + hero.build(reminders, cfg.builds, position, enemies)
         + power_windows
+        + last_hits.build(reminders, position)
         + game_check.build(
             reminders,
             benchmarks,
