@@ -44,7 +44,7 @@ CLAUDE.md).
    calm line: farm safely, stay near towers, buy a Black King Bar or
    defensive item if it is on the build. *Why:* tilt and feeding are classic
    low-bracket losses; one sentence can stop the spiral.
-7. [ ] **Neutral item tier reminders.** Tell the player when each tier of
+7. [x] **Neutral item tier reminders.** Tell the player when each tier of
    neutral items starts dropping and remind them to pick one up from the
    stash. Timings from the live patch. *Why:* new players forget neutral
    items entirely.
@@ -116,6 +116,10 @@ CLAUDE.md).
   whether the player fixed last game's first point is done
   (`reviews/last.json`, Castien asked for it on 2026-10-31). Also save (not speak) the review when the player abandons and GSI goes
   silent before post-game, using the health watch.
+- Neutral items, next steps (item 7 is done in `coach/rules/timers.py`):
+  once the coach knows the player has no neutral item a few minutes after a
+  tier opens (GSI's `neutral0` slot is empty), one nudge to go craft it; and
+  in Turbo, halve the tier times automatically from GSI's game mode.
 - Translations of the spoken lines.
 - Upgrade-aware builds: know that Dragon Lance went into Hurricane Pike (from
   dotaconstants' item components) so builds can list both steps.
