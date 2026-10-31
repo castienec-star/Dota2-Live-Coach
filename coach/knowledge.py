@@ -180,17 +180,18 @@ def abilities(hero: HeroInfo | str | None) -> list[Ability]:
     return [Ability(**a) for a in _load()["heroes"].get(key, [])]
 
 
-def described(hero: HeroInfo | str | None, ultimate_only: bool = False) -> str:
-    """ "Earth Spike: ...; Hex: ...", or just the ultimate; "" when unknown."""
+def described(hero: HeroInfo | str | None, ultimate_only: bool = False, passives: bool = False) -> str:
+    """ "Earth Spike: ...; Hex: ...", or just the ultimate (and with passives,
+    the passives too: what a break item turns off); "" when unknown."""
     found = abilities(hero)
     if ultimate_only:
-        found = [a for a in found if a.ultimate] or found[-1:]
+        found = [a for a in found if a.ultimate or (passives and a.passive)] or found[-1:]
     return "; ".join(a.line() for a in found)
 
 
-def hero_card(hero: HeroInfo | None, ultimate_only: bool = False) -> str:
+def hero_card(hero: HeroInfo | None, ultimate_only: bool = False, passives: bool = False) -> str:
     """ "Lion: Earth Spike: ...; Hex: ...", or "" when the data has nothing on the hero."""
-    what = described(hero, ultimate_only)
+    what = described(hero, ultimate_only, passives)
     return f"{hero.name}: {what}" if hero is not None and what else ""
 
 
@@ -245,7 +246,9 @@ def item_line(item: ItemInfo) -> str:
     return found
 
 
-def hero_cards(heroes: list[HeroInfo | None], ultimate_only: bool = False) -> list[str]:
+def hero_cards(
+    heroes: list[HeroInfo | None], ultimate_only: bool = False, passives: bool = False
+) -> list[str]:
     """One card per hero, without repeats."""
     seen: set[str] = set()
     cards = []
@@ -253,7 +256,7 @@ def hero_cards(heroes: list[HeroInfo | None], ultimate_only: bool = False) -> li
         if hero is None or hero.key in seen:
             continue
         seen.add(hero.key)
-        if card := hero_card(hero, ultimate_only):
+        if card := hero_card(hero, ultimate_only, passives):
             cards.append(card)
     return cards
 

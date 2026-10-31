@@ -55,3 +55,9 @@ def test_hero_names_short_names_and_common_words(text, ok):
 
 def test_numbers():
     assert numbers("at 10, twenty five and thirty minutes, 1v1") == {10, 25, 30}
+
+
+def test_a_line_that_drifts_into_another_language_is_dropped():
+    g = Grounding(HeroIndex())
+    assert g.problem("Use Force Staff组合使用力杖", "", []) == 'is not all in English ("组")'
+    assert g.problem("Don\u2019t fight alone \u2014 use your Blink. Café.", "", []) is None
