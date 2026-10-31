@@ -255,6 +255,18 @@ cooldown = 120
 
 # The spoken briefing in the countdown before the horn: your team's strengths
 # and weaknesses, counters, when to fight, and tips from your own past games.
+[player]
+# Your rank, so "how am I doing?" and the last-hit targets compare you with
+# players of your own medal, not everyone: "Herald", "Guardian", "Crusader",
+# "Archon", "Legend", "Ancient", "Divine" or "Immortal", or your MMR, e.g.
+# "2500". Empty: the coach asks once at the start of a game, or you say
+# "hey coach, my rank is Archon" (or type "rank archon"); what you say is
+# kept and comes before this setting.
+rank = ""
+# Otherwise read your medal from your own public OpenDota profile (needs
+# "Expose Public Match Data" on in Dota's settings, and [pregame] opendota).
+opendota = true
+
 [pregame]
 enabled = true
 # "ollama" (free, local model) or "builtin" (written from the facts, no AI).

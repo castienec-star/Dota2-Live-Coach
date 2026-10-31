@@ -69,12 +69,48 @@ Castien asked for the unasked check on 2026-10-28.
   far, since not dying is the first habit to build.
 - The 15/25 minute check now speaks for every hero, rough or not.
 
+## Compared with your own rank
+
+Castien asked (2026-10-31) that the coach know your MMR, so the comparison
+is fair: a Herald on 350 GPM is doing fine, a Legend on 350 GPM isn't.
+
+- **Your medal** (`coach/rank.py`): what you said ("my rank is Archon",
+  "my MMR is 2500", or the one-time question at the start of a game; kept
+  in `rank.json`), else `[player] rank` in `coach.toml`, else the medal on
+  your own public OpenDota profile (`/players/{your account}`, the same
+  own-profile rule as the briefing's match history). MMR becomes a medal at
+  about 770 MMR a medal (five stars of about 154).
+- **What each medal reaches** (`coach/data/brackets.json`, written by
+  `py -m coach refresh-brackets`): about 120 recent ranked matches per
+  medal (Herald to Ancient each, Divine and Immortal together) and 120
+  with no rank filter ("all"), only on the live patch, not Turbo, 15
+  minutes or longer, nobody abandoned. From OpenDota's public match data:
+  `/publicMatches?min_rank=&max_rank=` lists matches by average rank tier,
+  `/matches/{id}` gives each player's GPM, XPM and last hits. On each team
+  the three with most last hits count as cores, the other two as
+  supports. Saved at the same percentiles as `benchmarks.json`.
+- **How it is used:** for each number and percentile, the medal's value
+  divided by "all" is how much more or less that medal farms (held between
+  0.4 and 1.6 so one odd sample can't make a target silly). Your hero's own
+  public curve is scaled by that, so Juggernaut is still compared with
+  Juggernauts, just at your rank. Against your own medal "behind" is under
+  25% and "ahead" is 70% and up, centred on your medal's median.
+- **Last-hit targets** (before 8 minutes and the 5:00/10:00 line) use the
+  same scale on 3.5 a minute: if the middle Herald core last-hits 30% less
+  than the middle core overall, a Herald's 10:00 target is 25, not 35.
+- Without the file, or for a medal it doesn't cover, everything works as
+  before, against all players, and the coach says so when you tell it your
+  rank.
+- `rank.describe("archon")` gives one sentence of a medal's typical numbers
+  for the local model's facts.
+
 ## Known limits
 
 - Net worth is not compared: GSI gives gold but not net worth, and the
   benchmarks have no net worth curve.
-- Benchmarks mix every bracket and every position a hero is played in (Pudge
-  mid and Pudge support share one curve).
+- Benchmarks mix every position a hero is played in (Pudge mid and Pudge
+  support share one curve). The rank scale is per core or support, not per
+  hero: a sample of ~1,200 players a medal is too small for per-hero curves.
 - Only the 16 heroes with a build have their own bundled numbers. Next:
   bundle OpenDota's public benchmarks for every hero (issue #28 point 1),
   refreshed with patch data.

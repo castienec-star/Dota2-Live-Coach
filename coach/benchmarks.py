@@ -10,6 +10,10 @@ minutes the answer is last hits against a simple target and deaths so far.
 Only your own hero's GSI numbers are compared; nothing about other players is
 looked up.
 
+Once the coach knows your rank (coach/rank.py), each hero's numbers are
+scaled to what players of your medal reach, and so is the last-hit target:
+a Herald is compared with Heralds, a Legend with Legends.
+
 See docs/strategy/ahead-or-behind.md for how the verdict is chosen.
 """
 
@@ -25,7 +29,9 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
+from . import rank as rank_mod
 from .heroes import HeroIndex, HeroInfo
+from .rank import PlayerRank
 from .state import Snapshot
 
 BENCHMARKS_FILE = Path(__file__).resolve().parent / "data" / "benchmarks.json"
@@ -45,6 +51,8 @@ RAMP_START, RAMP_UNTIL = 0.6, 30 * 60
 # Most public matches are played below Divine, so the middle of this band is
 # a fair "even" for Herald to Ancient players.
 BEHIND, AHEAD = 0.15, 0.55
+# Against players of your own rank the middle of the band is their median.
+RANK_BEHIND, RANK_AHEAD = 0.25, 0.7
 # Early last-hit target for a core: 35 at 10 minutes (ROADMAP item 4), a
 # fair lane for Herald to Ancient, not a pro one. Counted from when the
 # first creep wave meets in lane, about half a minute in.
@@ -54,10 +62,12 @@ CREEPS_MEET = 0.5  # minutes
 log = logging.getLogger(__name__)
 
 
-def last_hit_target(minute: float) -> int:
+def last_hit_target(minute: float, rank: str | None = None) -> int:
     """Last hits a core should have at this minute, rounded to 5 (15 at 5:00,
-    35 at 10:00), and at least 5."""
-    return max(5, 5 * round(LAST_HITS_PER_MIN * (minute - CREEPS_MEET) / 5))
+    35 at 10:00), and at least 5. With a rank, scaled by how the middle core
+    of that medal last-hits against all cores (a Herald's target is lower)."""
+    rate = LAST_HITS_PER_MIN * (rank_mod.factor(rank, False, "last_hits_per_min", 0.5) or 1.0)
+    return max(5, 5 * round(rate * (minute - CREEPS_MEET) / 5))
 
 
 Curve = list[tuple[float, float]]  # (percentile, value), rising
@@ -71,6 +81,7 @@ class Verdict:
     weakest: str  # the metric furthest behind, e.g. "last_hits_per_min"
     minute: int
     rough: bool = False  # no numbers for this hero: against all cores or supports
+    rank: str | None = None  # compared with players of this medal, e.g. "archon"
 
 
 def load_benchmarks(path: Path = BENCHMARKS_FILE) -> dict[str, dict[str, Curve]]:
@@ -222,6 +233,7 @@ class Benchmarks:
         heroes: dict[str, dict[str, Curve]] | None = None,
         fetch: Fetch | None = None,
         hero_ids: dict[str, int] | None = None,
+        rank: PlayerRank | None = None,
     ) -> None:
         if heroes is None:
             try:
@@ -233,6 +245,12 @@ class Benchmarks:
         self._rough_said: set[str | None] = set()  # matches already told "rough"
         self.fetch = fetch
         self.hero_ids = hero_ids or {}
+        self.rank = rank
+
+    def bracket(self) -> str | None:
+        """The player's medal, when the bundled numbers cover it."""
+        mine = self.rank.bracket() if self.rank is not None else None
+        return mine if rank_mod.has(mine) else None
 
     def curves(self, hero: str) -> dict[str, Curve] | None:
         if hero not in self.heroes and self.fetch is not None and hero in self.hero_ids:
@@ -262,6 +280,10 @@ class Benchmarks:
             curves = role_curves().get(support)
         if not curves:
             return None
+        rank = self.bracket()
+        if rank:
+            curves = for_rank(curves, rank, support)
+        behind, ahead = (RANK_BEHIND, RANK_AHEAD) if rank else (BEHIND, AHEAD)
         mine = numbers(snap)
         scale = ramp(clock)
         shares = {
@@ -272,8 +294,16 @@ class Benchmarks:
         if not shares:
             return None
         score = sum(shares.values()) / len(shares)
-        kind = "behind" if score < BEHIND else "ahead" if score >= AHEAD else "even"
-        return Verdict(kind, score, min(shares, key=shares.get), clock // 60, rough)
+        kind = "behind" if score < behind else "ahead" if score >= ahead else "even"
+        return Verdict(kind, score, min(shares, key=shares.get), clock // 60, rough, rank)
+
+
+def for_rank(curves: dict[str, Curve], rank: str, support: bool) -> dict[str, Curve]:
+    """A hero's curves scaled to what players of this medal reach."""
+    scaled = {}
+    for metric, curve in curves.items():
+        scaled[metric] = [(p, v * (rank_mod.factor(rank, support, metric, p) or 1.0)) for p, v in curve]
+    return scaled
 
 
 def is_support(hero: HeroInfo | None, position: int = 0) -> bool:
@@ -296,6 +326,8 @@ def spoken(verdict: Verdict, support: bool, items: bool = True, caveat: bool = T
 
 def _spoken(verdict: Verdict, support: bool, items: bool) -> str:
     minutes = f"{verdict.minute} minutes"
+    if verdict.rank:
+        minutes = f"{rank_mod.name(verdict.rank)} at {minutes}"
     if verdict.kind == "ahead":
         return (
             f"You're ahead for {minutes}. Use it: group with your team "
@@ -326,7 +358,7 @@ def _spoken(verdict: Verdict, support: bool, items: bool) -> str:
     )
 
 
-def early(snap: Snapshot, support: bool) -> str:
+def early(snap: Snapshot, support: bool, rank: str | None = None) -> str:
     """Before the numbers say much: last hits against a simple target for a
     core, and deaths so far."""
     minute = (snap.clock_time or 0) // 60
@@ -344,7 +376,7 @@ def early(snap: Snapshot, support: bool) -> str:
             f"It's too early to judge a support at {minute} minutes. {died} "
             "Keep your core safe and stack a camp when you can."
         )
-    target = last_hit_target(minute)
+    target = last_hit_target(minute, rank)
     if snap.last_hits >= target:
         farm = f"{snap.last_hits} last hits at {minute} minutes, that's on track."
     else:
@@ -357,5 +389,5 @@ def status(benchmarks: Benchmarks, snap: Snapshot, hero: HeroInfo | None, positi
     support = is_support(hero, position)
     verdict = benchmarks.verdict(snap, support)
     if verdict is None:
-        return early(snap, support)
+        return early(snap, support, benchmarks.bracket())
     return spoken(verdict, support, caveat=benchmarks.say_rough(snap, verdict))

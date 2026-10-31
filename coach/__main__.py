@@ -1,4 +1,4 @@
-"""Command line entry point: py -m coach [run|install|replay|refresh-items|refresh-benchmarks|review|say]."""
+"""Command line entry point: py -m coach [run|install|replay|refresh-items|refresh-benchmarks|refresh-brackets|review|say]."""
 
 from __future__ import annotations
 
@@ -30,6 +30,7 @@ from .items import load_items
 from .lineup import Interview, Question, TypedQuestions, configured_position
 from .opendota import OpenDota
 from .profile import summarize
+from .rank import PlayerRank, tell
 from .recorder import MatchRecorder
 from .replay import replay
 from .rules import (
@@ -111,13 +112,23 @@ def ollama_models(cfg: config_mod.Config) -> set[tuple[str, str]]:
     )
 
 
+def make_rank(cfg: config_mod.Config) -> PlayerRank:
+    """The player's rank: told, set in coach.toml, or from their own OpenDota profile."""
+    lookup = None
+    if cfg.player.get("opendota", True) and cfg.pregame.get("opendota", True):
+        lookup = OpenDota(cfg.app_dir / "opendota").player_rank
+    return PlayerRank(cfg.player.get("rank", ""), cfg.app_dir / "rank.json", lookup)
+
+
 def make_benchmarks(cfg: config_mod.Config) -> Benchmarks:
-    """Bundled hero benchmarks, plus OpenDota for other heroes if it is on."""
+    """Bundled hero benchmarks, plus OpenDota for other heroes if it is on,
+    compared with players of the player's rank."""
+    rank = make_rank(cfg)
     if not cfg.pregame.get("opendota", True):
-        return Benchmarks()
+        return Benchmarks(rank=rank)
     stats = OpenDota(cfg.app_dir / "opendota")
     hero_ids = {h.key: h.id for h in load_heroes().values()}
-    return Benchmarks(fetch=stats.benchmarks, hero_ids=hero_ids)
+    return Benchmarks(fetch=stats.benchmarks, hero_ids=hero_ids, rank=rank)
 
 
 def make_coach(
@@ -148,6 +159,8 @@ def make_coach(
     )
     coach.enemy_items = enemy_items.EnemyItems(enemies=enemies)
     coach.listeners.append(coach.enemy_items)
+    if benchmarks.rank is not None:
+        coach.listeners.append(benchmarks.rank)  # reads your medal once it sees your account
     # A death tip has its own deadline too: the respawn.
     tip_say = functools.partial(speaker.say, priority=HIGH, max_delay=10)
     reminders, positions = split_positions(cfg.reminders)
@@ -156,7 +169,7 @@ def make_coach(
         timers.build(reminders)
         + hero.build(reminders, cfg.builds, position, enemies)
         + power_windows
-        + last_hits.build(reminders, position)
+        + last_hits.build(reminders, position, benchmarks.bracket)
         + game_check.build(
             reminders,
             benchmarks,
@@ -218,6 +231,9 @@ PICK_COMMANDS = ("vs", "with", "pos", "clear")
 # Typed for "how am I doing?".
 HOW_COMMANDS = ("how", "status")
 
+# Typed to set or hear your rank: "rank archon", "mmr 2500".
+RANK_COMMANDS = ("rank", "mmr", "medal")
+
 
 def how_am_i_doing(coach: Coach) -> str:
     """The same answer as asking "how am I doing?"."""
@@ -231,7 +247,8 @@ def how_am_i_doing(coach: Coach) -> str:
 
 def read_typed_picks(coach: Coach, questions: TypedQuestions | None = None) -> None:
     """Lets you type the draft in the coach window: "vs am cm lion pudge sf",
-    "buy" for what to buy now, "how" for how you are doing, the answer to
+    "buy" for what to buy now, "how" for how you are doing, "rank archon"
+    to set your rank, the answer to
     a start-of-game question shown there, or any other question for the model."""
     for line in sys.stdin:
         if not line.strip():
@@ -242,6 +259,9 @@ def read_typed_picks(coach: Coach, questions: TypedQuestions | None = None) -> N
             continue
         if command in HOW_COMMANDS and coach.advice is not None:
             print(how_am_i_doing(coach), flush=True)
+            continue
+        if command in RANK_COMMANDS and coach.advice is not None:
+            print(tell(coach.advice.benchmarks.rank, line), flush=True)
             continue
         if command not in PICK_COMMANDS and questions and questions.answer(line):
             continue
@@ -269,6 +289,7 @@ def make_interview(cfg: config_mod.Config, coach: Coach) -> Interview | None:
         coach.pregame,
         position=int(cfg.pregame.get("position", 0)),
         hero_positions={k: int(v) for k, v in positions.items()},
+        rank=coach.advice.benchmarks.rank if coach.advice is not None else None,
     )
 
 
@@ -367,6 +388,7 @@ def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
         threading.Thread(target=read_typed_picks, args=(coach, typed), daemon=True).start()
         logging.info('Type the enemy picks any time, e.g.  vs am cm lion pudge sf')
         logging.info('Type "buy" any time to hear what to buy now, or "how" for how you are doing')
+        logging.info('Type your rank to compare with players of your medal, e.g.  rank archon  or  mmr 2500')
         if chat is not None:
             logging.info("Or type any other question for the coach, e.g.  how do I play against pudge")
     if listening is None:
@@ -471,6 +493,35 @@ def cmd_refresh_benchmarks(cfg: config_mod.Config, args: argparse.Namespace) -> 
     return 0
 
 
+def cmd_refresh_brackets(cfg: config_mod.Config, args: argparse.Namespace) -> int:
+    """Saves what players of each medal reach on the current patch, from
+    OpenDota's public ranked matches, so comparisons are with your own rank."""
+    from . import rank
+
+    stats = OpenDota(cfg.app_dir / "opendota", timeout=20)
+    out = args.out or rank.BRACKETS_FILE
+
+    def get(path: str):
+        # One failed match shouldn't make the rest skip the network.
+        stats._offline_until = 0.0
+        return stats.get(path, max_age=86400)
+
+    groups = len(rank.GROUPS)
+    minutes = round(groups * args.matches * 1.2 / 60)
+    print(f"Reading {args.matches} ranked matches for each of {groups} rank groups from OpenDota (about {minutes} minutes)...")
+    try:
+        data = rank.fetch(get, args.matches, progress=lambda text: print(text, flush=True))
+    except RuntimeError as exc:
+        logging.error("%s. Check your internet connection and try again.", exc)
+        return 1
+    if "all" not in data["brackets"] or len(data["brackets"]) < 4:
+        logging.error("Only %d rank groups came back; nothing saved. Try again later.", len(data["brackets"]))
+        return 1
+    saved = rank.save(data, out)
+    print(f"Saved {saved} rank groups ({data['patch']}) to {out}")
+    return 0
+
+
 def cmd_review(cfg: config_mod.Config, args: argparse.Namespace) -> int:
     """Prints the post-game review of a recorded match."""
     items = load_items()
@@ -506,6 +557,9 @@ def main(argv: list[str] | None = None) -> int:
     p_refresh.add_argument("--out", type=Path, default=None, help="where to save (default: the bundled data file)")
     p_bench = sub.add_parser("refresh-benchmarks", help="save public GPM and last-hit numbers per hero from OpenDota")
     p_bench.add_argument("--out", type=Path, default=None, help="where to save (default: the bundled data file)")
+    p_ranks = sub.add_parser("refresh-brackets", help="save what players of each medal reach, from OpenDota")
+    p_ranks.add_argument("--out", type=Path, default=None, help="where to save (default: the bundled data file)")
+    p_ranks.add_argument("--matches", type=int, default=120, help="matches to read per rank group")
     p_review = sub.add_parser("review", help="print the post-game review of a recorded match")
     p_review.add_argument("recording", type=Path)
     p_say = sub.add_parser("say", help="test the voice")
@@ -520,6 +574,7 @@ def main(argv: list[str] | None = None) -> int:
         "replay": cmd_replay,
         "refresh-items": cmd_refresh_items,
         "refresh-benchmarks": cmd_refresh_benchmarks,
+        "refresh-brackets": cmd_refresh_brackets,
         "review": cmd_review,
         "say": cmd_say,
     }
