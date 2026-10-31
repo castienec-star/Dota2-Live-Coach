@@ -53,7 +53,7 @@ CLAUDE.md).
    minute that Roshan is worth taking after a won fight. Uses only the game
    clock and `daytime`. *Why:* objective play is what turns won fights into
    won games at low MMR.
-9. [ ] **Beginner and experienced modes.** One switch in `coach.toml` that
+9. [x] **Beginner and experienced modes.** One switch in `coach.toml` that
    sets how talkative the coach is. Beginner: all reminders, longer lines.
    Experienced: only gold, stacks, power rune and buyback. *Why:* the same
    app must suit a Herald and an Ancient without editing ten settings.
@@ -120,6 +120,11 @@ CLAUDE.md).
   once the coach knows the player has no neutral item a few minutes after a
   tier opens (GSI's `neutral0` slot is empty), one nudge to go craft it; and
   in Turbo, halve the tier times automatically from GSI's game mode.
+- Modes, next steps (item 9 is done: `[coach] mode` in `coach.toml`): a
+  longer, explaining first-time version of each line in beginner mode
+  ("Power rune in 15 seconds. Mid should check it: it can win the lane"),
+  said the first one or two times a match only; and a voice switch ("hey
+  coach, quiet mode") once the settings window (item 16) exists.
 - Translations of the spoken lines.
 - Upgrade-aware builds: know that Dragon Lance went into Hurricane Pike (from
   dotaconstants' item components) so builds can list both steps.
