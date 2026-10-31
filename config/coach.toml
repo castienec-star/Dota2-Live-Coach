@@ -111,6 +111,17 @@ every = 120
 until = 240
 lead = 10
 
+[reminders.night]
+# Says when night starts (everyone's vision is shorter) for the first few
+# nights of a match. Night Stalker's ultimate doesn't count.
+enabled = true
+nights = 3
+
+[reminders.roshan]
+# One reminder at this minute that a won fight is the time to take Roshan.
+enabled = true
+minute = 20
+
 [reminders.stack]
 # Pull the camp at about :53 each minute; stops after 11:53. Only said when your
 # hero stands within "radius" map units of a neutral camp (patch 7.41 camp spots).
@@ -118,6 +129,13 @@ first = 113
 every = 60
 until = 713
 radius = 1000
+
+[reminders.neutral_items]
+# Neutral items are crafted from Madstone, which cleared jungle camps drop.
+# Said once as each tier opens (5, 15, 25, 35 and 60 minutes in patch 7.41;
+# Turbo halves these). Game State Integration doesn't give your Madstone
+# count, so this only says when a tier opens. Docs: docs/strategy/neutral-items.md
+at = [300, 900, 1500, 2100, 3600]
 
 # Reminders about your own hero. Set enabled = false to turn one off.
 [reminders.low_health]
@@ -216,7 +234,8 @@ minutes = [5, 10]
 [reminders.review]
 # When the match ends, say up to three things to work on (deaths and when,
 # last hits at 10 minutes, how late your first big item came) and save them
-# as a text file in the "reviews" folder next to coach.toml.
+# as a text file in the "reviews" folder next to coach.toml. From the second
+# match on it opens with whether you fixed last game's first point.
 enabled = true
 
 [reminders.power_window]

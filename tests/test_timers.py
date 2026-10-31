@@ -156,3 +156,27 @@ def test_thinning_can_be_turned_off(payload):
     engine = Engine(build({"power_rune": {"thin_after": 0}}), said.append)
     rule = engine.rules[0]
     assert rule.name == "power_rune" and not rule.thinned(1320)
+
+
+def test_neutral_tiers_called_once_each(payload):
+    said = []
+    engine = Engine(build({}), said.append)
+    state = MatchState()
+    for start in (300, 900, 1500, 2100, 3600):
+        play(state, payload, [start - 1, start, start, start + 1], engine)
+    neutral = [line for line in said if "eutral items" in line]
+    assert len(neutral) == 5
+    assert "Madstone" in neutral[0] and "Tier" not in neutral[0]
+    assert neutral[1].startswith("Tier 2 neutral items are open.")
+    assert neutral[4].startswith("Tier 5")
+
+
+def test_neutral_tiers_follow_config(payload):
+    said = []
+    engine = Engine(build({"neutral_items": {"at": [150, 450]}}), said.append)
+    play(MatchState(), payload, [449, 450], engine)
+    assert said == ["Tier 2 neutral items are open. Click the Madstone counter when it flashes to upgrade yours."]
+
+
+def test_neutral_tiers_can_be_turned_off():
+    assert all(r.name != "neutral_items" for r in build({"neutral_items": {"enabled": False}}))

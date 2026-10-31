@@ -17,10 +17,10 @@ is.
   to 5: 15 at 5:00, 35 at 10:00. The same numbers as the post-game review
   (`docs/strategy/post-game-review.md`) and the early "how am I doing?"
   answer (`docs/strategy/ahead-or-behind.md`).
-- **Scaled to your rank** once the coach knows it (2026-10-31): 3.5 times how
-  the middle core of your medal last-hits against the middle core overall,
-  from `coach/data/brackets.json` (see "Compared with your own rank" in
-  `docs/strategy/ahead-or-behind.md`). The post-game review still uses the
+- **From your own medal** once the coach knows it (2026-10-31): the middle
+  core of your medal's whole-match last hits a minute, lowered for the early
+  game (0.73 at 10:00), from `coach/data/brackets.json` (see "Compared with
+  your own rank" in `docs/strategy/ahead-or-behind.md`). The post-game review still uses the
   flat 35 for now.
 - A lane wave is four creeps every 30 seconds early on (three melee, one
   ranged), about 8 a minute, so 3.5 is a bit under half the lane: reachable
@@ -42,6 +42,10 @@ is.
     instead of walking around.
 - Supports (position 4 or 5, or a support hero while the position isn't
   known) hear nothing: their job is to keep the core's lane safe.
+
+At 10:00 the line adds "up from 18 last game" when the player beat last
+game's last hits at 10 minutes as a core (from the post-game review,
+`post-game-review.md`). It says nothing when they are lower.
 
 Encouraging wording on purpose: one line at 5 and 10 minutes, never a
 string of "you're behind", so players keep the reminder on.

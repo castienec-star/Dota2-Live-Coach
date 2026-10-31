@@ -41,6 +41,7 @@ from .rules import (
     game_check,
     hero,
     last_hits,
+    objectives,
     split_positions,
     timers,
     windows,
@@ -165,11 +166,20 @@ def make_coach(
     tip_say = functools.partial(speaker.say, priority=HIGH, max_delay=10)
     reminders, positions = split_positions(cfg.reminders)
     power_windows = windows.build(reminders)
+    review = None
+    if reminders.get("review", {}).get("enabled", True):
+        # The last thing said, and players often leave within seconds of the
+        # end: first in line, most useful point first; the file has the rest.
+        review_say = functools.partial(speaker.say, priority=HIGH, max_delay=5)
+        # A fast replay (no tips) only prints it.
+        folder = cfg.app_dir / "reviews" if tips else None
+        review = review_mod.Review(review_say, folder, position)
     rules = (
         timers.build(reminders)
         + hero.build(reminders, cfg.builds, position, enemies)
         + power_windows
-        + last_hits.build(reminders, position, benchmarks.bracket)
+        + objectives.build(reminders)
+        + last_hits.build(reminders, position, review.previous_last_hits if review else None, benchmarks.bracket)
         + game_check.build(
             reminders,
             benchmarks,
@@ -182,13 +192,8 @@ def make_coach(
         + (death_tip.build(reminders, tip_say, position, notes_of(coach)) if tips else [])
     )
     coach.listeners.append(Engine(for_positions(rules, positions, position), speaker.say, cfg.voice_max_lines, prioritized=True))
-    if reminders.get("review", {}).get("enabled", True):
-        # The last thing said, and players often leave within seconds of the
-        # end: first in line, most useful point first; the file has the rest.
-        review_say = functools.partial(speaker.say, priority=HIGH, max_delay=5)
-        # A fast replay (no tips) only prints it.
-        folder = cfg.app_dir / "reviews" if tips else None
-        coach.listeners.append(review_mod.Review(review_say, folder, position))
+    if review is not None:
+        coach.listeners.append(review)
     if tips:
         coach.pregame = pregame_mod.build(
             with_tip_model(cfg, cfg.pregame),
@@ -508,17 +513,20 @@ def cmd_refresh_brackets(cfg: config_mod.Config, args: argparse.Namespace) -> in
 
     groups = len(rank.GROUPS)
     minutes = round(groups * args.matches * 1.2 / 60)
-    print(f"Reading {args.matches} ranked matches for each of {groups} rank groups from OpenDota (about {minutes} minutes)...")
+    print(f"Reading {args.matches} ranked matches for each of {groups} medals from OpenDota (about {minutes} minutes)...")
+    keys = {h.id: h.key for h in load_heroes().values()}
     try:
-        data = rank.fetch(get, args.matches, progress=lambda text: print(text, flush=True))
+        data = rank.fetch(get, keys, args.matches, progress=lambda text: print(text, flush=True))
     except RuntimeError as exc:
-        logging.error("%s. Check your internet connection and try again.", exc)
+        logging.error(
+            "%s. Nothing saved. Try again later or tomorrow: matches already read are kept for a day.", exc
+        )
         return 1
-    if "all" not in data["brackets"] or len(data["brackets"]) < 4:
-        logging.error("Only %d rank groups came back; nothing saved. Try again later.", len(data["brackets"]))
+    if len(data["brackets"]) < 4:
+        logging.error("Only %d medals came back; nothing saved. Try again later.", len(data["brackets"]))
         return 1
     saved = rank.save(data, out)
-    print(f"Saved {saved} rank groups ({data['patch']}) to {out}")
+    print(f"Saved {saved} medals ({data['patch']}) to {out}")
     return 0
 
 
@@ -559,7 +567,7 @@ def main(argv: list[str] | None = None) -> int:
     p_bench.add_argument("--out", type=Path, default=None, help="where to save (default: the bundled data file)")
     p_ranks = sub.add_parser("refresh-brackets", help="save what players of each medal reach, from OpenDota")
     p_ranks.add_argument("--out", type=Path, default=None, help="where to save (default: the bundled data file)")
-    p_ranks.add_argument("--matches", type=int, default=120, help="matches to read per rank group")
+    p_ranks.add_argument("--matches", type=int, default=250, help="matches to read per medal")
     p_review = sub.add_parser("review", help="print the post-game review of a recorded match")
     p_review.add_argument("recording", type=Path)
     p_say = sub.add_parser("say", help="test the voice")

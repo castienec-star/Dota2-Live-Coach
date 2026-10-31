@@ -21,22 +21,32 @@ def curve(middle, spread=0.5):
     return [round(middle * (1 - spread + 2 * spread * p), 2) for p in P]
 
 
-def group(scale, matches=100):
+def numbers(scale):
+    return {
+        "gold_per_min": curve(500 * scale),
+        "xp_per_min": curve(600 * scale),
+        "last_hits_per_min": curve(5.0 * scale),
+    }
+
+
+def group(scale, heroes=None, matches=100):
     return {
         "matches": matches,
-        "core": {
-            "gold_per_min": curve(500 * scale),
-            "xp_per_min": curve(600 * scale),
-            "last_hits_per_min": curve(5.0 * scale),
-        },
+        "core": numbers(scale),
         "support": {"gold_per_min": curve(300), "xp_per_min": curve(450 * scale), "last_hits_per_min": curve(1.0)},
+        "heroes": heroes or {},
     }
 
 
 DATA = {
     "percentiles": P,
     "patch": "7.41",
-    "brackets": {"all": group(1.0), "herald": group(0.7), "legend": group(1.2), "divine": group(1.3)},
+    "brackets": {
+        "herald": group(0.7),
+        # Legend Juggernauts farm more than Legend cores in general.
+        "legend": group(1.2, {"juggernaut": {"games": 40} | numbers(1.4)}),
+        "divine": group(1.3),
+    },
 }
 
 
@@ -194,21 +204,36 @@ def test_rank_without_numbers_for_it_says_so(tmp_path, monkeypatch):
 def test_same_numbers_rank_their_own_medal(brackets):
     # A Juggernaut "behind" against everyone is even for a Herald and
     # behind for a Legend.
-    snap = jugg(900, gpm=380, xpm=430, last_hits=60)
+    snap = jugg(900, gpm=280, xpm=330, last_hits=45)
     assert Benchmarks().verdict(snap).kind == "behind"
     herald = Benchmarks(rank=Told("herald")).verdict(snap)
     assert herald.kind == "even" and herald.rank == "herald"
     assert Benchmarks(rank=Told("legend")).verdict(snap).kind == "behind"
 
 
+def test_only_numbers_from_the_players_own_medal(brackets):
+    # Legend has Juggernaut's own numbers; Herald only its cores in general.
+    assert rank_mod.curves("legend", "juggernaut", False) == (brackets["legend"]["heroes"]["juggernaut"], True)
+    assert rank_mod.curves("herald", "juggernaut", False) == (brackets["herald"]["core"], False)
+    assert rank_mod.curves("herald", "lion", True) == (brackets["herald"]["support"], False)
+    assert not Benchmarks(rank=Told("legend")).verdict(jugg()).rough
+    # The same numbers beat Legend cores in general by more than Legend Juggernauts.
+    snap = jugg(900, gpm=560, xpm=640, last_hits=90)
+    legend = Benchmarks(rank=Told("legend"))
+    luna = Snapshot(clock_time=900, hero_name="npc_dota_hero_luna", gpm=560, xpm=640, last_hits=90)
+    assert legend.verdict(snap).kind == "even"
+    assert legend.verdict(luna).score > legend.verdict(snap).score
+
+
 def test_spoken_names_the_medal(brackets):
-    line = status(Benchmarks(rank=Told("herald")), jugg(900, 380, 430, 60), INDEX.by_key("juggernaut"))
+    line = status(Benchmarks(rank=Told("herald")), jugg(900, 280, 330, 45), INDEX.by_key("juggernaut"))
     assert line.startswith("You're about even for Herald at 15 minutes.")
+    assert line.endswith("That's a rough comparison with Herald cores in general.")
 
 
 def test_immortal_uses_divine_and_unknown_ranks_use_everyone(brackets):
     assert Benchmarks(rank=Told("immortal")).bracket() == "immortal"
-    assert rank_mod.factor("immortal", False, "gold_per_min", 0.5) == pytest.approx(1.3)
+    assert rank_mod.curves("immortal", "lion", False)[0] is brackets["divine"]["core"]
     # No numbers for Archon in this file: compared with everyone, as before.
     assert Benchmarks(rank=Told("archon")).bracket() is None
     assert Benchmarks(rank=Told("archon")).verdict(jugg()).rank is None
@@ -216,7 +241,9 @@ def test_immortal_uses_divine_and_unknown_ranks_use_everyone(brackets):
 
 def test_last_hit_target_follows_the_medal(brackets):
     assert last_hit_target(10) == 35
-    assert last_hit_target(10, "herald") == 25  # 3.5 x 0.7 a minute
+    # Herald cores average 3.5 a match, about 2.6 by 10:00.
+    assert last_hit_target(10, "herald") == 25
+    assert last_hit_target(5, "herald") == 10
     assert last_hit_target(10, "legend") == 40
     assert last_hit_target(10, "archon") == 35  # no numbers: everyone's
 
@@ -227,12 +254,6 @@ def test_early_answer_and_unasked_line_use_the_medal(brackets):
     state = MatchState()
     state.current = jugg(600, last_hits=26)
     assert rule.check(state) == ["26 last hits at 10 minutes, great farming. Keep it up."]
-
-
-def test_factors_are_kept_in_range(brackets, monkeypatch):
-    odd = dict(brackets, herald={"core": {"gold_per_min": [(p, 1.0) for p in P]}})
-    monkeypatch.setattr(rank_mod, "load_brackets", lambda: odd)
-    assert rank_mod.factor("herald", False, "gold_per_min", 0.5) == rank_mod.LOWEST
 
 
 def test_describe_for_the_local_model(brackets):
@@ -259,6 +280,7 @@ def match(match_id, duration=2400, leaver=0):
         n = slot % 128
         rows.append({
             "player_slot": slot,
+            "hero_id": 8 if slot == 0 else 100 + slot,
             "gold_per_min": 600 - 80 * n,
             "xp_per_min": 700 - 60 * n,
             "last_hits": 300 - 60 * n,
@@ -269,8 +291,8 @@ def match(match_id, duration=2400, leaver=0):
 
 def test_players_splits_cores_and_supports():
     rows = players(match(1))
-    assert [support for support, _ in rows] == [False] * 3 + [True] * 2 + [False] * 3 + [True] * 2
-    assert rows[0][1] == {"gold_per_min": 600.0, "xp_per_min": 700.0, "last_hits_per_min": 7.5}
+    assert [support for _, support, _ in rows] == [False] * 3 + [True] * 2 + [False] * 3 + [True] * 2
+    assert rows[0] == (8, False, {"gold_per_min": 600.0, "xp_per_min": 700.0, "last_hits_per_min": 7.5})
     assert players(match(1, leaver=2)) == []
     assert players(match(1, duration=600)) == []
 
@@ -288,7 +310,7 @@ def fake_opendota(path):
         listed = [
             {"match_id": 100 + n, "start_time": START, "lobby_type": 7, "game_mode": 22,
              "duration": 2400, "avg_rank_tier": tier}
-            for n in range(30)
+            for n in range(60)
         ]
         listed[0]["game_mode"] = 23  # Turbo
         listed[1]["lobby_type"] = 0  # unranked
@@ -307,22 +329,27 @@ def test_fetch_samples_each_group_on_the_live_patch(tmp_path, monkeypatch):
         asked.append(path)
         return fake_opendota(path)
 
-    data = rank_mod.fetch(get, matches=20)
+    data = rank_mod.fetch(get, {8: "juggernaut", 101: "lion"}, matches=40)
     assert data["patch"] == "7.41"
     assert set(data["brackets"]) == set(rank_mod.GROUPS)
-    assert data["brackets"]["herald"]["matches"] == 20
+    herald = data["brackets"]["herald"]
+    assert herald["matches"] == 40
+    # Juggernaut (40 games) gets its own numbers; unknown heroes don't.
+    assert set(herald["heroes"]) == {"juggernaut", "lion"} and herald["heroes"]["juggernaut"]["games"] == 40
+    assert herald["heroes"]["juggernaut"]["gold_per_min"][0] == 600
     assert not any(p in asked for p in ("/matches/100", "/matches/101", "/matches/102"))
-    assert "/publicMatches?min_rank=10&max_rank=19" in asked and "/publicMatches" in asked
+    assert "/publicMatches?min_rank=10&max_rank=19" in asked
     out = tmp_path / "brackets.json"
     assert rank_mod.save(data, out) == len(rank_mod.GROUPS)
     loaded = rank_mod.load_brackets.__wrapped__(out)
     assert len(loaded["herald"]["core"]["gold_per_min"]) == len(P)
+    assert loaded["herald"]["heroes"]["juggernaut"]["gold_per_min"][0] == (0.1, 600)
 
 
 def test_too_few_matches_leave_a_group_out(monkeypatch):
     monkeypatch.setattr("coach.rank.time.sleep", lambda s: None)
-    data = rank_mod.fetch(fake_opendota, matches=200)
-    assert data["brackets"] == {}  # 27 usable matches each, under 200 / 4
+    data = rank_mod.fetch(fake_opendota, {}, matches=400)
+    assert data["brackets"] == {}  # under 400 / 4 usable matches each
 
 
 def test_refresh_brackets_command(tmp_path, monkeypatch):
@@ -330,7 +357,7 @@ def test_refresh_brackets_command(tmp_path, monkeypatch):
     monkeypatch.setattr("coach.opendota.OpenDota.get", lambda self, path, max_age=None: fake_opendota(path))
     monkeypatch.setattr("coach.rank.time.sleep", lambda s: None)
     out = tmp_path / "brackets.json"
-    args = ["--config", str(tmp_path / "none.toml"), "refresh-brackets", "--out", str(out), "--matches", "20"]
+    args = ["--config", str(tmp_path / "none.toml"), "refresh-brackets", "--out", str(out), "--matches", "40"]
     assert main(args) == 0
     assert set(json.loads(out.read_text(encoding="utf-8"))["brackets"]) == set(rank_mod.GROUPS)
 
@@ -350,3 +377,10 @@ def test_opendota_player_rank(tmp_path):
     stats.get = lambda path, max_age=None: {"rank_tier": 35} if path == "/players/7" else {}
     assert stats.player_rank(7) == 35
     assert stats.player_rank(8) is None
+
+
+def test_stops_when_opendota_stops_answering(monkeypatch):
+    monkeypatch.setattr("coach.rank.time.sleep", lambda s: None)
+    get = lambda path: None if path.startswith("/matches/") else fake_opendota(path)  # noqa: E731
+    with pytest.raises(RuntimeError, match="stopped answering"):
+        rank_mod.fetch(get, {}, matches=40)

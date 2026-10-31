@@ -44,11 +44,11 @@ CLAUDE.md).
    calm line: farm safely, stay near towers, buy a Black King Bar or
    defensive item if it is on the build. *Why:* tilt and feeding are classic
    low-bracket losses; one sentence can stop the spiral.
-7. [ ] **Neutral item tier reminders.** Tell the player when each tier of
+7. [x] **Neutral item tier reminders.** Tell the player when each tier of
    neutral items starts dropping and remind them to pick one up from the
    stash. Timings from the live patch. *Why:* new players forget neutral
    items entirely.
-8. [ ] **Day/night and Roshan basics.** Say when night starts (vision is
+8. [x] **Day/night and Roshan basics.** Say when night starts (vision is
    shorter) for the first few cycles, and give one reminder at a sensible
    minute that Roshan is worth taking after a won fight. Uses only the game
    clock and `daytime`. *Why:* objective play is what turns won fights into
@@ -101,8 +101,9 @@ CLAUDE.md).
 
 - Last-hit pace, next steps (item 4 is done in `coach/rules/last_hits.py`):
   count denies too ("and 6 denies, nice") once the coach knows the lane
-  matchup, and in the post-game review say "you hit 15 at 5:00 this game,
-  up from 9" by comparing with the player's earlier reviews.
+  matchup. Comparing with last game is done (the 10:00 line and the review's
+  opening line); next, a trend over the last five games ("your last hits
+  at 10 minutes went from 15 to 28 this week").
 - Skill build reminders per hero (for example "max your first spell"),
   from public data.
 - Spoken item timing goals per hero ("aim for Battle Fury by 15 minutes").
@@ -111,10 +112,14 @@ CLAUDE.md).
   writes one text file per match in `reviews/`; the summary can compare them.
 - Post-game review, next steps: name the hero the player died to most when
   they told the coach (in-match answers), compare item timings with the
-  hero's public popular-item timings instead of one 20-minute rule, and say
-  "last game you fixed X" when a point from the previous review improved.
-  Also save (not speak) the review when the player abandons and GSI goes
+  hero's public popular-item timings instead of one 20-minute rule. Saying
+  whether the player fixed last game's first point is done
+  (`reviews/last.json`, Castien asked for it on 2026-10-31). Also save (not speak) the review when the player abandons and GSI goes
   silent before post-game, using the health watch.
+- Neutral items, next steps (item 7 is done in `coach/rules/timers.py`):
+  once the coach knows the player has no neutral item a few minutes after a
+  tier opens (GSI's `neutral0` slot is empty), one nudge to go craft it; and
+  in Turbo, halve the tier times automatically from GSI's game mode.
 - Translations of the spoken lines.
 - Upgrade-aware builds: know that Dragon Lance went into Hurricane Pike (from
   dotaconstants' item components) so builds can list both steps.

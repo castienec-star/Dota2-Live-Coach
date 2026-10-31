@@ -47,6 +47,7 @@ class Snapshot:
     game_state: str | None = None
     clock_time: int | None = None
     daytime: bool | None = None
+    nightstalker_night: bool = False
     paused: bool = False
     win_team: str | None = None
 
@@ -110,6 +111,7 @@ class Snapshot:
             game_state=game.get("game_state"),
             clock_time=game.get("clock_time"),
             daytime=game.get("daytime"),
+            nightstalker_night=bool(game.get("nightstalker_night", False)),
             paused=bool(game.get("paused", False)),
             win_team=game.get("win_team"),
             team=player.get("team_name"),

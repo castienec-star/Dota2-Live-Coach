@@ -7,16 +7,15 @@ start of a game, or set [player] rank in coach.toml. Failing those, it reads
 the medal on your own public OpenDota profile, like the briefing reads your
 own match history. Other players' profiles are never looked up.
 
-What players of each rank reach comes from public matches only: a sample of
-recent ranked matches of each medal on the current patch, read from
-OpenDota's public match data (`py -m coach refresh-brackets` rewrites
+Once your medal is known, you are compared only with players of that medal
+(a Legend 3 only with Legends). Their numbers come from public matches: a
+sample of recent ranked matches of each medal on the current patch, read
+from OpenDota's public match data (`py -m coach refresh-brackets` rewrites
 coach/data/brackets.json). From each match it keeps every player's gold,
-experience and last hits per minute, split into cores (the three with most
-last hits on each team) and supports, and saves those numbers at the same
-percentiles as coach/data/benchmarks.json. "all" is the same sample with no
-rank filter. Dividing a rank's numbers by "all" says how much lower or
-higher that rank farms; coach/benchmarks.py scales each hero's public
-numbers by that, and the last-hit targets too.
+experience and last hits per minute, by hero and as cores (the three with
+most last hits on each team) or supports, saved at the same percentiles as
+coach/data/benchmarks.json. A hero played often enough in your medal is
+compared with itself; otherwise with your medal's cores or supports.
 
 The file is plain numbers so other parts of the coach (such as the local
 model's facts) can quote them: see describe().
@@ -74,7 +73,6 @@ PERCENTILES = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99]
 # Divine's sample covers both.
 GROUPS = {name: (tier * 10, tier * 10 + 9) for tier, name in RANKS.items() if tier < 7}
 GROUPS["divine"] = (70, 89)
-GROUPS["all"] = (0, 0)  # no rank filter
 RANKED_LOBBY = 7
 TURBO = 23
 MIN_DURATION = 15 * 60  # shorter games are stomps or abandons
@@ -245,24 +243,32 @@ def tell(player: PlayerRank | None, text: str) -> str:
 # The bracket numbers.
 
 Curve = list[tuple[float, float]]  # (percentile, value), rising
+Curves = dict[str, Curve]  # metric: curve
+# A hero needs this many games in a medal's sample for its own curves; with
+# fewer it is compared with that medal's cores or supports in general.
+MIN_HERO_GAMES = 30
 
 
 @functools.cache
-def load_brackets(path: Path = BRACKETS_FILE) -> dict[str, dict[str, dict[str, Curve]]]:
-    """{group: {"core" or "support": {metric: curve}}} from the bundled file;
-    empty when there is none yet."""
+def load_brackets(path: Path = BRACKETS_FILE) -> dict[str, dict]:
+    """{medal: {"core": curves, "support": curves, "heroes": {hero key:
+    curves}}} from the bundled file; empty when there is none yet."""
     if not path.is_file():
         return {}
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
         percentiles = data["percentiles"]
+
+        def curves(values: dict) -> Curves:
+            return {m: list(zip(percentiles, v)) for m, v in values.items() if m in METRICS}
+
         return {
             group: {
-                role: {m: list(zip(percentiles, values)) for m, values in curves.items() if m in METRICS}
-                for role, curves in roles.items()
-                if role in ("core", "support")
+                "core": curves(numbers["core"]),
+                "support": curves(numbers["support"]),
+                "heroes": {key: curves(hero) for key, hero in numbers.get("heroes", {}).items()},
             }
-            for group, roles in data["brackets"].items()
+            for group, numbers in data["brackets"].items()
         }
     except (OSError, ValueError, KeyError, TypeError, AttributeError) as exc:
         log.warning("Can't read %s (%s); comparing with all players", path, exc)
@@ -284,43 +290,42 @@ def value_at(curve: Curve, p: float) -> float:
     return curve[-1][1]
 
 
-# A small sample can say a rank farms several times less or more at the
-# extremes; this keeps one odd number from making a target silly.
-LOWEST, HIGHEST = 0.4, 1.6
-
-
-def factor(rank: str | None, support: bool, metric: str, p: float) -> float | None:
-    """How much a medal's players reach of what all players reach, for one
-    number at percentile p: 0.8 means 20% less. None without data."""
-    brackets = load_brackets()
-    role = "support" if support else "core"
-    mine = brackets.get(group_of(rank) or "", {}).get(role, {}).get(metric)
-    everyone = brackets.get("all", {}).get(role, {}).get(metric)
-    if not mine or not everyone:
-        return None
-    base = value_at(everyone, p)
-    if base <= 0:
-        return None
-    return min(HIGHEST, max(LOWEST, value_at(mine, p) / base))
-
-
 def has(rank: str | None) -> bool:
     """Whether the bundled numbers cover this medal."""
-    return bool(rank) and factor(rank, False, "gold_per_min", 0.5) is not None
+    return bool(rank) and group_of(rank) in load_brackets()
+
+
+def curves(rank: str | None, hero: str, support: bool) -> tuple[Curves, bool] | None:
+    """Only numbers from players of this medal: the hero's own when enough
+    of them played it (True), else the medal's cores or supports (False)."""
+    group = load_brackets().get(group_of(rank) or "")
+    if not group:
+        return None
+    own = group["heroes"].get(hero)
+    if own:
+        return own, True
+    return group["support" if support else "core"], False
+
+
+def last_hits_per_min(rank: str | None) -> float | None:
+    """The whole-match last hits a minute of the middle core of this medal."""
+    group = load_brackets().get(group_of(rank) or "")
+    curve = group["core"].get("last_hits_per_min") if group else None
+    return value_at(curve, 0.5) if curve else None
 
 
 def describe(rank: str | None) -> str:
     """One sentence of what the middle player of a medal reaches on the
     current patch, e.g. for the local model's facts. Empty without data."""
     group = load_brackets().get(group_of(rank) or "")
-    if not group or "core" not in group:
+    if not group or not group["core"]:
         return ""
     core = {m: value_at(c, 0.5) for m, c in group["core"].items()}
     line = (
         f"A typical {name(rank)} core gets about {core.get('gold_per_min', 0):.0f} gold, "
         f"{core.get('xp_per_min', 0):.0f} experience and {core.get('last_hits_per_min', 0):.1f} last hits a minute"
     )
-    support = group.get("support", {}).get("xp_per_min")
+    support = group["support"].get("xp_per_min")
     if support:
         line += f", a support about {value_at(support, 0.5):.0f} experience"
     return line + "."
@@ -351,9 +356,9 @@ def patch_start(get: Callable[[str], Any]) -> tuple[str, int]:
     return str(latest.get("name", "")), int(started.timestamp())
 
 
-def players(match: dict) -> list[tuple[bool, dict[str, float]]]:
-    """(support, numbers) for each player of a finished match; empty when
-    someone abandoned, or the match is too short to count."""
+def players(match: dict) -> list[tuple[int, bool, dict[str, float]]]:
+    """(hero id, support, numbers) for each player of a finished match;
+    empty when someone abandoned, or the match is too short to count."""
     duration = match.get("duration") or 0
     rows = match.get("players") or []
     if duration < MIN_DURATION or len(rows) != 10:
@@ -367,6 +372,7 @@ def players(match: dict) -> list[tuple[bool, dict[str, float]]]:
         team.sort(key=lambda p: p.get("last_hits") or 0, reverse=True)
         for n, p in enumerate(team):
             out.append((
+                int(p.get("hero_id") or 0),
                 n >= CORES_PER_TEAM,
                 {
                     "gold_per_min": float(p.get("gold_per_min") or 0),
@@ -377,6 +383,11 @@ def players(match: dict) -> list[tuple[bool, dict[str, float]]]:
     return out
 
 
+Sample = dict[str, dict[str, list[float]]]  # "core", "support" or hero id: {metric: values}
+# This many matches in a row without an answer: OpenDota stopped answering.
+GIVE_UP = 20
+
+
 def sample(
     get: Callable[[str], Any],
     group: str,
@@ -384,20 +395,19 @@ def sample(
     since: int,
     pause: float = 1.1,
     progress: Callable[[str], None] = lambda text: None,
-    pages: int = 30,
-) -> tuple[int, dict[str, dict[str, list[float]]]]:
-    """(matches read, {"core"/"support": {metric: values}}) for one group:
-    recent ranked matches on the current patch, newest first."""
+    pages: int = 60,
+) -> tuple[int, Sample]:
+    """(matches read, numbers) for one medal: recent ranked matches whose
+    players average that medal, on the current patch, newest first."""
     low, high = GROUPS[group]
-    found = {"core": {m: [] for m in METRICS}, "support": {m: [] for m in METRICS}}
-    read, before = 0, None
+    found: Sample = {}
+    read, before, missed = 0, None, 0
     for _ in range(pages):
-        params = [f"min_rank={low}", f"max_rank={high}"] if high else []
+        params = [f"min_rank={low}", f"max_rank={high}"]
         if before:
             params.append(f"less_than_match_id={before}")
-        path = "/publicMatches" + ("?" + "&".join(params) if params else "")
         time.sleep(pause)
-        listed = [m for m in get(path) or [] if isinstance(m, dict) and m.get("match_id")]
+        listed = [m for m in get("/publicMatches?" + "&".join(params)) or [] if isinstance(m, dict) and m.get("match_id")]
         if not listed:
             break
         before = min(m["match_id"] for m in listed)
@@ -410,47 +420,67 @@ def sample(
                 or m.get("game_mode") == TURBO
                 or (m.get("duration") or 0) < MIN_DURATION
                 or (m.get("start_time") or 0) < since
-                or (high and not (tier and low <= tier <= high))
+                or not (tier and low <= tier <= high)
             ):
                 continue
             time.sleep(pause)
-            rows = players(get(f"/matches/{m['match_id']}") or {})
+            detail = get(f"/matches/{m['match_id']}")
+            missed = 0 if detail else missed + 1
+            if missed >= GIVE_UP:
+                raise RuntimeError("OpenDota stopped answering (its free daily limit?)")
+            rows = players(detail or {})
             if not rows:
                 continue
-            for support, numbers in rows:
-                for metric, value in numbers.items():
-                    found["support" if support else "core"][metric].append(value)
+            for hero, support, numbers in rows:
+                for key in ("support" if support else "core", str(hero)):
+                    bucket = found.setdefault(key, {metric: [] for metric in METRICS})
+                    for metric, value in numbers.items():
+                        bucket[metric].append(value)
             read += 1
-            progress(f"{name(group) or 'All'}: {read}/{matches} matches")
+            progress(f"{name(group)}: {read}/{matches} matches")
             if read >= matches:
                 return read, found
     return read, found
 
 
+def _rounded(values: list[float]) -> list[float]:
+    return [round(v, 2) for v in percentiles(values)]
+
+
 def fetch(
     get: Callable[[str], Any],
-    matches: int = 120,
+    hero_keys: dict[int, str],
+    matches: int = 250,
     pause: float = 1.1,
     progress: Callable[[str], None] = lambda text: None,
 ) -> dict:
-    """The brackets file's contents, sampled from OpenDota. Groups with too
+    """The brackets file's contents, sampled from OpenDota. Medals with too
     few matches are left out."""
     patch, since = patch_start(get)
     brackets = {}
     for group in GROUPS:
         read, found = sample(get, group, matches, since, pause, progress)
-        if read < max(10, matches // 4):
-            progress(f"{name(group) or 'All'}: only {read} matches on this patch, left out")
+        if read < max(10, matches // 4) or "core" not in found or "support" not in found:
+            progress(f"{name(group)}: only {read} matches on this patch, left out")
             continue
-        brackets[group] = {"matches": read} | {
-            role: {m: [round(v, 2) for v in percentiles(values)] for m, values in curves.items()}
-            for role, curves in found.items()
+        heroes = {
+            hero_keys[int(key)]: {"games": len(values["gold_per_min"])}
+            | {m: _rounded(v) for m, v in values.items()}
+            for key, values in found.items()
+            if key.isdigit() and int(key) in hero_keys and len(values["gold_per_min"]) >= MIN_HERO_GAMES
+        }
+        brackets[group] = {
+            "matches": read,
+            "core": {m: _rounded(v) for m, v in found["core"].items()},
+            "support": {m: _rounded(v) for m, v in found["support"].items()},
+            "heroes": dict(sorted(heroes.items())),
         }
     return {
         "source": "OpenDota public matches (/publicMatches, /matches): ranked, not Turbo, 15 minutes or "
         f"longer, nobody abandoned. Fetched {date.today().isoformat()}, patch {patch}.",
-        "note": "Whole-match averages per player. Cores are the 3 players with most last hits on each "
-        "team. Values at the percentiles below, in order. 'all' has no rank filter.",
+        "note": "Each medal holds only players of that medal (Divine also has Immortal). Whole-match "
+        "averages per player. Cores are the 3 players with most last hits on each team. A hero is listed "
+        f"with {MIN_HERO_GAMES} or more games. Values at the percentiles below, in order.",
         "patch": patch,
         "percentiles": PERCENTILES,
         "brackets": brackets,
@@ -458,7 +488,7 @@ def fetch(
 
 
 def save(data: dict, path: Path = BRACKETS_FILE) -> int:
-    """Writes the file; returns how many groups it holds."""
+    """Writes the file; returns how many medals it holds."""
     path.write_text(json.dumps(data, indent=1) + "\n", encoding="utf-8")
     load_brackets.cache_clear()
     return len(data["brackets"])

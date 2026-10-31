@@ -97,6 +97,9 @@ built-in voice. Defaults follow patch 7.41:
 | Wisdom shrines | 20 s before 7:00, then every 7 minutes |
 | Water rune | 10 s before 2:00 and 4:00 (mid only, once your position is known) |
 | Stack the camp | at :53 each minute until 11:53, only when your hero is near a neutral camp |
+| Night has started | when night falls, for the first 3 nights (not Night Stalker's ultimate); `[reminders.night]` |
+| Think Roshan after a won fight | once, at 20:00; `[reminders.roshan]` |
+| Neutral items | when each tier opens: 5:00, 15:00, 25:00, 35:00 and 60:00 (the first time, how to craft one from Madstone) |
 
 "Near a camp" uses your own hero's position and the fixed 7.41 camp spots
 (see `THIRD_PARTY_NOTICES.md`). Game State Integration does not say whether a
@@ -163,7 +166,15 @@ game and saves them in `%APPDATA%\Dota2LiveCoach\reviews\`:
   for a support, or none at all.
 
 If there is less to fix, it says what went well. Games under 5 minutes get no
-review. Read the review of any recorded match again with
+review.
+
+From the second match on, the review opens with last game's first point:
+"You fixed last game's point: 30 last hits at 10 minutes, up from 18. Well
+done.", "Better than last game: ..." or "Last game's point is still the one
+to work on: ...". It is skipped when you switched between core and support.
+At 10:00 the last-hit line also says when you beat last game's count ("30
+last hits at 10 minutes, up from 18 last game"). Last game is kept in
+`reviews\last.json`; delete it to start fresh. Read the review of any recorded match again with
 `py -m coach review "%APPDATA%\Dota2LiveCoach\recordings\<file>.jsonl"`, or
 turn it off with `enabled = false` under `[reminders.review]`. The targets are
 explained in `docs/strategy/post-game-review.md`.
@@ -346,14 +357,14 @@ with a local model (see below):
 
   **Compared with your own rank.** A Herald isn't held to a Legend's
   numbers. Tell the coach your medal once and "how am I doing?", the 15/25
-  minute check and the last-hit targets use what players of your medal
-  reach on the current patch: "You're about even for Herald at 15 minutes."
+  minute check and the last-hit targets use only numbers from players of
+  your medal on the current patch (a Legend only against Legends): "You're about even for Herald at 15 minutes."
   Say "hey coach, my rank is Archon" (or "my MMR is 2500"), answer the
   one-time question at the start of a game, type `rank archon` in the coach
   window, or set `rank` in `[player]` in `coach.toml`. Otherwise the coach
   reads the medal on your own public OpenDota profile. "What's my rank?"
   says which one it uses. The numbers per medal come from public ranked
-  matches on OpenDota (about 20 minutes to refresh, public data only):
+  matches on OpenDota (about 35 minutes to refresh, public data only):
 
   ```
   py -m coach refresh-brackets

@@ -10,9 +10,9 @@ minutes the answer is last hits against a simple target and deaths so far.
 Only your own hero's GSI numbers are compared; nothing about other players is
 looked up.
 
-Once the coach knows your rank (coach/rank.py), each hero's numbers are
-scaled to what players of your medal reach, and so is the last-hit target:
-a Herald is compared with Heralds, a Legend with Legends.
+Once the coach knows your rank (coach/rank.py), only numbers from players
+of your medal are used, for the verdict and the last-hit target: a Herald
+is compared with Heralds, a Legend with Legends.
 
 See docs/strategy/ahead-or-behind.md for how the verdict is chosen.
 """
@@ -64,9 +64,11 @@ log = logging.getLogger(__name__)
 
 def last_hit_target(minute: float, rank: str | None = None) -> int:
     """Last hits a core should have at this minute, rounded to 5 (15 at 5:00,
-    35 at 10:00), and at least 5. With a rank, scaled by how the middle core
-    of that medal last-hits against all cores (a Herald's target is lower)."""
-    rate = LAST_HITS_PER_MIN * (rank_mod.factor(rank, False, "last_hits_per_min", 0.5) or 1.0)
+    35 at 10:00), and at least 5. With a rank, from how the middle core
+    of that medal last-hits over a whole match, lowered for this early point
+    of the match by the same ramp as the verdict (a Herald's is lower)."""
+    whole = rank_mod.last_hits_per_min(rank)
+    rate = whole * ramp(int(minute * 60)) if whole else LAST_HITS_PER_MIN
     return max(5, 5 * round(rate * (minute - CREEPS_MEET) / 5))
 
 
@@ -274,15 +276,18 @@ class Benchmarks:
         hero = (snap.hero_name or "").removeprefix("npc_dota_hero_")
         if clock < EARLIEST or not hero:
             return None
-        curves = self.curves(hero)
-        rough = not curves
-        if rough:
-            curves = role_curves().get(support)
-        if not curves:
-            return None
         rank = self.bracket()
         if rank:
-            curves = for_rank(curves, rank, support)
+            # Only players of your medal: your hero's, else cores or supports.
+            curves, own = rank_mod.curves(rank, hero, support)
+            rough = not own
+        else:
+            curves = self.curves(hero)
+            rough = not curves
+            if rough:
+                curves = role_curves().get(support)
+        if not curves:
+            return None
         behind, ahead = (RANK_BEHIND, RANK_AHEAD) if rank else (BEHIND, AHEAD)
         mine = numbers(snap)
         scale = ramp(clock)
@@ -296,14 +301,6 @@ class Benchmarks:
         score = sum(shares.values()) / len(shares)
         kind = "behind" if score < behind else "ahead" if score >= ahead else "even"
         return Verdict(kind, score, min(shares, key=shares.get), clock // 60, rough, rank)
-
-
-def for_rank(curves: dict[str, Curve], rank: str, support: bool) -> dict[str, Curve]:
-    """A hero's curves scaled to what players of this medal reach."""
-    scaled = {}
-    for metric, curve in curves.items():
-        scaled[metric] = [(p, v * (rank_mod.factor(rank, support, metric, p) or 1.0)) for p, v in curve]
-    return scaled
 
 
 def is_support(hero: HeroInfo | None, position: int = 0) -> bool:
@@ -320,7 +317,8 @@ def spoken(verdict: Verdict, support: bool, items: bool = True, caveat: bool = T
     caveat=False leaves out that a rough verdict is rough."""
     line = _spoken(verdict, support, items)
     if verdict.rough and caveat:
-        line += f" That's a rough comparison with {'supports' if support else 'cores'} in general."
+        group = f"{rank_mod.name(verdict.rank)} " if verdict.rank else ""
+        line += f" That's a rough comparison with {group}{'supports' if support else 'cores'} in general."
     return line
 
 

@@ -6,6 +6,10 @@ docs/strategy/last-hitting.md), the same target as asking "how am I doing?"
 before 8 minutes. Once the coach knows your rank the target follows what
 cores of your medal reach (coach/rank.py). Supports hear nothing: their job
 isn't last hits.
+
+At 10:00 it also says when you beat last game's last hits at 10 minutes (from
+the post-game review, coach/review.py). Never when you're lower: one bad
+lane shouldn't sound like a step back.
 """
 
 from __future__ import annotations
@@ -26,10 +30,12 @@ TIPS = {
 }
 
 
-def spoken(snap: Snapshot, minute: int, rank: str | None = None) -> str:
+def spoken(snap: Snapshot, minute: int, previous: int | None = None, rank: str | None = None) -> str:
     target = last_hit_target(minute, rank)
     have = snap.last_hits
     head = f"{have} last hits at {minute} minutes"
+    if minute == 10 and previous is not None and have > previous:
+        head += f", up from {previous} last game"
     if have >= target:
         return f"{head}, great farming. Keep it up."
     if have >= target * CLOSE:
@@ -50,12 +56,14 @@ class LastHitPace:
         late: int = 30,
         position: PositionOf | None = None,
         heroes: HeroIndex | None = None,
+        previous: Callable[[], int | None] | None = None,
         rank: Callable[[], str | None] | None = None,
     ) -> None:
         self.times = sorted(int(m) * 60 for m in (minutes if minutes is not None else [5, 10]))
         self.late = late
         self.position = position
         self.heroes = heroes or HeroIndex()
+        self.previous = previous or (lambda: None)
         self.rank = rank or (lambda: None)
         self._done: set[int] = set()
 
@@ -71,7 +79,7 @@ class LastHitPace:
         position = self.position(snap) if self.position else 0
         if is_support(self.heroes.by_key(snap.hero_name), position):
             return []
-        return [spoken(snap, due[-1] // 60, self.rank())]
+        return [spoken(snap, due[-1] // 60, self.previous(), self.rank())]
 
     def reset(self) -> None:
         self._done.clear()
@@ -80,9 +88,12 @@ class LastHitPace:
 def build(
     settings: dict[str, dict],
     position: PositionOf | None = None,
+    previous: Callable[[], int | None] | None = None,
     rank: Callable[[], str | None] | None = None,
 ) -> list[LastHitPace]:
+    """previous() gives last game's last hits at 10:00 as a core, if known;
+    rank() the player's medal, for the target."""
     options = dict(settings.get("last_hits", {}))
     if not options.pop("enabled", True):
         return []
-    return [LastHitPace(position=position, rank=rank, **options)]
+    return [LastHitPace(position=position, previous=previous, rank=rank, **options)]
