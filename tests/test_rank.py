@@ -11,7 +11,7 @@ from coach.rank import PlayerRank, from_mmr, from_tier, parse, players, tell
 from coach.rules.last_hits import LastHitPace
 from coach.state import MatchState, Snapshot
 from coach.voice import Answers, intent
-from tests.test_lineup import INDEX, Sink, converse, start
+from test_lineup import INDEX, Sink, converse, start
 
 P = rank_mod.PERCENTILES
 
