@@ -14,6 +14,11 @@ APP_DIR_NAME = "Dota2LiveCoach"
 DEFAULTS_FILE = Path(__file__).resolve().parent.parent / "config" / "coach.toml"
 # Sections whose tables the player names freely (hero builds).
 FREE_SECTIONS = {"builds"}
+# [coach] mode: "beginner" hears every reminder; "experienced" only these
+# [reminders.*] tables (and the post-game review), unless the player's own
+# coach.toml turns another one on with enabled = true.
+MODES = ("beginner", "experienced")
+EXPERIENCED = {"power_rune", "bounty_rune", "stack", "item_ready", "buyback", "review"}
 
 log = logging_mod.getLogger(__name__)
 
@@ -57,6 +62,24 @@ def _merge(base: dict, override: dict) -> dict:
         else:
             merged[key] = value
     return merged
+
+
+def apply_mode(reminders: dict, user_reminders: dict, mode: str) -> dict:
+    """The [reminders.*] tables with the ones mode leaves out turned off. A
+    table the player enabled or disabled themselves keeps their choice."""
+    if mode not in MODES:
+        log.warning("[coach] mode must be one of %s, got %r; using beginner.", ", ".join(MODES), mode)
+        return reminders
+    if mode == "beginner":
+        return reminders
+    return {
+        name: (
+            {**table, "enabled": False}
+            if isinstance(table, dict) and name not in EXPERIENCED and "enabled" not in user_reminders.get(name, {})
+            else table
+        )
+        for name, table in reminders.items()
+    }
 
 
 def _read_toml(path: Path) -> dict:
@@ -131,7 +154,11 @@ def load(user_file: Path | None = None, app_dir: Path | None = None) -> Config:
         voice_rate=int(voice.get("rate", 0)),
         voice_max_delay=float(voice.get("max_delay", 4)),
         voice_max_lines=int(voice.get("max_lines", 2)),
-        reminders=raw.get("reminders", {}),
+        reminders=apply_mode(
+            raw.get("reminders", {}),
+            user.get("reminders", {}),
+            raw.get("coach", {}).get("mode", "beginner"),
+        ),
         builds=raw.get("builds", {}),
         pregame=raw.get("pregame", {}),
         listen=raw.get("listen", {}),

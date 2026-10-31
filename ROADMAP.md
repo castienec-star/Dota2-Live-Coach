@@ -53,7 +53,7 @@ CLAUDE.md).
    minute that Roshan is worth taking after a won fight. Uses only the game
    clock and `daytime`. *Why:* objective play is what turns won fights into
    won games at low MMR.
-9. [ ] **Beginner and experienced modes.** One switch in `coach.toml` that
+9. [x] **Beginner and experienced modes.** One switch in `coach.toml` that
    sets how talkative the coach is. Beginner: all reminders, longer lines.
    Experienced: only gold, stacks, power rune and buyback. *Why:* the same
    app must suit a Herald and an Ancient without editing ten settings.
