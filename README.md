@@ -87,6 +87,12 @@ after that, it tells you.
 
 ## Voice reminders
 
+Played a lot already? Set `mode = "experienced"` under `[coach]` in your
+`coach.toml`: the coach then only calls power and gold runes, stacks, "you
+have gold for (item)", buyback and the post-game review. To keep one more
+reminder, set `enabled = true` in its `[reminders.*]` table. The default,
+`"beginner"`, says everything below.
+
 Once the horn sounds, the coach speaks clock reminders through Windows'
 built-in voice. Defaults follow patch 7.41:
 

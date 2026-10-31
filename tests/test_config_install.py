@@ -87,3 +87,36 @@ def test_load_warns_about_stale_sections(tmp_path, caplog):
     (tmp_path / "coach.toml").write_text("[pregame.capture]\nenabled = true\n", encoding="utf-8")
     config.load(app_dir=tmp_path)
     assert "[pregame.capture]" in caplog.text
+
+
+def enabled(cfg):
+    return {name for name, table in cfg.reminders.items() if table.get("enabled", True)}
+
+
+def test_beginner_mode_keeps_every_reminder(tmp_path):
+    cfg = config.load(app_dir=tmp_path)
+    assert enabled(cfg) == set(cfg.reminders)
+
+
+def test_experienced_mode_keeps_only_the_basics(tmp_path):
+    (tmp_path / "coach.toml").write_text('[coach]\nmode = "experienced"\n', encoding="utf-8")
+    cfg = config.load(app_dir=tmp_path)
+    assert enabled(cfg) == config.EXPERIENCED
+    # The rest of each table is kept, so turning one back on needs only enabled.
+    assert cfg.reminders["death_tip"]["ollama_model"]
+
+
+def test_experienced_mode_respects_the_players_own_choices(tmp_path):
+    (tmp_path / "coach.toml").write_text(
+        '[coach]\nmode = "experienced"\n[reminders.night]\nenabled = true\n[reminders.stack]\nenabled = false\n',
+        encoding="utf-8",
+    )
+    cfg = config.load(app_dir=tmp_path)
+    assert enabled(cfg) == config.EXPERIENCED - {"stack"} | {"night"}
+
+
+def test_unknown_mode_warns_and_keeps_everything(tmp_path, caplog):
+    (tmp_path / "coach.toml").write_text('[coach]\nmode = "pro"\n', encoding="utf-8")
+    cfg = config.load(app_dir=tmp_path)
+    assert enabled(cfg) == set(cfg.reminders)
+    assert "mode" in caplog.text
