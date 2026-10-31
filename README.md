@@ -405,8 +405,10 @@ of health isn't said at all. Without Ollama running (or slower than
 the question in the coach window instead, e.g. `how do I play against pudge`.
 
 The chat also knows this patch's win rate of your hero and every hero you
-told it about, in Herald to Ancient public games of the last week, so "is
-Pudge strong right now?" gets a real answer. The numbers are OpenDota's
+told it about, in public games of your own rank bracket over the last week
+(a Legend player gets Legend numbers only), so "is Pudge strong right now?"
+gets a real answer. While the coach doesn't know your rank it leaves the win
+rates out rather than mix brackets, and OpenDota has none for Immortal. The numbers are OpenDota's
 public hero stats: Dotabuff has the same kind of numbers but no public API
 to read them from, and copying its pages by program isn't allowed. Save them (a few seconds,
 public aggregate numbers only) with:

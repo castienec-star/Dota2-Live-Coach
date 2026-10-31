@@ -1,4 +1,4 @@
-"""How each hero does this patch in Herald to Ancient public games.
+"""How each hero does this patch in public games of your own rank bracket.
 
 `py -m coach refresh-hero-stats` reads OpenDota's public /heroStats (picks
 and wins per hero and rank bracket in public ranked matches of the last
@@ -10,7 +10,9 @@ read, never a player's profile or match.
 
 The free chat puts the win rates of your hero and the heroes you told the
 coach about in its prompt, so "is Pudge strong right now?" gets a real
-answer. A file saved for another patch is ignored.
+answer. Only your own bracket's numbers are used (a Legend player hears
+Legend numbers), and none at all while your rank isn't known. OpenDota
+sends no Immortal numbers. A file saved for another patch is ignored.
 """
 
 from __future__ import annotations
@@ -32,10 +34,8 @@ PATCH_FILE = Path(__file__).resolve().parent / "data" / "PATCH"
 
 # OpenDota's rank brackets: 1 Herald ... 8 Immortal.
 BRACKETS = ("Herald", "Guardian", "Crusader", "Archon", "Legend", "Ancient", "Divine", "Immortal")
-# The players the coach is for: Herald to Ancient.
-LOW = range(1, 7)
 WINDOW_DAYS = 7  # /heroStats counts the last week of public matches
-MIN_GAMES = 1000  # fewer than this in Herald to Ancient and the rate is noise
+MIN_GAMES = 500  # fewer than this in a bracket and the rate is noise
 
 
 @dataclass(frozen=True)
@@ -107,17 +107,17 @@ def save(found: dict[str, dict[str, Any]], path: Path = STATS_FILE, patch: str |
     path.write_text(json.dumps(data, indent=1, sort_keys=True) + "\n", encoding="utf-8")
 
 
-def load(path: Path = STATS_FILE, patch: str | None = None) -> dict[str, HeroStat]:
-    """{hero key: Herald to Ancient numbers}; {} before the first refresh or
+def load(path: Path = STATS_FILE, patch: str | None = None) -> dict[int, dict[str, HeroStat]]:
+    """{bracket 1 to 8: {hero key: numbers}}; {} before the first refresh or
     when the file is from another patch."""
     if not path.is_file():
         return {}
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
         saved, rows = data["patch"], data["heroes"]
-        totals = {
-            key: (sum(row["picks"][b - 1] for b in LOW), sum(row["wins"][b - 1] for b in LOW))
-            for key, row in rows.items()
+        counts = {
+            bracket: {key: (int(row["picks"][bracket - 1]), int(row["wins"][bracket - 1])) for key, row in rows.items()}
+            for bracket in range(1, len(BRACKETS) + 1)
         }
     except (OSError, ValueError, KeyError, TypeError, IndexError):
         log.warning("Could not read %s; the chat goes without hero win rates", path)
@@ -126,23 +126,30 @@ def load(path: Path = STATS_FILE, patch: str | None = None) -> dict[str, HeroSta
     if saved != patch:
         log.info("%s is for patch %s, not %s; not used", path.name, saved, patch)
         return {}
-    # Ten heroes per match.
-    matches = sum(p for p, _ in totals.values()) / 10 or 1
-    ranked = sorted((k for k, (p, _) in totals.items() if p >= MIN_GAMES), key=lambda k: -totals[k][1] / totals[k][0])
-    place = {key: n for n, key in enumerate(ranked, 1)}
+    return {bracket: ranked(totals) for bracket, totals in counts.items()}
+
+
+def ranked(totals: dict[str, tuple[int, int]]) -> dict[str, HeroStat]:
+    """{hero key: numbers} for one bracket's {hero key: (picks, wins)},
+    leaving out heroes with fewer than MIN_GAMES games."""
+    matches = sum(p for p, _ in totals.values()) / 10 or 1  # ten heroes per match
+    keys = sorted((k for k, (p, _) in totals.items() if p >= MIN_GAMES), key=lambda k: -totals[k][1] / totals[k][0])
     return {
-        key: HeroStat(p, w, place.get(key, 0), len(ranked), p / matches)
-        for key, (p, w) in totals.items()
-        if p >= MIN_GAMES
+        key: HeroStat(totals[key][0], totals[key][1], n, len(keys), totals[key][0] / matches)
+        for n, key in enumerate(keys, 1)
     }
 
 
-def describe(stats: dict[str, HeroStat], heroes: list[HeroInfo], patch: str | None = None) -> list[str]:
-    """Prompt lines for these heroes, e.g. "Pudge: wins 48.1% (98th of 127),
-    in 21% of matches"; [] when there are no numbers for any of them."""
+def describe(
+    stats: dict[int, dict[str, HeroStat]], bracket: int | None, heroes: list[HeroInfo], patch: str | None = None
+) -> list[str]:
+    """Prompt lines for these heroes in your bracket, e.g. "Pudge: wins 48.1%
+    (98th of 127), in 21% of matches"; [] when your bracket isn't known or
+    has no numbers for any of them."""
+    in_bracket = stats.get(bracket or 0, {})
     parts = []
     for hero in dict.fromkeys(h for h in heroes if h is not None):
-        stat = stats.get(hero.key)
+        stat = in_bracket.get(hero.key)
         if stat is not None:
             parts.append(
                 f"{hero.name}: wins {stat.win_rate:.1%} ({ordinal(stat.rank)} of {stat.of}), "
@@ -151,8 +158,8 @@ def describe(stats: dict[str, HeroStat], heroes: list[HeroInfo], patch: str | No
     if not parts:
         return []
     return [
-        f"Patch {patch or current_patch()} win rates in Herald to Ancient public games this week "
-        "(about 50% is normal, a few points either way matters little):",
+        f"Patch {patch or current_patch()} win rates in {BRACKETS[bracket - 1]} public games this week, "
+        "the player's own bracket (about 50% is normal, a few points either way matters little):",
         *(f"- {part}" for part in parts),
     ]
 
