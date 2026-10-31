@@ -48,7 +48,7 @@ CLAUDE.md).
    neutral items starts dropping and remind them to pick one up from the
    stash. Timings from the live patch. *Why:* new players forget neutral
    items entirely.
-8. [ ] **Day/night and Roshan basics.** Say when night starts (vision is
+8. [x] **Day/night and Roshan basics.** Say when night starts (vision is
    shorter) for the first few cycles, and give one reminder at a sensible
    minute that Roshan is worth taking after a won fight. Uses only the game
    clock and `daytime`. *Why:* objective play is what turns won fights into
