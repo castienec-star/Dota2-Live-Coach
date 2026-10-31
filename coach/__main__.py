@@ -152,11 +152,19 @@ def make_coach(
     tip_say = functools.partial(speaker.say, priority=HIGH, max_delay=10)
     reminders, positions = split_positions(cfg.reminders)
     power_windows = windows.build(reminders)
+    review = None
+    if reminders.get("review", {}).get("enabled", True):
+        # The last thing said, and players often leave within seconds of the
+        # end: first in line, most useful point first; the file has the rest.
+        review_say = functools.partial(speaker.say, priority=HIGH, max_delay=5)
+        # A fast replay (no tips) only prints it.
+        folder = cfg.app_dir / "reviews" if tips else None
+        review = review_mod.Review(review_say, folder, position)
     rules = (
         timers.build(reminders)
         + hero.build(reminders, cfg.builds, position, enemies)
         + power_windows
-        + last_hits.build(reminders, position)
+        + last_hits.build(reminders, position, review.previous_last_hits if review else None)
         + game_check.build(
             reminders,
             benchmarks,
@@ -169,13 +177,8 @@ def make_coach(
         + (death_tip.build(reminders, tip_say, position, notes_of(coach)) if tips else [])
     )
     coach.listeners.append(Engine(for_positions(rules, positions, position), speaker.say, cfg.voice_max_lines, prioritized=True))
-    if reminders.get("review", {}).get("enabled", True):
-        # The last thing said, and players often leave within seconds of the
-        # end: first in line, most useful point first; the file has the rest.
-        review_say = functools.partial(speaker.say, priority=HIGH, max_delay=5)
-        # A fast replay (no tips) only prints it.
-        folder = cfg.app_dir / "reviews" if tips else None
-        coach.listeners.append(review_mod.Review(review_say, folder, position))
+    if review is not None:
+        coach.listeners.append(review)
     if tips:
         coach.pregame = pregame_mod.build(
             with_tip_model(cfg, cfg.pregame),

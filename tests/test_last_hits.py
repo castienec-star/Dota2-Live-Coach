@@ -62,3 +62,12 @@ def test_build_reads_settings():
     (rule,) = last_hits.build({"last_hits": {"minutes": [4]}})
     assert run(rule, 240, 15) != []
     assert last_hits.build({})[0].times == [300, 600]
+
+
+def test_says_when_last_hits_beat_last_game_at_10():
+    rule = LastHitPace(previous=lambda: 18)
+    assert run(rule, 300, 16) == ["16 last hits at 5 minutes, great farming. Keep it up."]
+    (line,) = run(rule, 600, 30)
+    assert line == "30 last hits at 10 minutes, up from 18 last game, close to the 35 to aim for. Keep at it."
+    rule = LastHitPace(previous=lambda: 40)
+    assert "last game" not in run(rule, 600, 30)[0]

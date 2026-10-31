@@ -101,8 +101,9 @@ CLAUDE.md).
 
 - Last-hit pace, next steps (item 4 is done in `coach/rules/last_hits.py`):
   count denies too ("and 6 denies, nice") once the coach knows the lane
-  matchup, and in the post-game review say "you hit 15 at 5:00 this game,
-  up from 9" by comparing with the player's earlier reviews.
+  matchup. Comparing with last game is done (the 10:00 line and the review's
+  opening line); next, a trend over the last five games ("your last hits
+  at 10 minutes went from 15 to 28 this week").
 - Skill build reminders per hero (for example "max your first spell"),
   from public data.
 - Spoken item timing goals per hero ("aim for Battle Fury by 15 minutes").
@@ -111,9 +112,9 @@ CLAUDE.md).
   writes one text file per match in `reviews/`; the summary can compare them.
 - Post-game review, next steps: name the hero the player died to most when
   they told the coach (in-match answers), compare item timings with the
-  hero's public popular-item timings instead of one 20-minute rule, and say
-  "last game you fixed X" when a point from the previous review improved.
-  Also save (not speak) the review when the player abandons and GSI goes
+  hero's public popular-item timings instead of one 20-minute rule. Saying
+  whether the player fixed last game's first point is done
+  (`reviews/last.json`, Castien asked for it on 2026-10-31). Also save (not speak) the review when the player abandons and GSI goes
   silent before post-game, using the health watch.
 - Translations of the spoken lines.
 - Upgrade-aware builds: know that Dragon Lance went into Hurricane Pike (from

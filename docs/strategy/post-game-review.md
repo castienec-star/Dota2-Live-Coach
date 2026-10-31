@@ -33,6 +33,25 @@ When there is less than three to fix, the review praises what went well
 (few deaths in a long game, last hits on target): beginners quit coaching
 tools that only criticise.
 
+## Comparing with last game
+
+Castien asked on 2026-10-31 for the review to open by saying whether the
+player fixed last game's point. The first point of each review (deaths,
+last hits or first big item) is kept in `reviews/last.json`, and the next
+review opens with one line:
+
+- the same check no longer finds that point: "You fixed last game's point:
+  30 last hits at 10 minutes, up from 18. Well done.";
+- still a point but better (fewer deaths, more last hits, an earlier item):
+  "Better than last game: ... Keep working on it.";
+- otherwise: "Last game's point is still the one to work on: ...".
+
+The line takes one of the three spoken points. It is skipped when the role
+changed (core and support targets differ) or last game had nothing to fix.
+The live 10:00 last-hit line (`last-hitting.md`) uses the same file, but only
+mentions last game when the player beat it: a bad lane shouldn't sound like a
+step back.
+
 ## Fair play
 
 Only the player's own GSI data (deaths with the game clock, last hits,

@@ -38,5 +38,9 @@ is.
 - Supports (position 4 or 5, or a support hero while the position isn't
   known) hear nothing: their job is to keep the core's lane safe.
 
+At 10:00 the line adds "up from 18 last game" when the player beat last
+game's last hits at 10 minutes as a core (from the post-game review,
+`post-game-review.md`). It says nothing when they are lower.
+
 Encouraging wording on purpose: one line at 5 and 10 minutes, never a
 string of "you're behind", so players keep the reminder on.
