@@ -4,9 +4,15 @@ At 5:00 and 10:00 a core hears one encouraging line: its last hits against
 3.5 a minute from when the creeps meet (15 at 5:00, 35 at 10:00, see
 docs/strategy/last-hitting.md), the same target as asking "how am I doing?"
 before 8 minutes. Supports hear nothing: their job isn't last hits.
+
+At 10:00 it also says when you beat last game's last hits at 10 minutes (from
+the post-game review, coach/review.py). Never when you're lower: one bad
+lane shouldn't sound like a step back.
 """
 
 from __future__ import annotations
+
+from collections.abc import Callable
 
 from ..benchmarks import is_support, last_hit_target
 from ..heroes import HeroIndex
@@ -22,10 +28,12 @@ TIPS = {
 }
 
 
-def spoken(snap: Snapshot, minute: int) -> str:
+def spoken(snap: Snapshot, minute: int, previous: int | None = None) -> str:
     target = last_hit_target(minute)
     have = snap.last_hits
     head = f"{have} last hits at {minute} minutes"
+    if minute == 10 and previous is not None and have > previous:
+        head += f", up from {previous} last game"
     if have >= target:
         return f"{head}, great farming. Keep it up."
     if have >= target * CLOSE:
@@ -46,11 +54,13 @@ class LastHitPace:
         late: int = 30,
         position: PositionOf | None = None,
         heroes: HeroIndex | None = None,
+        previous: Callable[[], int | None] | None = None,
     ) -> None:
         self.times = sorted(int(m) * 60 for m in (minutes if minutes is not None else [5, 10]))
         self.late = late
         self.position = position
         self.heroes = heroes or HeroIndex()
+        self.previous = previous or (lambda: None)
         self._done: set[int] = set()
 
     def check(self, state: MatchState) -> list[str]:
@@ -65,14 +75,19 @@ class LastHitPace:
         position = self.position(snap) if self.position else 0
         if is_support(self.heroes.by_key(snap.hero_name), position):
             return []
-        return [spoken(snap, due[-1] // 60)]
+        return [spoken(snap, due[-1] // 60, self.previous())]
 
     def reset(self) -> None:
         self._done.clear()
 
 
-def build(settings: dict[str, dict], position: PositionOf | None = None) -> list[LastHitPace]:
+def build(
+    settings: dict[str, dict],
+    position: PositionOf | None = None,
+    previous: Callable[[], int | None] | None = None,
+) -> list[LastHitPace]:
+    """previous() gives last game's last hits at 10:00 as a core, if known."""
     options = dict(settings.get("last_hits", {}))
     if not options.pop("enabled", True):
         return []
-    return [LastHitPace(position=position, **options)]
+    return [LastHitPace(position=position, previous=previous, **options)]

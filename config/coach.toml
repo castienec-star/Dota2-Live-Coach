@@ -216,7 +216,8 @@ minutes = [5, 10]
 [reminders.review]
 # When the match ends, say up to three things to work on (deaths and when,
 # last hits at 10 minutes, how late your first big item came) and save them
-# as a text file in the "reviews" folder next to coach.toml.
+# as a text file in the "reviews" folder next to coach.toml. From the second
+# match on it opens with whether you fixed last game's first point.
 enabled = true
 
 [reminders.power_window]

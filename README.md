@@ -163,7 +163,15 @@ game and saves them in `%APPDATA%\Dota2LiveCoach\reviews\`:
   for a support, or none at all.
 
 If there is less to fix, it says what went well. Games under 5 minutes get no
-review. Read the review of any recorded match again with
+review.
+
+From the second match on, the review opens with last game's first point:
+"You fixed last game's point: 30 last hits at 10 minutes, up from 18. Well
+done.", "Better than last game: ..." or "Last game's point is still the one
+to work on: ...". It is skipped when you switched between core and support.
+At 10:00 the last-hit line also says when you beat last game's count ("30
+last hits at 10 minutes, up from 18 last game"). Last game is kept in
+`reviews\last.json`; delete it to start fresh. Read the review of any recorded match again with
 `py -m coach review "%APPDATA%\Dota2LiveCoach\recordings\<file>.jsonl"`, or
 turn it off with `enabled = false` under `[reminders.review]`. The targets are
 explained in `docs/strategy/post-game-review.md`.
