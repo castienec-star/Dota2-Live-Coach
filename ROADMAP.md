@@ -64,23 +64,40 @@ CLAUDE.md).
     minute of starting, say and print what to check (launch option, config
     file path, firewall), then detect when Dota connects. *Why:* "it does
     nothing" is the top support problem for a paid app.
-12. [ ] **Strategy notes in `docs/strategy/`.** Short, sourced notes on low-
+12. [x] **Strategy notes in `docs/strategy/`.** Short, sourced notes on low-
     bracket fundamentals and the heroes from item 1, used to make the
     coach's tips and builds accurate. *Why:* the coach is only as good as its
-    advice.
+    advice. Done: `fundamentals.md` (what to say by stage and role, with the
+    GSI signal) and `low-bracket-meta.md` (per-medal win rates, 7.41f).
 13. [ ] **Better built-in death tips.** Use the strategy notes to make the
     no-AI tips specific to role and game stage (laning, mid game, late), so
     players without a GPU still get good advice. *Why:* many low-bracket
-    players have modest PCs and no API key.
-14. [ ] **Windows installer prototype.** Build a single `.exe` with
+    players have modest PCs and no API key. The tables in
+    `docs/strategy/fundamentals.md` list the lines and their GSI signals,
+    including position tips for fragile ranged cores (Drow Ranger, Lina,
+    Shadow Fiend lose 41 to 48% at every medal, `low-bracket-meta.md`).
+14. [ ] **Builds for the next most-picked heroes.** Shadow Shaman,
+    Windranger, Anti-Mage, Earthshaker, Necrophos, Crystal Maiden, Lina,
+    Dragon Knight, Lifestealer, Phantom Lancer, Tidehunter, Lich and Sven are
+    in the top 25 picks from Herald to Ancient (`low-bracket-meta.md`) but
+    fall back to the role default. *Why:* a top-25 hero getting a generic
+    "Power Treads, Black King Bar, Satanic" build looks broken to a buyer.
+15. [ ] **Suggest a break after a losing streak.** When the player's last
+    three reviews in `reviews/` are losses, say one calm line at the next
+    game start ("three losses in a row; a ten-minute break helps more than
+    another queue"), at most once a day, switchable off. *Why:* tilt queuing
+    is a classic low-bracket MMR drain, and climbing players name breaks
+    between games as a top habit (`fundamentals.md`). Uses only the coach's
+    own files.
+16. [ ] **Windows installer prototype.** Build a single `.exe` with
     PyInstaller and a GitHub Actions job that produces it as an artifact, so
     nobody needs Python or Git. No signing or auto-update yet. *Why:* the
     current command-line setup loses most buyers before their first game.
-15. [ ] **First-run setup in plain words.** `py -m coach` (and the future
+17. [ ] **First-run setup in plain words.** `py -m coach` (and the future
     installer) runs install automatically when the GSI config is missing,
     tests the voice, and tells the player exactly what to do next.
     *Why:* onboarding decides whether a trial turns into a subscription.
-16. [ ] **Simple settings window.** A small local window (tkinter, no
+18. [ ] **Simple settings window.** A small local window (tkinter, no
     server) to toggle reminders, pick the voice and mode, and edit the build
     for the current hero. *Why:* paying users expect not to edit TOML.
 
@@ -121,6 +138,13 @@ CLAUDE.md).
   tier opens (GSI's `neutral0` slot is empty), one nudge to go craft it; and
   in Turbo, halve the tier times automatically from GSI's game mode.
 - Translations of the spoken lines.
+- "What hero should I learn?": answer with two or three forgiving heroes
+  for the player's role that win at their own medal (Wraith King, Dragon
+  Knight, Witch Doctor, Crystal Maiden in 7.41f, `low-bracket-meta.md`),
+  from `coach/data/hero_stats.json` once PR #70's refresh has run.
+- Hero-aware 15:00 check: for heroes that lose by farming alone (Nature's
+  Prophet 43 to 46% at every medal), say "group up with your team now"
+  instead of a farm line.
 - Upgrade-aware builds: know that Dragon Lance went into Hurricane Pike (from
   dotaconstants' item components) so builds can list both steps.
 - Questions during the match (issue #11 step 3): done in the
