@@ -130,6 +130,68 @@ def test_builtin_tips_use_own_stats(payload):
     assert "last hits" in tips(snap)
 
 
+def calm(snap, clock, hero="npc_dota_hero_antimage"):
+    """A snapshot where none of the stat-based tips apply, so the stage and
+    role lines are what's left."""
+    snap.clock_time, snap.hero_name = clock, hero
+    snap.last_hits, snap.deaths, snap.kills, snap.assists = 400, 1, 5, 5
+    snap.gold, snap.buyback_cost = 5000, 1000
+    return snap
+
+
+@pytest.mark.parametrize(
+    "clock, position, stage",
+    [
+        (300, 1, ("laning phase", "core")),
+        (300, 5, ("laning phase", "support")),
+        (900, 3, ("mid game", "core")),
+        (900, 4, ("mid game", "support")),
+        (2100, 2, ("late game", "core")),
+        (2100, 5, ("late game", "support")),
+    ],
+)
+def test_builtin_tips_fit_role_and_stage(payload, clock, position, stage):
+    from coach.rules.death_tip import STAGE_TIPS
+
+    snap = calm(Snapshot.from_payload(payload), clock, "npc_dota_hero_axe")
+    tips = BuiltinTips(position=lambda s: position)
+    said = [tips(snap) for _ in range(4)]
+    assert set(said) == set(STAGE_TIPS[stage])
+    assert all(a != b for a, b in zip(said, said[1:]))
+
+
+def test_builtin_tips_guess_support_from_the_hero(payload):
+    from coach.rules.death_tip import STAGE_TIPS
+
+    snap = calm(Snapshot.from_payload(payload), 900, "npc_dota_hero_crystal_maiden")
+    assert BuiltinTips()(snap) in STAGE_TIPS[("mid game", "support")]
+
+
+def test_support_hears_no_last_hit_or_buyback_tip(payload):
+    snap = calm(Snapshot.from_payload(payload), 1900, "npc_dota_hero_axe")
+    snap.last_hits, snap.gold, snap.buyback_cost = 10, 100, 2000
+    tip = BuiltinTips(position=lambda s: 5)(snap)
+    assert "last hits" not in tip and "buyback" not in tip
+
+
+def test_fragile_ranged_core_hears_where_to_stand(payload):
+    snap = calm(Snapshot.from_payload(payload), 1200, "npc_dota_hero_drow_ranger")
+    tips = BuiltinTips(position=lambda s: 1)
+    said = [tips(snap) for _ in range(4)]
+    assert said[0] == "As Drow Ranger, stand behind your team and attack from as far away as you can. You are fragile."
+    # Not in the laning phase, where the lane lines matter more.
+    snap.clock_time = 300
+    assert not any("fragile" in tips(snap) for _ in range(4))
+
+
+def test_lone_farmer_hears_to_join_fights_in_mid_game_only(payload):
+    snap = calm(Snapshot.from_payload(payload), 1200)
+    tips = BuiltinTips(position=lambda s: 1)
+    assert tips(snap) == "As Anti-Mage, join the next fight with your team instead of farming alone."
+    snap.clock_time = 2100
+    assert not any("farming alone" in tips(snap) for _ in range(4))
+
+
 @pytest.fixture
 def fake_ollama():
     """A tiny local stand-in for Ollama's /api/chat."""

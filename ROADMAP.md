@@ -69,13 +69,14 @@ CLAUDE.md).
     coach's tips and builds accurate. *Why:* the coach is only as good as its
     advice. Done: `fundamentals.md` (what to say by stage and role, with the
     GSI signal) and `low-bracket-meta.md` (per-medal win rates, 7.41f).
-13. [ ] **Better built-in death tips.** Use the strategy notes to make the
+13. [x] **Better built-in death tips.** Use the strategy notes to make the
     no-AI tips specific to role and game stage (laning, mid game, late), so
     players without a GPU still get good advice. *Why:* many low-bracket
     players have modest PCs and no API key. The tables in
     `docs/strategy/fundamentals.md` list the lines and their GSI signals,
     including position tips for fragile ranged cores (Drow Ranger, Lina,
     Shadow Fiend lose 41 to 48% at every medal, `low-bracket-meta.md`).
+    Done in `coach/rules/death_tip.py` (`STAGE_TIPS`, `hero_tip`).
 14. [ ] **Builds for the next most-picked heroes.** Shadow Shaman,
     Windranger, Anti-Mage, Earthshaker, Necrophos, Crystal Maiden, Lina,
     Dragon Knight, Lifestealer, Phantom Lancer, Tidehunter, Lich and Sven are
@@ -137,6 +138,10 @@ CLAUDE.md).
   once the coach knows the player has no neutral item a few minutes after a
   tier opens (GSI's `neutral0` slot is empty), one nudge to go craft it; and
   in Turbo, halve the tier times automatically from GSI's game mode.
+- Built-in death tips, next steps (item 13 is done): when the player told
+  the coach their lane was lost, a laning-phase line about playing for
+  experience under their tower; and the same stage and role lines as a
+  short "what should I focus on now?" voice answer.
 - Translations of the spoken lines.
 - "What hero should I learn?": answer with two or three forgiving heroes
   for the player's role that win at their own medal (Wraith King, Dragon
