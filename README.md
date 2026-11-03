@@ -19,6 +19,15 @@ The coach only tells you things you could already see or work out yourself.
 
 ## Setup (Windows)
 
+**Without Python (test build).** Every change to `main` builds a
+`DotaCoach` app folder on GitHub: open the repo's **Actions** tab, pick the
+newest **windows app** run, and download **DotaCoach-windows** under
+*Artifacts* (needs a GitHub login). Unzip it, double-click
+`Set up Dota 2.bat` once, add `-gamestateintegration` to Dota's launch
+options (below), then double-click `DotaCoach.exe` before each match. It is
+not signed yet, so Windows may warn ("More info > Run anyway"). Everything
+below is the Python way, which gets updates first.
+
 Requires Python 3.12 or newer from [python.org](https://www.python.org/downloads/windows/),
 which also installs the `py` launcher. Use `py` rather than `python`: on many
 PCs `python` opens the Microsoft Store instead.
@@ -450,6 +459,16 @@ Settings live in `config/coach.toml`; copy it to
 py -m pip install -e ".[dev]"
 py -m pytest
 ```
+
+Build the app folder yourself (lands in `dist\DotaCoach\`):
+
+```
+py -m pip install -e ".[voice,build]"
+py packaging\build_exe.py
+```
+
+`py -m coach --version` (or `DotaCoach.exe --version`) prints which version
+you have.
 
 **Which model coaches best?** `evals/cases.json` holds a fixed set of game
 moments (deaths, item questions, briefings) with what a good answer contains.

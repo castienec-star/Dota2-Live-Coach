@@ -1,0 +1,40 @@
+name: windows app
+
+# Builds dist/DotaCoach (DotaCoach.exe, no Python or Git needed) and keeps it
+# as a download on the run's page under "Artifacts".
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - "packaging/**"
+      - "pyproject.toml"
+      - ".github/workflows/build-exe.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e ".[voice,build]"
+      - run: python packaging/build_exe.py
+      - name: Smoke test the app
+        shell: pwsh
+        run: |
+          $app = "dist\DotaCoach\DotaCoach.exe"
+          & $app --version
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          # Replay one game-state update: proves the bundled config and data load.
+          python -c "import json; p = json.load(open('tests/data/sample_payload.json')); open('smoke.jsonl', 'w').write(json.dumps({'t': 0, 'payload': p}) + '\n')"
+          $out = & $app replay smoke.jsonl | Out-String
+          Write-Output $out
+          if ($LASTEXITCODE -ne 0 -or $out -notmatch "Replayed 1 updates") { exit 1 }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: DotaCoach-windows
+          path: dist/DotaCoach
+          retention-days: 30

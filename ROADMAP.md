@@ -72,10 +72,13 @@ CLAUDE.md).
     no-AI tips specific to role and game stage (laning, mid game, late), so
     players without a GPU still get good advice. *Why:* many low-bracket
     players have modest PCs and no API key.
-14. [ ] **Windows installer prototype.** Build a single `.exe` with
+14. [x] **Windows installer prototype.** Build a single `.exe` with
     PyInstaller and a GitHub Actions job that produces it as an artifact, so
     nobody needs Python or Git. No signing or auto-update yet. *Why:* the
     current command-line setup loses most buyers before their first game.
+    Done: `packaging/build_exe.py` and the "windows app" workflow build a
+    `DotaCoach` folder (a folder, not one `.exe`, so it starts fast with the
+    speech packages) with "Set up Dota 2.bat".
 15. [ ] **First-run setup in plain words.** `py -m coach` (and the future
     installer) runs install automatically when the GSI config is missing,
     tests the voice, and tells the player exactly what to do next.
@@ -86,6 +89,12 @@ CLAUDE.md).
 
 ## Ideas to look at later
 
+- App follow-ups to item 14: publish the app folder as a zip on a GitHub
+  Release when a version is tagged (artifact downloads need a GitHub login
+  and expire after 30 days); say `DotaCoach.exe install` instead of
+  `py -m coach install` in the coach's own hints when it runs as the app;
+  check the app with Windows Defender and SmartScreen on a clean PC, since
+  an unsigned app gets a warning (signing is a cost: see Castien's section).
 - Voice questions (issue #9): the ahead/behind verdict ("how am I doing?")
   is done in the `agent/ahead-or-behind` PR, and "what should I buy?" with
   counters from the known enemy lineup in the `agent/situational-items` PR.
