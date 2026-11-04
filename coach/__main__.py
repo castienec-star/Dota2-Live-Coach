@@ -151,7 +151,7 @@ def make_coach(
     coach.listeners.append(coach.enemy_items)
     # A death tip has its own deadline too: the respawn.
     tip_say = functools.partial(speaker.say, priority=HIGH, max_delay=10)
-    reminders, positions = split_positions(cfg.reminders)
+    reminders, positions = split_positions(cfg.unasked)
     power_windows = windows.build(reminders)
     review = None
     if reminders.get("review", {}).get("enabled", True):
@@ -311,6 +311,8 @@ def version() -> str:
 
 def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
     logging.info("Dota 2 Live Coach, version from %s", version())
+    if cfg.mode == "experienced":
+        logging.info("Experienced mode: only item gold, stacks, power rune and buyback reminders")
     recorder = MatchRecorder(cfg.record_dir) if cfg.record else None
     speaker = make_speaker(cfg)
     benchmarks = make_benchmarks(cfg)

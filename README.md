@@ -105,6 +105,19 @@ built-in voice. Defaults follow patch 7.41:
 (see `THIRD_PARTY_NOTICES.md`). Game State Integration does not say whether a
 camp is alive, already stacked or blocked, so the coach cannot check that.
 
+Already know the basics? Put this in your own `coach.toml` and the coach only
+says when you have the gold for your next item, stacks, the power rune and
+buyback (and the review after the match). It still answers when you ask, and
+any reminder you turn on or off yourself stays as you set it:
+
+```toml
+[coach]
+mode = "experienced"
+```
+
+The default, `mode = "beginner"`, says every reminder in this section and asks short
+questions during the match.
+
 ### Your hero
 
 | Reminder | When |

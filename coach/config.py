@@ -14,6 +14,13 @@ APP_DIR_NAME = "Dota2LiveCoach"
 DEFAULTS_FILE = Path(__file__).resolve().parent.parent / "config" / "coach.toml"
 # Sections whose tables the player names freely (hero builds).
 FREE_SECTIONS = {"builds"}
+# [coach] mode = "experienced" keeps only these unasked reminders: gold for
+# the next item, stacks, the power rune and buyback, plus the post-game review
+# (said after the match, never over it). Asked questions still get answers.
+EXPERIENCED = {"item_ready", "stack", "power_rune", "buyback", "review"}
+# ...and turns off the coach's own questions during the match.
+EXPERIENCED_QUIET_LISTEN = ("game_questions", "enemy_items_check")
+MODES = ("beginner", "experienced")
 
 log = logging_mod.getLogger(__name__)
 
@@ -37,12 +44,24 @@ class Config:
     voice_rate: int = 0
     voice_max_delay: float = 4.0
     voice_max_lines: int = 2
+    mode: str = "beginner"
+    # Reminders the mode keeps quiet; asked questions still use their settings.
+    quiet: frozenset[str] = frozenset()
     reminders: dict = field(default_factory=dict)
     builds: dict = field(default_factory=dict)
     pregame: dict = field(default_factory=dict)
     listen: dict = field(default_factory=dict)
     items: dict = field(default_factory=dict)
     app_dir: Path = Path()
+
+    @property
+    def unasked(self) -> dict:
+        """[reminders.*] for what the coach says on its own, with the mode's
+        quiet reminders turned off."""
+        return {
+            name: {**options, "enabled": False} if name in self.quiet else options
+            for name, options in self.reminders.items()
+        }
 
     @property
     def url(self) -> str:
@@ -64,6 +83,28 @@ def _read_toml(path: Path) -> dict:
         return {}
     with path.open("rb") as f:
         return tomllib.load(f)
+
+
+def apply_mode(mode: str, raw: dict, user: dict) -> tuple[dict, frozenset[str]]:
+    """raw with the coach's own questions the mode leaves out turned off, and
+    the reminders it quiets. Anything the player's own coach.toml turns on or
+    off itself stays as set."""
+    if mode not in MODES:
+        raise ValueError(f"coach.mode must be one of {', '.join(MODES)}, got {mode!r}")
+    if mode == "beginner":
+        return raw, frozenset()
+    own = user.get("reminders", {})
+    quiet = frozenset(
+        name
+        for name in raw.get("reminders", {})
+        if name not in EXPERIENCED and "enabled" not in own.get(name, {})
+    )
+    own_listen = user.get("listen", {})
+    listen = dict(raw.get("listen", {}))
+    for key in EXPERIENCED_QUIET_LISTEN:
+        if key not in own_listen:
+            listen[key] = False
+    return {**raw, "listen": listen}, quiet
 
 
 def stale(defaults: dict, user: dict) -> list[str]:
@@ -108,6 +149,8 @@ def load(user_file: Path | None = None, app_dir: Path | None = None) -> Config:
             ", ".join(old),
         )
     raw = _merge(defaults, user)
+    mode = str(raw.get("coach", {}).get("mode", "beginner")).strip().lower()
+    raw, quiet = apply_mode(mode, raw, user)
 
     server = raw.get("server", {})
     recording = raw.get("recording", {})
@@ -131,6 +174,8 @@ def load(user_file: Path | None = None, app_dir: Path | None = None) -> Config:
         voice_rate=int(voice.get("rate", 0)),
         voice_max_delay=float(voice.get("max_delay", 4)),
         voice_max_lines=int(voice.get("max_lines", 2)),
+        mode=mode,
+        quiet=quiet,
         reminders=raw.get("reminders", {}),
         builds=raw.get("builds", {}),
         pregame=raw.get("pregame", {}),
