@@ -120,9 +120,12 @@ CLAUDE.md).
     installer) runs install automatically when the GSI config is missing,
     tests the voice, and tells the player exactly what to do next.
     *Why:* onboarding decides whether a trial turns into a subscription.
-19. [ ] **Simple settings window.** A small local window (tkinter, no
+19. [x] **Simple settings window.** A small local window (tkinter, no
     server) to toggle reminders, pick the voice and mode, and edit the build
     for the current hero. *Why:* paying users expect not to edit TOML.
+    Done: `py -m coach settings` ("Coach settings.bat" in the app),
+    `coach/settings.py` and `coach/settings_window.py`. It opens on the hero
+    of the last recording and saves only what differs from the defaults.
 
 20. [ ] **Hand-written builds for the next most-picked heroes.** Take the
     most-picked heroes from Herald to Ancient that still use OpenDota's
@@ -220,6 +223,13 @@ CLAUDE.md).
   few games the coach only confirms it ("Pudge, position 4 again?").
 - Check the default builds against OpenDota's public per-bracket item data
   (Herald to Ancient) once the coach's build tooling can reach it.
+
+- Settings window, next steps (item 19 is done): the voice-question
+  switches (`[listen]`: hey coach, start questions, questions during the
+  match), the player's rank and usual position, and per-position builds
+  (`hero_pos4`); a "Settings" line in the coach's own console and the
+  first-run steps; and opening it without the console window in the app
+  (a second, windowed exe).
 
 ## Needs Castien's decision
 

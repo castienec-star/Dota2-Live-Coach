@@ -94,6 +94,22 @@ Start a match (a bot match works). The console logs your hero's state every
 `%APPDATA%\Dota2LiveCoach\recordings\` as a `.jsonl` file, together with
 every line the coach said (or skipped as too late) and the game time.
 
+### Settings window
+
+```
+py -m coach settings
+```
+
+opens a small window (in the app: double-click "Coach settings.bat") to pick
+beginner or experienced mode, choose the voice and its speed (with a "Test the
+voice" button), turn each reminder on or off, and edit the item build of any
+hero or the role defaults. It opens on the hero of your last recorded match.
+Saving writes only what differs from the defaults to your own
+`%APPDATA%\Dota2LiveCoach\coach.toml`; the old file is kept next to it as
+`coach.toml.bak`, because comments in it are not kept. Restart the coach to
+use the new settings. Everything else (timings, the wake word, models) is
+still set in `coach.toml` itself.
+
 If your own `%APPDATA%\Dota2LiveCoach\coach.toml` still has settings an older
 version used (such as `[pregame.capture]`), the coach names them on start.
 
@@ -541,7 +557,8 @@ py -m coach replay "%APPDATA%\Dota2LiveCoach\recordings\<file>.jsonl" --speed 1
 instantly and prints them instead.
 
 Settings live in `config/coach.toml`; copy it to
-`%APPDATA%\Dota2LiveCoach\coach.toml` to override them.
+`%APPDATA%\Dota2LiveCoach\coach.toml` to override them, or use the settings
+window (`py -m coach settings`) for the common ones.
 
 ## Development
 
