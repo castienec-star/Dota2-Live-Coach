@@ -119,12 +119,17 @@ CLAUDE.md).
     server) to toggle reminders, pick the voice and mode, and edit the build
     for the current hero. *Why:* paying users expect not to edit TOML.
 
+20. [ ] **Hand-written builds for the next most-picked heroes.** Take the
+    most-picked heroes from Herald to Ancient that still use OpenDota's
+    popular-items fallback (pick counts in `coach/data/hero_stats.json`
+    once it is bundled, otherwise `low-bracket-meta.md`) and write a
+    forgiving build for each, about a dozen per PR. *Why:* the fallback
+    lists can skip boots (Necrophos started with Radiance) or name bare
+    components; Castien chose hand-written builds over patching the
+    fallback (2026-11-04).
+
 ## Ideas to look at later
 
-- Popularity fallback builds without boots: Necrophos's popular build
-  (`coach/popularity.py`) started with Radiance and no boots, though the
-  README says "boots first". Add the hero's most bought boots, or the role's
-  boots, when the popular lists name none. Seen while writing item 15.
 - App follow-ups to item 17: publish the app folder as a zip on a GitHub
   Release when a version is tagged (artifact downloads need a GitHub login
   and expire after 30 days); say `DotaCoach.exe install` instead of
