@@ -84,7 +84,8 @@ CLAUDE.md).
     for it (2026-11-04); a beginner gets one clear priority without having
     to die first.
     Done: `BuiltinTips.focus` (low health first, lines worded for now, not
-    "next life"), voice intent `focus` and typed `focus`.
+    "next life"), voice intent `focus` and typed `focus`, and said once
+    unasked at 10:30 (`coach/rules/focus_check.py`, Castien OK'd 2026-11-04).
 15. [ ] **Builds for the next most-picked heroes.** Shadow Shaman,
     Windranger, Anti-Mage, Earthshaker, Necrophos, Crystal Maiden, Lina,
     Dragon Knight, Lifestealer, Phantom Lancer, Tidehunter, Lich and Sven are
@@ -196,9 +197,6 @@ CLAUDE.md).
   few games the coach only confirms it ("Pudge, position 4 again?").
 - Check the default builds against OpenDota's public per-bracket item data
   (Herald to Ancient) once the coach's build tooling can reach it.
-- Say the "what should I focus on?" priority once, unasked, at the end of
-  the laning phase (around 10:00) when the player hasn't asked yet: it's
-  when beginners most often keep laning instead of farming the jungle.
 
 ## Needs Castien's decision
 

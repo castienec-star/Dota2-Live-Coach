@@ -37,6 +37,7 @@ from .rules import (
     Engine,
     PositionOf,
     death_tip,
+    focus_check,
     for_positions,
     game_check,
     hero,
@@ -196,6 +197,7 @@ def make_coach(
             # Never waits for the model: its pick if ready, else the rules'.
             lambda snap: coach.advice(snap, wait=False)[0],
         )
+        + focus_check.build(reminders, position, notes_of(coach))
         + (death_tip.build(reminders, tip_say, position, notes_of(coach)) if tips else [])
     )
     coach.listeners.append(Engine(for_positions(rules, positions, position), speaker.say, cfg.voice_max_lines, prioritized=True))

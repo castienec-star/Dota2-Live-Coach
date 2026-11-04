@@ -240,6 +240,15 @@ minutes = [15, 25]
 enabled = true
 minutes = [5, 10]
 
+[reminders.focus_check]
+# Once the laning phase is over, the coach says the one thing to focus on now
+# for your role, e.g. "The laning phase is over. Your focus now: farm the
+# jungle camp between waves instead of walking around the map." The same as
+# asking "what should I focus on now?". Seconds of game time; 630 is 10:30,
+# after the 10-minute last-hit check.
+enabled = true
+at = 630
+
 [reminders.review]
 # When the match ends, say up to three things to work on (deaths and when,
 # last hits at 10 minutes, how late your first big item came) and save them

@@ -314,7 +314,11 @@ class BuiltinTips:
             return "Your team is losing fights. Wait for them and fight together near your towers."
         if not any(i.name == "item_tpscroll" for i in snap.items):
             return "Buy a Town Portal scroll and keep it on you, so you can join fights and save towers."
-        return self._rotate([now_worded(line) for line in self._stage_lines(snap, role)])
+        return self.stage_line(snap)
+
+    def stage_line(self, snap: Snapshot) -> str:
+        """The next line for the player's role and game stage, worded for now."""
+        return self._rotate([now_worded(line) for line in self._stage_lines(snap, self.role(snap))])
 
     def _stage_lines(self, snap: Snapshot, role: str) -> list[str]:
         lines = list(STAGE_TIPS[(phase(snap), role)])
