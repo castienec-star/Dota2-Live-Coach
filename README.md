@@ -19,6 +19,15 @@ The coach only tells you things you could already see or work out yourself.
 
 ## Setup (Windows)
 
+**Without Python (test build).** Every change to `main` builds a
+`DotaCoach` app folder on GitHub: open the repo's **Actions** tab, pick the
+newest **windows app** run, and download **DotaCoach-windows** under
+*Artifacts* (needs a GitHub login). Unzip it, double-click
+`Set up Dota 2.bat` once, add `-gamestateintegration` to Dota's launch
+options (below), then double-click `DotaCoach.exe` before each match. It is
+not signed yet, so Windows may warn ("More info > Run anyway"). Everything
+below is the Python way, which gets updates first.
+
 Requires Python 3.12 or newer from [python.org](https://www.python.org/downloads/windows/),
 which also installs the `py` launcher. Use `py` rather than `python`: on many
 PCs `python` opens the Microsoft Store instead.
@@ -105,13 +114,26 @@ built-in voice. Defaults follow patch 7.41:
 (see `THIRD_PARTY_NOTICES.md`). Game State Integration does not say whether a
 camp is alive, already stacked or blocked, so the coach cannot check that.
 
+Already know the basics? Put this in your own `coach.toml` and the coach only
+says when you have the gold for your next item, stacks, the power rune and
+buyback (and the review after the match). It still answers when you ask, and
+any reminder you turn on or off yourself stays as you set it:
+
+```toml
+[coach]
+mode = "experienced"
+```
+
+The default, `mode = "beginner"`, says every reminder in this section and asks short
+questions during the match.
+
 ### Your hero
 
 | Reminder | When |
 | --- | --- |
 | You have gold for (item) | You can afford the next item on your build list |
 | Buy a (cheap item) now, you'll get your (item) later | Before 25:00, you are still 600+ gold short of the next build item (boots included) and you can afford a Magic Wand or your hero's Bracer, Wraith Band or Null Talisman that you don't own. Each one at most once a match. If you told the coach the enemy heroes, a cheap counter comes first with the reason: "Buy Infused Raindrops now: Lina does a lot of magic damage" (3:00 to 12:00) or "Buy a Magic Wand now: Bristleback casts a lot of spells" |
-| (n) last hits at 5 minutes ... | At 5:00 and 10:00, cores only: your last hits against a simple target (15 at 5:00, 35 at 10:00), with one thing to work on when you're well behind. Supports hear nothing. Change the minutes in `[reminders.last_hits]` |
+| (n) last hits at 5 minutes ... | At 5:00 and 10:00, cores only: your last hits against a simple target (15 at 5:00, 35 at 10:00, lower or higher for your rank once the coach knows it), with one thing to work on when you're well behind. Supports hear nothing. Change the minutes in `[reminders.last_hits]` |
 | You're ahead / about even / behind for (minutes) ... | At 15:00 and 25:00, your gold, experience and last hits per minute against public numbers for your hero, with what to do about it (see "How am I doing?" below). It also names one item to get, the same pick as "What should I buy?" (a counter to the enemy heroes you told it, a defensive item, your next build item or a late-game item). Change the minutes in `[reminders.game_check]` |
 | Low health, back off | Health drops under 25% (again after you heal over 40%), once a burst of damage has stopped |
 | Go heal | Health stays under 40% for 10 s without taking damage; names a Salve, Bottle, Tango or Faerie Fire you carry |
@@ -364,6 +386,21 @@ with a local model (see below):
   py -m coach refresh-benchmarks
   ```
 
+  **Compared with your own rank.** A Herald isn't held to a Legend's
+  numbers. Tell the coach your medal once and "how am I doing?", the 15/25
+  minute check and the last-hit targets use only numbers from players of
+  your medal on the current patch (a Legend only against Legends): "You're about even for Herald at 15 minutes."
+  Say "hey coach, my rank is Archon" (or "my MMR is 2500"), answer the
+  one-time question at the start of a game, type `rank archon` in the coach
+  window, or set `rank` in `[player]` in `coach.toml`. Otherwise the coach
+  reads the medal on your own public OpenDota profile. "What's my rank?"
+  says which one it uses. The numbers per medal come from public ranked
+  matches on OpenDota (about 35 minutes to refresh, public data only):
+
+  ```
+  py -m coach refresh-brackets
+  ```
+
 - "What should I buy?": one item for right now, from how your game is going
   and the enemy heroes you named at the start of the game (or typed). A
   counter comes first, picked for your position: Monkey King Bar against
@@ -422,8 +459,26 @@ of health isn't said at all. Without Ollama running (or slower than
 `chat_timeout` seconds) you hear the list of built-in questions instead. Set
 `chat = false` under `[listen]` to turn this off; it uses the death tips'
 `provider`, so `provider = "builtin"` turns it off too. No microphone? Type
-the question in the coach window instead, e.g. `how do I play against pudge`. Voice questions are
-on by default and
+the question in the coach window instead, e.g. `how do I play against pudge`.
+
+The chat also knows this patch's win rate of your hero and every hero you
+told it about, in public games of your own rank bracket over the last week
+(a Legend player gets Legend numbers only), so "is Pudge strong right now?"
+gets a real answer. While the coach doesn't know your rank it leaves the win
+rates out rather than mix brackets, and OpenDota has none for Immortal. The numbers are OpenDota's
+public hero stats: Dotabuff has the same kind of numbers but no public API
+to read them from, and copying its pages by program isn't allowed. Save them (a few seconds,
+public aggregate numbers only) with:
+
+```
+py -m coach refresh-hero-stats
+```
+
+It refuses when OpenDota shows a newer patch than the coach's data is for
+(`coach/data/PATCH`), or one less than a week old, so the numbers never mix
+two patches, and a saved file from another patch is ignored.
+
+Voice questions are on by default and
 needs two free speech models that run on your PC (downloaded once, about
 200 MB). Install them once; until you do, the coach simply doesn't listen:
 
@@ -459,6 +514,16 @@ Settings live in `config/coach.toml`; copy it to
 py -m pip install -e ".[dev]"
 py -m pytest
 ```
+
+Build the app folder yourself (lands in `dist\DotaCoach\`):
+
+```
+py -m pip install -e ".[voice,build]"
+py packaging\build_exe.py
+```
+
+`py -m coach --version` (or `DotaCoach.exe --version`) prints which version
+you have.
 
 **Which model coaches best?** `evals/cases.json` holds a fixed set of game
 moments (deaths, item questions, briefings) with what a good answer contains.

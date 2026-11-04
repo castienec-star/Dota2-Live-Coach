@@ -2,8 +2,9 @@
 
 Only two kinds of data are read: aggregate numbers for a hero (how it does
 against other heroes and by game length, and the GPM and last hits public
-matches reach on it: the same kind of numbers Dota Plus shows) and your own account's public match history. Other players' profiles
-are never looked up.
+matches reach on it: the same kind of numbers Dota Plus shows) and your own
+account's public match history and medal. Other players' profiles are never
+looked up.
 """
 
 from __future__ import annotations
@@ -101,6 +102,13 @@ class OpenDota:
     def benchmarks(self, hero_id: int) -> dict[str, Curve] | None:
         """Public per-hero percentiles of GPM, XPM and last hits per minute."""
         return parse_api(self.get(f"/benchmarks?hero_id={hero_id}", max_age=30 * 86400))
+
+    def player_rank(self, account: int) -> int | None:
+        """Your own medal as Dota's rank tier (43 = Archon 3), from your public
+        profile; None when it is hidden or you aren't ranked yet."""
+        profile = self.get(f"/players/{account}", max_age=86400) or {}
+        tier = profile.get("rank_tier") if isinstance(profile, dict) else None
+        return int(tier) if isinstance(tier, int) and tier > 0 else None
 
     def player_heroes(self, account: int) -> dict[int, tuple[int, int]]:
         """{hero id: (games, wins)} from your own public match history."""
