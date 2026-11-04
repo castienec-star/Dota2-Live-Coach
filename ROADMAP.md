@@ -89,10 +89,13 @@ CLAUDE.md).
     is a classic low-bracket MMR drain, and climbing players name breaks
     between games as a top habit (`fundamentals.md`). Uses only the coach's
     own files.
-16. [ ] **Windows installer prototype.** Build a single `.exe` with
+16. [x] **Windows installer prototype.** Build a single `.exe` with
     PyInstaller and a GitHub Actions job that produces it as an artifact, so
     nobody needs Python or Git. No signing or auto-update yet. *Why:* the
     current command-line setup loses most buyers before their first game.
+    Done: `packaging/build_exe.py` and the "windows app" workflow build a
+    `DotaCoach` folder (a folder, not one `.exe`, so it starts fast with the
+    speech packages) with "Set up Dota 2.bat".
 17. [ ] **First-run setup in plain words.** `py -m coach` (and the future
     installer) runs install automatically when the GSI config is missing,
     tests the voice, and tells the player exactly what to do next.
@@ -103,6 +106,12 @@ CLAUDE.md).
 
 ## Ideas to look at later
 
+- App follow-ups to item 16: publish the app folder as a zip on a GitHub
+  Release when a version is tagged (artifact downloads need a GitHub login
+  and expire after 30 days); say `DotaCoach.exe install` instead of
+  `py -m coach install` in the coach's own hints when it runs as the app;
+  check the app with Windows Defender and SmartScreen on a clean PC, since
+  an unsigned app gets a warning (signing is a cost: see Castien's section).
 - Voice questions (issue #9): the ahead/behind verdict ("how am I doing?")
   is done in the `agent/ahead-or-behind` PR, and "what should I buy?" with
   counters from the known enemy lineup in the `agent/situational-items` PR.
@@ -141,7 +150,7 @@ CLAUDE.md).
   longer, explaining first-time version of each line in beginner mode
   ("Power rune in 15 seconds. Mid should check it: it can win the lane"),
   said the first one or two times a match only; and a voice switch ("hey
-  coach, quiet mode") once the settings window (item 16) exists.
+  coach, quiet mode") once the settings window (item 18) exists.
 - Translations of the spoken lines.
 - "What hero should I learn?": answer with two or three forgiving heroes
   for the player's role that win at their own medal (Wraith King, Dragon

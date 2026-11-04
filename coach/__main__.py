@@ -322,8 +322,20 @@ def first_pending(*askers) -> Callable[[], Question | None] | None:
     return lambda: next((q for q in (a.pending() for a in askers) if q is not None), None)
 
 
+BUILD_FILE = "BUILD"
+
+
 def version() -> str:
-    """The date and commit of this copy, so you can tell an update arrived."""
+    """The date and commit of this copy, so you can tell an update arrived.
+
+    The Windows app (packaging/build_exe.py) has no Git folder, so its build
+    writes the same line into a BUILD file inside the bundle."""
+    bundle = getattr(sys, "_MEIPASS", None)
+    if bundle is not None:
+        try:
+            return (Path(bundle) / BUILD_FILE).read_text(encoding="utf-8").strip() or "unknown"
+        except OSError:
+            return "unknown (app build without a BUILD file)"
     try:
         out = subprocess.run(
             ["git", "log", "-1", "--format=%cd (%h)", "--date=format:%Y-%m-%d %H:%M"],
@@ -591,6 +603,7 @@ def cmd_say(cfg: config_mod.Config, args: argparse.Namespace) -> int:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="coach", description="Dota 2 Live Coach")
     parser.add_argument("--config", type=Path, help="path to a coach.toml")
+    parser.add_argument("--version", action="store_true", help="print which version this is")
     sub = parser.add_subparsers(dest="command")
     sub.add_parser("run", help="listen for game state (default)")
     p_install = sub.add_parser("install", help="write Dota 2's GSI config file")
@@ -612,6 +625,9 @@ def main(argv: list[str] | None = None) -> int:
     p_say = sub.add_parser("say", help="test the voice")
     p_say.add_argument("text", nargs="?", default="Power rune in 15 seconds.")
     args = parser.parse_args(argv)
+    if args.version:
+        print(f"Dota 2 Live Coach, version from {version()}")
+        return 0
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s", datefmt="%H:%M:%S")
     cfg = config_mod.load(args.config)
