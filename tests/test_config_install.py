@@ -87,3 +87,45 @@ def test_load_warns_about_stale_sections(tmp_path, caplog):
     (tmp_path / "coach.toml").write_text("[pregame.capture]\nenabled = true\n", encoding="utf-8")
     config.load(app_dir=tmp_path)
     assert "[pregame.capture]" in caplog.text
+
+
+def test_beginner_mode_is_the_default(tmp_path):
+    cfg = config.load(app_dir=tmp_path)
+    assert cfg.mode == "beginner"
+    assert cfg.quiet == frozenset()
+    assert cfg.unasked == cfg.reminders
+    assert cfg.listen["game_questions"] is True
+
+
+def test_experienced_mode_keeps_gold_stacks_power_rune_and_buyback(tmp_path):
+    (tmp_path / "coach.toml").write_text('[coach]\nmode = "Experienced"\n', encoding="utf-8")
+    cfg = config.load(app_dir=tmp_path)
+    assert cfg.mode == "experienced"
+    on = {name for name, options in cfg.unasked.items() if options.get("enabled", True)}
+    assert on == config.EXPERIENCED & set(cfg.reminders)
+    assert {"bounty_rune", "low_health", "death_tip", "last_hits"} <= cfg.quiet
+    # Asked questions ("when is the next rune?") still see the real settings.
+    assert cfg.reminders["bounty_rune"].get("enabled", True)
+    assert cfg.listen["game_questions"] is False
+    assert cfg.listen["enemy_items_check"] is False
+    assert cfg.listen["start_questions"] is True
+
+
+def test_own_settings_win_over_experienced_mode(tmp_path):
+    (tmp_path / "coach.toml").write_text(
+        '[coach]\nmode = "experienced"\n'
+        "[reminders.low_health]\nenabled = true\n"
+        "[reminders.stack]\nenabled = false\n"
+        "[listen]\ngame_questions = true\n",
+        encoding="utf-8",
+    )
+    cfg = config.load(app_dir=tmp_path)
+    assert cfg.unasked["low_health"]["enabled"] is True
+    assert cfg.unasked["stack"]["enabled"] is False
+    assert cfg.listen["game_questions"] is True
+
+
+def test_unknown_mode_is_refused(tmp_path):
+    (tmp_path / "coach.toml").write_text('[coach]\nmode = "pro"\n', encoding="utf-8")
+    with pytest.raises(ValueError, match="beginner, experienced"):
+        config.load(app_dir=tmp_path)
