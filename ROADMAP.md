@@ -86,12 +86,17 @@ CLAUDE.md).
     Done: `BuiltinTips.focus` (low health first, lines worded for now, not
     "next life"), voice intent `focus` and typed `focus`, and said once
     unasked at 10:30 (`coach/rules/focus_check.py`, Castien OK'd 2026-11-04).
-15. [ ] **Builds for the next most-picked heroes.** Shadow Shaman,
+15. [x] **Builds for the next most-picked heroes.** Shadow Shaman,
     Windranger, Anti-Mage, Earthshaker, Necrophos, Crystal Maiden, Lina,
     Dragon Knight, Lifestealer, Phantom Lancer, Tidehunter, Lich and Sven are
     in the top 25 picks from Herald to Ancient (`low-bracket-meta.md`) but
     fall back to the role default. *Why:* a top-25 hero getting a generic
     "Power Treads, Black King Bar, Satanic" build looks broken to a buyer.
+    Done: hand-written builds in `config/coach.toml`. Most of these heroes
+    already got OpenDota's popular items, but those lists had gaps a beginner
+    notices (Necrophos without boots, Lifestealer told to buy a bare Sange,
+    Earthshaker on the generic support list). Owning Harpoon now counts as
+    the build's Echo Sabre.
 16. [ ] **Suggest a break after a losing streak.** When the player's last
     three reviews in `reviews/` are losses, say one calm line at the next
     game start ("three losses in a row; a ten-minute break helps more than
@@ -116,6 +121,10 @@ CLAUDE.md).
 
 ## Ideas to look at later
 
+- Popularity fallback builds without boots: Necrophos's popular build
+  (`coach/popularity.py`) started with Radiance and no boots, though the
+  README says "boots first". Add the hero's most bought boots, or the role's
+  boots, when the popular lists name none. Seen while writing item 15.
 - App follow-ups to item 17: publish the app folder as a zip on a GitHub
   Release when a version is tagged (artifact downloads need a GitHub login
   and expire after 30 days); say `DotaCoach.exe install` instead of

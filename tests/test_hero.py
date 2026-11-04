@@ -204,6 +204,40 @@ def test_default_builds_name_real_heroes_and_items(tmp_path):
     parse_builds(cfg.builds, load_items())
 
 
+def test_top_low_bracket_picks_have_their_own_build(tmp_path):
+    # The top 25 picks from Herald to Ancient (docs/strategy/low-bracket-meta.md)
+    # get a hand-written build, not the popularity or role fallback.
+    from coach import config
+
+    builds = config.load(app_dir=tmp_path).builds
+    for hero in (
+        "shadow_shaman", "windrunner", "antimage", "earthshaker", "necrolyte",
+        "crystal_maiden", "lina", "dragon_knight", "life_stealer", "phantom_lancer",
+        "tidehunter", "lich", "sven",
+    ):
+        assert builds.get(hero), f"no build for {hero}"
+
+
+def test_default_builds_never_list_an_item_and_its_upgrade(tmp_path):
+    from coach import config
+    from coach.rules.hero import UPGRADES
+
+    for hero, found in parse_builds(config.load(app_dir=tmp_path).builds, load_items()).items():
+        keys = {i.key for i in found}
+        for item in keys:
+            assert not keys & set(UPGRADES.get(item, ())), f"{hero} lists {item} and its upgrade"
+
+
+def test_harpoon_counts_as_the_builds_echo_sabre(payload):
+    items = load_items()
+    payload["hero"]["name"] = "npc_dota_hero_sven"
+    payload["items"]["slot0"] = {"name": "item_harpoon"}
+    rule = ItemReady(parse_builds({"sven": ["Echo Sabre", "Black King Bar"]}, items))
+    from coach.state import Snapshot
+
+    assert rule.next_item(Snapshot.from_payload(payload)).name == "Black King Bar"
+
+
 def test_unknown_item_is_an_error():
     with pytest.raises(ValueError):
         parse_builds({"luna": ["Not An Item"]}, load_items())
