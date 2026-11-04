@@ -208,7 +208,15 @@ done.", "Better than last game: ..." or "Last game's point is still the one
 to work on: ...". It is skipped when you switched between core and support.
 At 10:00 the last-hit line also says when you beat last game's count ("30
 last hits at 10 minutes, up from 18 last game"). Last game is kept in
-`reviews\last.json`; delete it to start fresh. Read the review of any recorded match again with
+`reviews\last.json`; delete it to start fresh.
+
+After your third loss in a row in one sitting, the review ends with one calm
+line: "That's three losses in a row. Take a ten-minute break before the next
+game: stand up, drink some water. A short break helps more than another
+queue." It is said right after the match, before you queue again, at most once
+a day. The coach only reads its own review files to count the losses; games
+more than 90 minutes apart count as separate sittings. Change the number or
+turn it off (0) with `break_after_losses` under `[reminders.review]`. Read the review of any recorded match again with
 `py -m coach review "%APPDATA%\Dota2LiveCoach\recordings\<file>.jsonl"`, or
 turn it off with `enabled = false` under `[reminders.review]`. The targets are
 explained in `docs/strategy/post-game-review.md`.

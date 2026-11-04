@@ -5,7 +5,7 @@ import pytest
 from coach import __main__ as main_mod
 from coach.items import load_items
 from coach.profile import MatchSummary
-from coach.review import POST_GAME, Last, Review, last_hit_target, points, progress, spoken, text
+from coach.review import POST_GAME, Last, break_line, losing_streak, saved_results, Review, last_hit_target, points, progress, spoken, text
 from coach.state import MatchState
 
 from test_pregame import IN_PROGRESS, write_recording
@@ -67,7 +67,7 @@ def test_text_file_layout():
     assert "1. One.\n2. Two.\n" in out
 
 
-def feed(review, payload, clocks, deaths=()):
+def feed(review, payload, clocks, deaths=(), won=None):
     state = MatchState()
     p = copy.deepcopy(payload)
     p["items"] = {}
@@ -79,6 +79,8 @@ def feed(review, payload, clocks, deaths=()):
         state.update(copy.deepcopy(p))
         review(state)
     p["map"]["game_state"] = POST_GAME
+    if won is not None:
+        p["map"]["win_team"] = "radiant" if won else "dire"
     state.update(copy.deepcopy(p))
     review(state)
     state.update(copy.deepcopy(p))
@@ -161,3 +163,81 @@ def test_bad_last_file_is_ignored(tmp_path):
     (tmp_path / "last.json").write_text("{not json", encoding="utf-8")
     assert Review(lambda line: None, tmp_path).last is None
     assert Review(lambda line: None, None).previous_last_hits() is None
+
+
+HOUR = 3600
+NOON = 1_800_000_000.0  # any fixed moment
+
+
+def write_review(folder, at, result, hero="luna"):
+    folder.mkdir(parents=True, exist_ok=True)
+    import time
+
+    name = f"{time.strftime('%Y%m%d-%H%M%S', time.localtime(at))}-{hero}.txt"
+    m = match(hero=hero, won={"won": True, "lost": False}.get(result))
+    (folder / name).write_text(text(m, ["One."]), encoding="utf-8")
+
+
+def test_saved_results_read_back_the_text_files(tmp_path):
+    write_review(tmp_path, NOON - 2 * HOUR, "won")
+    write_review(tmp_path, NOON - HOUR, "lost", hero="lion")
+    write_review(tmp_path, NOON, "unknown")
+    (tmp_path / "notes.txt").write_text("not a review", encoding="utf-8")
+    results = saved_results(tmp_path)
+    assert [won for _, won in results] == [True, False, None]
+    assert results[0][0] == pytest.approx(NOON - 2 * HOUR)
+
+
+@pytest.mark.parametrize(
+    "results, expected",
+    [
+        ([(NOON - 2 * HOUR, False), (NOON - HOUR, False), (NOON, False)], 3),
+        ([(NOON - HOUR, True), (NOON - 0.5 * HOUR, False), (NOON, False)], 2),
+        # A long gap is a break the player already took.
+        ([(NOON - 5 * HOUR, False), (NOON - HOUR, False), (NOON, False)], 2),
+        ([(NOON - HOUR, False), (NOON, None)], 0),
+        ([(NOON - 3 * HOUR, False)], 0),
+        ([], 0),
+    ],
+)
+def test_losing_streak_counts_this_sitting_only(results, expected):
+    assert losing_streak(results, NOON) == expected
+
+
+def test_break_line():
+    assert break_line(3).startswith("That's three losses in a row. Take a ten-minute break")
+
+
+def lose(tmp_path, payload, at, said, **kw):
+    review = Review(said.append, tmp_path, position=lambda snap: 1, clock=lambda: at, **kw)
+    feed(review, payload, range(0, 1801, 30), deaths=(1700,), won=False)
+    return review
+
+
+def test_third_loss_in_a_row_suggests_a_break_once_a_day(tmp_path, payload):
+    said = []
+    lose(tmp_path, payload, NOON - HOUR, said)
+    lose(tmp_path, payload, NOON - 0.5 * HOUR, said)
+    assert not any("break" in line for line in said)
+    lose(tmp_path, payload, NOON, said)
+    assert said[-1].startswith("Match review. ")
+    assert said[-1].endswith(break_line(3))
+    assert len(said) == 3  # one spoken line per review, never a second one that could be dropped
+    lose(tmp_path, payload, NOON + 0.5 * HOUR, said)
+    assert "break" not in said[-1]  # already said today
+
+
+def test_break_after_zero_turns_it_off(tmp_path, payload):
+    said = []
+    for at in (NOON - HOUR, NOON - 0.5 * HOUR, NOON):
+        lose(tmp_path, payload, at, said, break_after=0)
+    assert not any("break" in line for line in said)
+
+
+def test_a_win_breaks_the_streak(tmp_path, payload):
+    said = []
+    lose(tmp_path, payload, NOON - HOUR, said)
+    review = Review(said.append, tmp_path, position=lambda snap: 1, clock=lambda: NOON - 0.5 * HOUR)
+    feed(review, payload, range(0, 1801, 30), deaths=(1700,), won=True)
+    lose(tmp_path, payload, NOON, said)
+    assert not any("break" in line for line in said)

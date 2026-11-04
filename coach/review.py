@@ -8,12 +8,18 @@ targets are explained in docs/strategy/post-game-review.md.
 
 The last review is kept in last.json in the same folder, so the next one
 opens by saying whether you fixed last game's first point.
+
+After the third loss in a row in one sitting (read back from the saved
+review files) the review ends with one calm line suggesting a ten-minute
+break before queueing again, at most once a day (docs/strategy/
+fundamentals.md: "Don't chain-queue after losses").
 """
 
 from __future__ import annotations
 
 import json
 import logging
+import re
 import time
 from collections.abc import Callable
 from dataclasses import asdict, dataclass
@@ -38,6 +44,15 @@ FEW_DEATHS = 3  # at most this many in a long game is worth praising
 LONG_GAME = 20 * 60
 FIRST_ITEM_BY = {False: 20 * 60, True: 25 * 60}  # core, support
 LAST_HIT_SHORT = 0.8  # under 80% of the target is a point to fix
+BREAK_AFTER = 3  # losses in a row before the review suggests a break
+# Reviews saved further apart than this belong to different sittings: the
+# player already took a break between them. A game plus queue and draft is
+# rarely longer than this.
+SITTING_GAP = 90 * 60
+BREAK_FILE = "break.txt"  # the day the break line was last said
+STAMP = "%Y%m%d-%H%M%S"  # how review files are named, before "-<hero>.txt"
+_RESULT = re.compile(r", \d+ minutes, (won|lost|result unknown)\.")
+NUMBERS = {2: "two", 3: "three", 4: "four", 5: "five", 6: "six", 7: "seven", 8: "eight", 9: "nine", 10: "ten"}
 
 
 def last_hit_target() -> int:
@@ -227,6 +242,42 @@ def text(m: MatchSummary, lines: list[str], heroes: HeroIndex | None = None) -> 
     return f"{head}\n\n{body}\n"
 
 
+def saved_results(folder: Path) -> list[tuple[float, bool | None]]:
+    """(when saved, won) for each review file in folder, oldest first. Won is
+    None for a result the coach couldn't see; unreadable files are skipped."""
+    results = []
+    for path in sorted(folder.glob("*.txt")):
+        try:
+            when = time.mktime(time.strptime(path.name[: len("20260101-000000")], STAMP))
+            with path.open(encoding="utf-8") as f:
+                first = f.readline()
+        except (OSError, ValueError, UnicodeDecodeError):
+            continue
+        found = _RESULT.search(first)
+        if found is None:
+            continue
+        results.append((when, {"won": True, "lost": False}.get(found.group(1))))
+    return results
+
+
+def losing_streak(results: list[tuple[float, bool | None]], now: float, gap: float = SITTING_GAP) -> int:
+    """Losses in a row at the end of results, all in the current sitting: the
+    last one at most gap seconds before now, and each within gap of the next."""
+    count, later = 0, now
+    for when, won in reversed(results):
+        if won is not False or later - when > gap:
+            break
+        count, later = count + 1, when
+    return count
+
+
+def break_line(losses: int) -> str:
+    return (
+        f"That's {NUMBERS.get(losses, str(losses))} losses in a row. Take a ten-minute break before the next "
+        "game: stand up, drink some water. A short break helps more than another queue."
+    )
+
+
 class Review:
     """Watches the match and gives the review once it reaches post-game."""
 
@@ -237,8 +288,12 @@ class Review:
         position: Callable[[Snapshot], int] | None = None,
         heroes: HeroIndex | None = None,
         items: dict[str, ItemInfo] | None = None,
+        break_after: int = BREAK_AFTER,
+        clock: Callable[[], float] = time.time,
     ) -> None:
         self.say = say
+        self.break_after = int(break_after)  # 0 = never suggest a break
+        self.clock = clock
         self.folder = folder
         self.position = position
         self.heroes = heroes or HeroIndex()
@@ -277,11 +332,35 @@ class Review:
             opener = progress(self.last, summary, support, self.items)
             if opener:
                 lines = [opener] + lines[: MAX_POINTS - 1]
-        self.say(spoken(lines))
         self.saved = self.save(summary, lines)
+        # Said in one go: a second line would wait behind the review and miss its deadline.
+        rest = self.suggest_break() if summary.won is False else None
+        self.say(spoken(lines) + (f" {rest}" if rest else ""))
         found = found_points(summary, support, self.items)
         self.last = Last(summary, support, found[0][0] if found else None)
         self.save_last()
+
+    def suggest_break(self) -> str | None:
+        """The break line after break_after losses in a row this sitting (this
+        match's review already saved), at most once a day; else None."""
+        if self.break_after <= 0 or self.folder is None or self.saved is None:
+            return None
+        now = self.clock()
+        losses = losing_streak(saved_results(self.folder), now)
+        if losses < self.break_after:
+            return None
+        today = time.strftime("%Y-%m-%d", time.localtime(now))
+        said = self.folder / BREAK_FILE
+        try:
+            if said.read_text(encoding="utf-8").strip() == today:
+                return None
+        except OSError:
+            pass  # never said yet
+        try:
+            said.write_text(today, encoding="utf-8")
+        except OSError as exc:
+            log.warning("Could not save when the break was suggested: %s", exc)
+        return break_line(losses)
 
     def save_last(self) -> None:
         if self.last_path is None or self.last is None:
@@ -295,7 +374,7 @@ class Review:
     def save(self, m: MatchSummary, lines: list[str]) -> Path | None:
         if self.folder is None:
             return None
-        path = self.folder / f"{time.strftime('%Y%m%d-%H%M%S')}-{m.hero}.txt"
+        path = self.folder / f"{time.strftime(STAMP, time.localtime(self.clock()))}-{m.hero}.txt"
         try:
             self.folder.mkdir(parents=True, exist_ok=True)
             path.write_text(text(m, lines, self.heroes), encoding="utf-8")
