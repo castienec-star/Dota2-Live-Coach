@@ -181,7 +181,12 @@ def make_coach(
         review_say = functools.partial(speaker.say, priority=HIGH, max_delay=5)
         # A fast replay (no tips) only prints it.
         folder = cfg.app_dir / "reviews" if tips else None
-        review = review_mod.Review(review_say, folder, position)
+        review = review_mod.Review(
+            review_say,
+            folder,
+            position,
+            break_after=reminders.get("review", {}).get("break_after_losses", review_mod.BREAK_AFTER),
+        )
     rules = (
         timers.build(reminders)
         + hero.build(reminders, cfg.builds, position, enemies)

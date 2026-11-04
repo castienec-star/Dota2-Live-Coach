@@ -97,13 +97,18 @@ CLAUDE.md).
     notices (Necrophos without boots, Lifestealer told to buy a bare Sange,
     Earthshaker on the generic support list). Owning Harpoon now counts as
     the build's Echo Sabre.
-16. [ ] **Suggest a break after a losing streak.** When the player's last
+16. [x] **Suggest a break after a losing streak.** When the player's last
     three reviews in `reviews/` are losses, say one calm line at the next
     game start ("three losses in a row; a ten-minute break helps more than
     another queue"), at most once a day, switchable off. *Why:* tilt queuing
     is a classic low-bracket MMR drain, and climbing players name breaks
     between games as a top habit (`fundamentals.md`). Uses only the coach's
     own files.
+    Done: said at the end of the third loss's review (`coach/review.py`),
+    not at the next game start: once a match is found, a break means
+    abandoning it. Losses are read back from the saved review files; games
+    more than 90 minutes apart are separate sittings. `break_after_losses`
+    under `[reminders.review]`.
 17. [x] **Windows installer prototype.** Build a single `.exe` with
     PyInstaller and a GitHub Actions job that produces it as an artifact, so
     nobody needs Python or Git. No signing or auto-update yet. *Why:* the
@@ -130,6 +135,10 @@ CLAUDE.md).
 
 ## Ideas to look at later
 
+- "How did I do today?": a voice and typed question answering today's
+  record from the saved reviews (wins, losses, the point that came up most),
+  so a player can decide to stop on a good note. Builds on
+  `review.saved_results` from item 16.
 - App follow-ups to item 17: publish the app folder as a zip on a GitHub
   Release when a version is tagged (artifact downloads need a GitHub login
   and expire after 30 days); say `DotaCoach.exe install` instead of

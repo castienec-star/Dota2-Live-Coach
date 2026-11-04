@@ -255,6 +255,10 @@ at = 630
 # as a text file in the "reviews" folder next to coach.toml. From the second
 # match on it opens with whether you fixed last game's first point.
 enabled = true
+# After this many losses in a row in one sitting (games less than 90 minutes
+# apart), the review ends with one calm line suggesting a ten-minute break
+# before the next queue. At most once a day; 0 turns it off.
+break_after_losses = 3
 
 [reminders.power_window]
 # Says when the stretches the pre-game briefing found begin: when your lineup
