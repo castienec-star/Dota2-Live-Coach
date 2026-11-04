@@ -16,7 +16,7 @@ from aiohttp import web
 
 from . import config as config_mod
 from . import chat as chat_mod
-from . import enemy_items, game_questions, item_advisor, situational
+from . import enemy_items, first_run, game_questions, item_advisor, situational
 from . import health as health_mod
 from . import llm
 from . import pregame as pregame_mod
@@ -355,6 +355,8 @@ def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
         logging.info("Experienced mode: only item gold, stacks, power rune and buyback reminders")
     recorder = MatchRecorder(cfg.record_dir) if cfg.record else None
     speaker = make_speaker(cfg)
+    # Writes Dota's config file when it is missing and says what is left to do.
+    first_run.run(cfg, speaker.say)
     benchmarks = make_benchmarks(cfg)
     coach = make_coach(cfg, speaker, recorder, benchmarks=benchmarks)
     if recorder is not None:

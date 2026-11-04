@@ -60,6 +60,15 @@ pass the folder: `py -m coach install --dota-path "D:\SteamLibrary\steamapps\com
 Then in Steam, right-click Dota 2 > Properties > Launch Options and add
 `-gamestateintegration`.
 
+Forgot `install`? `py -m coach` does it for you: on every start it checks
+that file and writes it when it is missing or out of date. Right after
+writing it, the coach says hello out loud (if you hear nothing, check the
+Windows sound output and try `py -m coach say`) and prints what is left to
+do, numbered. It also reads Steam's own settings file (`localconfig.vdf`,
+read only) to see whether Dota 2 has the `-gamestateintegration` launch
+option, and prints the steps when it doesn't. When everything is already set
+up, it says nothing.
+
 ## Update
 
 New features only reach you once you update. Close the coach window, then

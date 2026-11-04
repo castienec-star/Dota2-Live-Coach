@@ -103,7 +103,7 @@ CLAUDE.md).
     Done: `packaging/build_exe.py` and the "windows app" workflow build a
     `DotaCoach` folder (a folder, not one `.exe`, so it starts fast with the
     speech packages) with "Set up Dota 2.bat".
-18. [ ] **First-run setup in plain words.** `py -m coach` (and the future
+18. [x] **First-run setup in plain words.** `py -m coach` (and the future
     installer) runs install automatically when the GSI config is missing,
     tests the voice, and tells the player exactly what to do next.
     *Why:* onboarding decides whether a trial turns into a subscription.
@@ -153,6 +153,11 @@ CLAUDE.md).
   once the coach knows the player has no neutral item a few minutes after a
   tier opens (GSI's `neutral0` slot is empty), one nudge to go craft it; and
   in Turbo, halve the tier times automatically from GSI's game mode.
+- First-run setup, next steps (item 18 is done in `coach/first_run.py`):
+  the packaged app (item 17) runs it too, but its printed steps still say
+  `py -m coach install`: say `DotaCoach.exe install` there. Once the
+  settings window (item 19) exists, show the numbered steps there with a
+  "test the voice again" button.
 - Built-in death tips, next steps (item 13 is done): when the player told
   the coach their lane was lost, a laning-phase line about playing for
   experience under their tower (the "what should I focus on now?" answer is item
