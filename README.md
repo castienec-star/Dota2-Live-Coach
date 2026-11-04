@@ -372,7 +372,7 @@ It uses:
 ### Ask the coach out loud
 
 Hands free, no window or key: say **"hey coach"**, wait for the beep, then
-ask. The coach answers five questions straight away from your own hero's
+ask. The coach answers six questions straight away from your own hero's
 data, the game clock and the enemy heroes you told it, and anything else
 with a local model (see below):
 
@@ -453,6 +453,15 @@ with a local model (see below):
   match. No microphone? Type the same sentence in the coach window.
   "What should I buy?" and the 15/25 minute check then counter what you
   told it, e.g. "Buy Nullifier now: Lion has Glimmer Cape and Force Staff."
+- "What should I focus on now?" (or "what should I do now?", "any tips?"):
+  one clear priority while you're alive, without waiting to die for a tip.
+  Low health comes first ("back off and heal"), then what your own numbers
+  show (no buyback gold late, the hero you said gives you trouble, low last
+  hits, dying often, your team losing fights, no Town Portal scroll), and
+  otherwise a line for your role and the game stage, the same ones as the
+  built-in death tips (last hitting and lane safety early, farming jungle
+  camps and taking objectives mid game, staying grouped late). Asking again
+  gives the next line. No microphone? Type `focus` in the coach window.
 - "Can I buy back?": the buyback cost against your gold, or its cooldown.
 - "When is the next rune?": the next power rune, gold runes and wisdom
   shrines.

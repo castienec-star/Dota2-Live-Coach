@@ -77,12 +77,14 @@ CLAUDE.md).
     including position tips for fragile ranged cores (Drow Ranger, Lina,
     Shadow Fiend lose 41 to 48% at every medal, `low-bracket-meta.md`).
     Done in `coach/rules/death_tip.py` (`STAGE_TIPS`, `hero_tip`).
-14. [ ] **"What should I focus on now?"** A voice question, answered while
+14. [x] **"What should I focus on now?"** A voice question, answered while
     alive with the same stage and role lines as the built-in death tips
     (`STAGE_TIPS`, `hero_tip` in `coach/rules/death_tip.py`), plus the
     stat-based ones (low last hits, no Town Portal). *Why:* Castien asked
     for it (2026-11-04); a beginner gets one clear priority without having
     to die first.
+    Done: `BuiltinTips.focus` (low health first, lines worded for now, not
+    "next life"), voice intent `focus` and typed `focus`.
 15. [ ] **Builds for the next most-picked heroes.** Shadow Shaman,
     Windranger, Anti-Mage, Earthshaker, Necrophos, Crystal Maiden, Lina,
     Dragon Knight, Lifestealer, Phantom Lancer, Tidehunter, Lich and Sven are
@@ -194,6 +196,9 @@ CLAUDE.md).
   few games the coach only confirms it ("Pudge, position 4 again?").
 - Check the default builds against OpenDota's public per-bracket item data
   (Herald to Ancient) once the coach's build tooling can reach it.
+- Say the "what should I focus on?" priority once, unasked, at the end of
+  the laning phase (around 10:00) when the player hasn't asked yet: it's
+  when beginners most often keep laning instead of farming the jungle.
 
 ## Needs Castien's decision
 
