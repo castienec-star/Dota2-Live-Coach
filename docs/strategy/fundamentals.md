@@ -58,11 +58,13 @@ low MMR because of position and fight-joining mistakes, not items.
 | Go high ground only with your whole team, ideally with Aegis | everyone | clock and Aegis in inventory |
 | Defend your base together; don't trade a Barracks for a far-lane farm | everyone | death after 25:00 |
 
-## Where the current built-in death tips fall short
+## How the built-in death tips use this note
 
-`BUILTIN_TIPS` in `coach/rules/death_tip.py` rotates five general lines
-whatever the role, clock or hero. With this note, item 13 can pick the line
-from (stage, role, hero) instead: a support dying at 6:00 hears about the
-river and vision, a Drow Ranger dying at 18:00 hears about position, a core
-dying at 32:00 without buyback hears about buyback. Keep the rotation so no
-line repeats twice in a row.
+`STAGE_TIPS` in `coach/rules/death_tip.py` holds three lines for each stage
+and role (supports are positions 4 and 5, or a support hero while the
+position is unknown; the offlane gets the core lines), taken from the tables
+above. `hero_tip` adds the position line for fragile ranged cores and the
+join-fights line for lone farmers after the laning phase. The stat-based tips
+(low last hits, buyback, dying often, no Town Portal) still come first, and
+supports never hear the last-hit or buyback ones. No line repeats twice in a
+row.

@@ -69,44 +69,51 @@ CLAUDE.md).
     coach's tips and builds accurate. *Why:* the coach is only as good as its
     advice. Done: `fundamentals.md` (what to say by stage and role, with the
     GSI signal) and `low-bracket-meta.md` (per-medal win rates, 7.41f).
-13. [ ] **Better built-in death tips.** Use the strategy notes to make the
+13. [x] **Better built-in death tips.** Use the strategy notes to make the
     no-AI tips specific to role and game stage (laning, mid game, late), so
     players without a GPU still get good advice. *Why:* many low-bracket
     players have modest PCs and no API key. The tables in
     `docs/strategy/fundamentals.md` list the lines and their GSI signals,
     including position tips for fragile ranged cores (Drow Ranger, Lina,
     Shadow Fiend lose 41 to 48% at every medal, `low-bracket-meta.md`).
-14. [ ] **Builds for the next most-picked heroes.** Shadow Shaman,
+    Done in `coach/rules/death_tip.py` (`STAGE_TIPS`, `hero_tip`).
+14. [ ] **"What should I focus on now?"** A voice question, answered while
+    alive with the same stage and role lines as the built-in death tips
+    (`STAGE_TIPS`, `hero_tip` in `coach/rules/death_tip.py`), plus the
+    stat-based ones (low last hits, no Town Portal). *Why:* Castien asked
+    for it (2026-11-04); a beginner gets one clear priority without having
+    to die first.
+15. [ ] **Builds for the next most-picked heroes.** Shadow Shaman,
     Windranger, Anti-Mage, Earthshaker, Necrophos, Crystal Maiden, Lina,
     Dragon Knight, Lifestealer, Phantom Lancer, Tidehunter, Lich and Sven are
     in the top 25 picks from Herald to Ancient (`low-bracket-meta.md`) but
     fall back to the role default. *Why:* a top-25 hero getting a generic
     "Power Treads, Black King Bar, Satanic" build looks broken to a buyer.
-15. [ ] **Suggest a break after a losing streak.** When the player's last
+16. [ ] **Suggest a break after a losing streak.** When the player's last
     three reviews in `reviews/` are losses, say one calm line at the next
     game start ("three losses in a row; a ten-minute break helps more than
     another queue"), at most once a day, switchable off. *Why:* tilt queuing
     is a classic low-bracket MMR drain, and climbing players name breaks
     between games as a top habit (`fundamentals.md`). Uses only the coach's
     own files.
-16. [x] **Windows installer prototype.** Build a single `.exe` with
+17. [x] **Windows installer prototype.** Build a single `.exe` with
     PyInstaller and a GitHub Actions job that produces it as an artifact, so
     nobody needs Python or Git. No signing or auto-update yet. *Why:* the
     current command-line setup loses most buyers before their first game.
     Done: `packaging/build_exe.py` and the "windows app" workflow build a
     `DotaCoach` folder (a folder, not one `.exe`, so it starts fast with the
     speech packages) with "Set up Dota 2.bat".
-17. [x] **First-run setup in plain words.** `py -m coach` (and the future
+18. [x] **First-run setup in plain words.** `py -m coach` (and the future
     installer) runs install automatically when the GSI config is missing,
     tests the voice, and tells the player exactly what to do next.
     *Why:* onboarding decides whether a trial turns into a subscription.
-18. [ ] **Simple settings window.** A small local window (tkinter, no
+19. [ ] **Simple settings window.** A small local window (tkinter, no
     server) to toggle reminders, pick the voice and mode, and edit the build
     for the current hero. *Why:* paying users expect not to edit TOML.
 
 ## Ideas to look at later
 
-- App follow-ups to item 16: publish the app folder as a zip on a GitHub
+- App follow-ups to item 17: publish the app folder as a zip on a GitHub
   Release when a version is tagged (artifact downloads need a GitHub login
   and expire after 30 days); say `DotaCoach.exe install` instead of
   `py -m coach install` in the coach's own hints when it runs as the app;
@@ -146,16 +153,20 @@ CLAUDE.md).
   once the coach knows the player has no neutral item a few minutes after a
   tier opens (GSI's `neutral0` slot is empty), one nudge to go craft it; and
   in Turbo, halve the tier times automatically from GSI's game mode.
-- First-run setup, next steps (item 17 is done in `coach/first_run.py`):
-  the packaged app (item 16) runs it too, but its printed steps still say
+- First-run setup, next steps (item 18 is done in `coach/first_run.py`):
+  the packaged app (item 17) runs it too, but its printed steps still say
   `py -m coach install`: say `DotaCoach.exe install` there. Once the
-  settings window (item 18) exists, show the numbered steps there with a
+  settings window (item 19) exists, show the numbered steps there with a
   "test the voice again" button.
+- Built-in death tips, next steps (item 13 is done): when the player told
+  the coach their lane was lost, a laning-phase line about playing for
+  experience under their tower (the "what should I focus on now?" answer is item
+  14).
 - Modes, next steps (item 9 is done: `[coach] mode` in `coach.toml`): a
   longer, explaining first-time version of each line in beginner mode
   ("Power rune in 15 seconds. Mid should check it: it can win the lane"),
   said the first one or two times a match only; and a voice switch ("hey
-  coach, quiet mode") once the settings window (item 18) exists.
+  coach, quiet mode") once the settings window (item 19) exists.
 - Translations of the spoken lines.
 - "What hero should I learn?": answer with two or three forgiving heroes
   for the player's role that win at their own medal (Wraith King, Dragon
