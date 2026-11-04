@@ -17,6 +17,11 @@ is.
   to 5: 15 at 5:00, 35 at 10:00. The same numbers as the post-game review
   (`docs/strategy/post-game-review.md`) and the early "how am I doing?"
   answer (`docs/strategy/ahead-or-behind.md`).
+- **From your own medal** once the coach knows it (2026-10-31): the middle
+  core of your medal's whole-match last hits a minute, lowered for the early
+  game (0.73 at 10:00), from `coach/data/brackets.json` (see "Compared with
+  your own rank" in `docs/strategy/ahead-or-behind.md`). The post-game review still uses the
+  flat 35 for now.
 - A lane wave is four creeps every 30 seconds early on (three melee, one
   ranged), about 8 a minute, so 3.5 is a bit under half the lane: reachable
   for a beginner who is contested, and well under what good cores get.
