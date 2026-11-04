@@ -405,11 +405,17 @@ with a local model (see below):
   window, or set `rank` in `[player]` in `coach.toml`. Otherwise the coach
   reads the medal on your own public OpenDota profile. "What's my rank?"
   says which one it uses. The numbers per medal come from public ranked
-  matches on OpenDota (about 35 minutes to refresh, public data only):
+  matches on OpenDota (about 40 minutes to refresh, public data only):
 
   ```
   py -m coach refresh-brackets
   ```
+
+  It asks OpenDota once every 2 seconds and, when OpenDota says "too many
+  requests", waits up to 10 minutes before going on. If OpenDota still
+  refuses (its free daily limit), the medals already finished are saved
+  and the rest are named; run it again later and it continues where it
+  stopped, because the matches it read are kept for 3 days.
 
 - "What should I buy?": one item for right now, from how your game is going
   and the enemy heroes you named at the start of the game (or typed). A

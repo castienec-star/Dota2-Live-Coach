@@ -51,11 +51,20 @@ class OpenDota:
         self.timeout = timeout
         self.max_age = max_age_days * 86400
         self._offline_until = 0.0
+        self.last_status: int | None = None  # HTTP status of the last failed request
+
+    def cache_file(self, path: str) -> Path:
+        return self.cache_dir / (re.sub(r"[^A-Za-z0-9]+", "_", path).strip("_") + ".json")
+
+    def fresh(self, path: str, max_age: float) -> bool:
+        """Whether get() would answer from the cache without asking OpenDota."""
+        cache = self.cache_file(path)
+        return cache.is_file() and time.time() - cache.stat().st_mtime < max_age
 
     def get(self, path: str, max_age: float | None = None) -> Any:
         """GET an API path; serves a fresh cache, else the network, else a stale cache."""
         max_age = self.max_age if max_age is None else max_age
-        cache = self.cache_dir / (re.sub(r"[^A-Za-z0-9]+", "_", path).strip("_") + ".json")
+        cache = self.cache_file(path)
         cached = None
         if cache.is_file():
             try:
@@ -74,9 +83,11 @@ class OpenDota:
             with urllib.request.urlopen(request, timeout=self.timeout) as response:
                 data = json.load(response)
         except (urllib.error.URLError, TimeoutError, OSError, ValueError) as exc:
+            self.last_status = getattr(exc, "code", None)
             self._offline_until = time.monotonic() + OFFLINE_RETRY
             log.warning("OpenDota not reachable (%s); using saved data if any", exc)
             return cached
+        self.last_status = None
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         cache.write_text(json.dumps(data), encoding="utf-8")
         return data

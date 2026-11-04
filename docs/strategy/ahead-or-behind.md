@@ -83,7 +83,7 @@ only with Legend players.
   own-profile rule as the briefing's match history). MMR becomes a medal at
   about 770 MMR a medal (five stars of about 154).
 - **What each medal reaches** (`coach/data/brackets.json`, written by
-  `py -m coach refresh-brackets`): about 250 recent ranked matches per
+  `py -m coach refresh-brackets`): about 150 recent ranked matches per
   medal (Herald to Ancient each, Divine and Immortal together), only on
   the live patch, not Turbo, 15 minutes or longer, nobody abandoned. From OpenDota's public match data:
   `/publicMatches?min_rank=&max_rank=` lists matches by average rank tier,
