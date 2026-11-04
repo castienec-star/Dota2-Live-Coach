@@ -77,28 +77,34 @@ CLAUDE.md).
     including position tips for fragile ranged cores (Drow Ranger, Lina,
     Shadow Fiend lose 41 to 48% at every medal, `low-bracket-meta.md`).
     Done in `coach/rules/death_tip.py` (`STAGE_TIPS`, `hero_tip`).
-14. [ ] **Builds for the next most-picked heroes.** Shadow Shaman,
+14. [ ] **"What should I focus on now?"** A voice question, answered while
+    alive with the same stage and role lines as the built-in death tips
+    (`STAGE_TIPS`, `hero_tip` in `coach/rules/death_tip.py`), plus the
+    stat-based ones (low last hits, no Town Portal). *Why:* Castien asked
+    for it (2026-11-04); a beginner gets one clear priority without having
+    to die first.
+15. [ ] **Builds for the next most-picked heroes.** Shadow Shaman,
     Windranger, Anti-Mage, Earthshaker, Necrophos, Crystal Maiden, Lina,
     Dragon Knight, Lifestealer, Phantom Lancer, Tidehunter, Lich and Sven are
     in the top 25 picks from Herald to Ancient (`low-bracket-meta.md`) but
     fall back to the role default. *Why:* a top-25 hero getting a generic
     "Power Treads, Black King Bar, Satanic" build looks broken to a buyer.
-15. [ ] **Suggest a break after a losing streak.** When the player's last
+16. [ ] **Suggest a break after a losing streak.** When the player's last
     three reviews in `reviews/` are losses, say one calm line at the next
     game start ("three losses in a row; a ten-minute break helps more than
     another queue"), at most once a day, switchable off. *Why:* tilt queuing
     is a classic low-bracket MMR drain, and climbing players name breaks
     between games as a top habit (`fundamentals.md`). Uses only the coach's
     own files.
-16. [ ] **Windows installer prototype.** Build a single `.exe` with
+17. [ ] **Windows installer prototype.** Build a single `.exe` with
     PyInstaller and a GitHub Actions job that produces it as an artifact, so
     nobody needs Python or Git. No signing or auto-update yet. *Why:* the
     current command-line setup loses most buyers before their first game.
-17. [ ] **First-run setup in plain words.** `py -m coach` (and the future
+18. [ ] **First-run setup in plain words.** `py -m coach` (and the future
     installer) runs install automatically when the GSI config is missing,
     tests the voice, and tells the player exactly what to do next.
     *Why:* onboarding decides whether a trial turns into a subscription.
-18. [ ] **Simple settings window.** A small local window (tkinter, no
+19. [ ] **Simple settings window.** A small local window (tkinter, no
     server) to toggle reminders, pick the voice and mode, and edit the build
     for the current hero. *Why:* paying users expect not to edit TOML.
 
@@ -140,8 +146,8 @@ CLAUDE.md).
   in Turbo, halve the tier times automatically from GSI's game mode.
 - Built-in death tips, next steps (item 13 is done): when the player told
   the coach their lane was lost, a laning-phase line about playing for
-  experience under their tower; and the same stage and role lines as a
-  short "what should I focus on now?" voice answer.
+  experience under their tower (the "what should I focus on now?" answer is item
+  14).
 - Translations of the spoken lines.
 - "What hero should I learn?": answer with two or three forgiving heroes
   for the player's role that win at their own medal (Wraith King, Dragon
