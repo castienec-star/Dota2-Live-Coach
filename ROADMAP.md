@@ -76,7 +76,7 @@ CLAUDE.md).
     PyInstaller and a GitHub Actions job that produces it as an artifact, so
     nobody needs Python or Git. No signing or auto-update yet. *Why:* the
     current command-line setup loses most buyers before their first game.
-15. [ ] **First-run setup in plain words.** `py -m coach` (and the future
+15. [x] **First-run setup in plain words.** `py -m coach` (and the future
     installer) runs install automatically when the GSI config is missing,
     tests the voice, and tells the player exactly what to do next.
     *Why:* onboarding decides whether a trial turns into a subscription.
@@ -120,6 +120,10 @@ CLAUDE.md).
   once the coach knows the player has no neutral item a few minutes after a
   tier opens (GSI's `neutral0` slot is empty), one nudge to go craft it; and
   in Turbo, halve the tier times automatically from GSI's game mode.
+- First-run setup, next steps (item 15 is done in `coach/first_run.py`):
+  the packaged app (item 14) can call the same check from its launcher, and
+  once the settings window (item 16) exists, show the numbered steps there
+  with a "test the voice again" button.
 - Translations of the spoken lines.
 - Upgrade-aware builds: know that Dragon Lance went into Hurricane Pike (from
   dotaconstants' item components) so builds can list both steps.
