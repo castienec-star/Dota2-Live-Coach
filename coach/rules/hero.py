@@ -231,6 +231,7 @@ UPGRADES = {
     "item_force_staff": ("item_hurricane_pike",),
     "item_maelstrom": ("item_mjollnir", "item_gungir"),
     "item_diffusal_blade": ("item_disperser",),
+    "item_echo_sabre": ("item_harpoon",),
     "item_vanguard": ("item_crimson_guard",),
     "item_basher": ("item_abyssal_blade",),
     "item_kaya": ("item_kaya_and_sange", "item_yasha_and_kaya"),

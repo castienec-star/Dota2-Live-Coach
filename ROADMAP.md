@@ -86,12 +86,17 @@ CLAUDE.md).
     Done: `BuiltinTips.focus` (low health first, lines worded for now, not
     "next life"), voice intent `focus` and typed `focus`, and said once
     unasked at 10:30 (`coach/rules/focus_check.py`, Castien OK'd 2026-11-04).
-15. [ ] **Builds for the next most-picked heroes.** Shadow Shaman,
+15. [x] **Builds for the next most-picked heroes.** Shadow Shaman,
     Windranger, Anti-Mage, Earthshaker, Necrophos, Crystal Maiden, Lina,
     Dragon Knight, Lifestealer, Phantom Lancer, Tidehunter, Lich and Sven are
     in the top 25 picks from Herald to Ancient (`low-bracket-meta.md`) but
     fall back to the role default. *Why:* a top-25 hero getting a generic
     "Power Treads, Black King Bar, Satanic" build looks broken to a buyer.
+    Done: hand-written builds in `config/coach.toml`. Most of these heroes
+    already got OpenDota's popular items, but those lists had gaps a beginner
+    notices (Necrophos without boots, Lifestealer told to buy a bare Sange,
+    Earthshaker on the generic support list). Owning Harpoon now counts as
+    the build's Echo Sabre.
 16. [ ] **Suggest a break after a losing streak.** When the player's last
     three reviews in `reviews/` are losses, say one calm line at the next
     game start ("three losses in a row; a ten-minute break helps more than
@@ -113,6 +118,15 @@ CLAUDE.md).
 19. [ ] **Simple settings window.** A small local window (tkinter, no
     server) to toggle reminders, pick the voice and mode, and edit the build
     for the current hero. *Why:* paying users expect not to edit TOML.
+
+20. [ ] **Hand-written builds for the next most-picked heroes.** Take the
+    most-picked heroes from Herald to Ancient that still use OpenDota's
+    popular-items fallback (pick counts in `coach/data/hero_stats.json`
+    once it is bundled, otherwise `low-bracket-meta.md`) and write a
+    forgiving build for each, about a dozen per PR. *Why:* the fallback
+    lists can skip boots (Necrophos started with Radiance) or name bare
+    components; Castien chose hand-written builds over patching the
+    fallback (2026-11-04).
 
 ## Ideas to look at later
 

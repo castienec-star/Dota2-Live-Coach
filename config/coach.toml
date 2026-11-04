@@ -341,8 +341,9 @@ position = 0
 # These are simple, forgiving builds for heroes popular from Herald to Ancient.
 # Don't list an item and then its upgrade (Dragon Lance, then Hurricane Pike):
 # the coach cannot tell the first one was built into the second.
-# Some keys differ from the hero's name: Wraith King is skeleton_king and Zeus
-# is zuus.
+# Some keys differ from the hero's name: Wraith King is skeleton_king, Zeus is
+# zuus, Windranger is windrunner, Necrophos is necrolyte and Lifestealer is
+# life_stealer.
 [builds]
 default = ["Power Treads", "Black King Bar", "Satanic"]
 default_support = ["Arcane Boots", "Glimmer Cape", "Force Staff", "Aghanim's Scepter"]
@@ -371,3 +372,17 @@ sniper = ["Power Treads", "Maelstrom", "Hurricane Pike", "Black King Bar", "Daed
 viper = ["Power Treads", "Hurricane Pike", "Black King Bar", "Eye of Skadi", "Butterfly"]
 witch_doctor = ["Arcane Boots", "Glimmer Cape", "Aghanim's Scepter", "Force Staff", "Aether Lens"]
 zuus = ["Arcane Boots", "Kaya", "Aghanim's Scepter", "Aether Lens", "Octarine Core"]
+# More top-25 picks from Herald to Ancient (docs/strategy/low-bracket-meta.md).
+antimage = ["Power Treads", "Battle Fury", "Manta Style", "Black King Bar", "Abyssal Blade"]
+crystal_maiden = ["Tranquil Boots", "Glimmer Cape", "Force Staff", "Blink Dagger", "Aghanim's Scepter"]
+dragon_knight = ["Power Treads", "Black King Bar", "Blink Dagger", "Aghanim's Scepter", "Assault Cuirass"]
+earthshaker = ["Arcane Boots", "Blink Dagger", "Aghanim's Shard", "Force Staff", "Aghanim's Scepter"]
+lich = ["Tranquil Boots", "Glimmer Cape", "Force Staff", "Aghanim's Scepter", "Aether Lens"]
+life_stealer = ["Phase Boots", "Armlet of Mordiggian", "Radiance", "Sange and Yasha", "Abyssal Blade"]
+lina = ["Power Treads", "Yasha and Kaya", "Black King Bar", "Aghanim's Scepter", "Daedalus"]
+necrolyte = ["Arcane Boots", "Radiance", "Heart of Tarrasque", "Aghanim's Scepter", "Shiva's Guard"]
+phantom_lancer = ["Power Treads", "Diffusal Blade", "Manta Style", "Aghanim's Scepter", "Heart of Tarrasque"]
+shadow_shaman = ["Tranquil Boots", "Blink Dagger", "Aghanim's Scepter", "Glimmer Cape", "Force Staff"]
+sven = ["Power Treads", "Echo Sabre", "Black King Bar", "Daedalus", "Satanic"]
+tidehunter = ["Arcane Boots", "Blink Dagger", "Pipe of Insight", "Aghanim's Scepter", "Shiva's Guard"]
+windrunner = ["Power Treads", "Maelstrom", "Black King Bar", "Daedalus", "Monkey King Bar"]

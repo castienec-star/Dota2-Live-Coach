@@ -154,10 +154,12 @@ questions during the match.
 
 Item builds are per hero in the `[builds]` section of `coach.toml`, for
 example `luna = ["Power Treads", "Manta Style", "Black King Bar"]`. The coach
-comes with simple builds for heroes popular from Herald to Ancient (Axe,
-Bristleback, Drow Ranger, Juggernaut, Legion Commander, Lion, Luna, Ogre Magi,
-Phantom Assassin, Pudge, Slark, Sniper, Viper, Witch Doctor, Wraith King and
-Zeus). Any other hero gets the items real players build on it most, from
+comes with simple builds for heroes popular from Herald to Ancient (Anti-Mage,
+Axe, Bristleback, Crystal Maiden, Dragon Knight, Drow Ranger, Earthshaker,
+Juggernaut, Legion Commander, Lich, Lifestealer, Lina, Lion, Luna, Necrophos,
+Ogre Magi, Phantom Assassin, Phantom Lancer, Pudge, Shadow Shaman, Slark,
+Sniper, Sven, Tidehunter, Viper, Windranger, Witch Doctor, Wraith King, Zeus
+and a few roaming supports). Any other hero gets the items real players build on it most, from
 OpenDota's public item popularity bundled in `coach/data/item_popularity.json`
 (fetched 2026-10-30, patch 7.41f): boots first, then the most bought big
 items of the mid and late game, leaving out bare components (Ultimate Orb,
