@@ -202,3 +202,20 @@ def test_loop_passes_silence_to_a_question():
     )
     loop.run([frame(0)] * 200)
     assert answers == [""]
+
+
+@pytest.mark.parametrize(
+    "text",
+    ["What should I focus on now?", "what should I do now", "any tips?", "what's my priority"],
+)
+def test_focus_intent(text):
+    assert intent(text) == "focus"
+
+
+def test_focus_answer_while_alive_and_dead(snap):
+    answers = Answers({}, BUILDS)
+    snap.health = snap.max_health = 1000
+    alive = answers.answer("what should I focus on?", snap)
+    assert alive and "Next life" not in alive and alive != UNKNOWN
+    snap.alive = False
+    assert answers.answer("what should I focus on?", snap)

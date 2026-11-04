@@ -37,6 +37,7 @@ from .rules import (
     Engine,
     PositionOf,
     death_tip,
+    focus_check,
     for_positions,
     game_check,
     hero,
@@ -196,6 +197,7 @@ def make_coach(
             # Never waits for the model: its pick if ready, else the rules'.
             lambda snap: coach.advice(snap, wait=False)[0],
         )
+        + focus_check.build(reminders, position, notes_of(coach))
         + (death_tip.build(reminders, tip_say, position, notes_of(coach)) if tips else [])
     )
     coach.listeners.append(Engine(for_positions(rules, positions, position), speaker.say, cfg.voice_max_lines, prioritized=True))
@@ -243,6 +245,9 @@ PICK_COMMANDS = ("vs", "with", "pos", "clear")
 # Typed for "how am I doing?".
 HOW_COMMANDS = ("how", "status")
 
+# Typed for "what should I focus on now?".
+FOCUS_COMMANDS = ("focus", "tip")
+
 # Typed to set or hear your rank: "rank archon", "mmr 2500".
 RANK_COMMANDS = ("rank", "mmr", "medal")
 
@@ -257,11 +262,22 @@ def how_am_i_doing(coach: Coach) -> str:
     return status(advice.benchmarks, snap, advice.heroes.by_key(snap.hero_name), position)
 
 
+def focus(coach: Coach, tips: death_tip.BuiltinTips) -> str:
+    """The same answer as asking "what should I focus on now?"."""
+    snap = coach.state.current
+    if snap.hero_name is None:
+        return "I can't see your hero yet. Ask me again once the game has started."
+    return tips.focus(snap) if snap.alive else tips(snap)
+
+
 def read_typed_picks(coach: Coach, questions: TypedQuestions | None = None) -> None:
     """Lets you type the draft in the coach window: "vs am cm lion pudge sf",
-    "buy" for what to buy now, "how" for how you are doing, "rank archon"
+    "buy" for what to buy now, "how" for how you are doing, "focus" for the
+    one thing to work on now, "rank archon"
     to set your rank, the answer to
     a start-of-game question shown there, or any other question for the model."""
+    advice = coach.advice
+    tips = death_tip.BuiltinTips(notes_of(coach), advice.position if advice is not None else None)
     for line in sys.stdin:
         if not line.strip():
             continue
@@ -271,6 +287,9 @@ def read_typed_picks(coach: Coach, questions: TypedQuestions | None = None) -> N
             continue
         if command in HOW_COMMANDS and coach.advice is not None:
             print(how_am_i_doing(coach), flush=True)
+            continue
+        if command in FOCUS_COMMANDS:
+            print(focus(coach, tips), flush=True)
             continue
         if command in RANK_COMMANDS and coach.advice is not None:
             print(tell(coach.advice.benchmarks.rank, line), flush=True)
@@ -416,7 +435,10 @@ def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
     if typing:
         threading.Thread(target=read_typed_picks, args=(coach, typed), daemon=True).start()
         logging.info('Type the enemy picks any time, e.g.  vs am cm lion pudge sf')
-        logging.info('Type "buy" any time to hear what to buy now, or "how" for how you are doing')
+        logging.info(
+            'Type "buy" any time to hear what to buy now, "how" for how you are doing, '
+            'or "focus" for the one thing to work on now'
+        )
         logging.info('Type your rank to compare with players of your medal, e.g.  rank archon  or  mmr 2500')
         if chat is not None:
             logging.info("Or type any other question for the coach, e.g.  how do I play against pudge")

@@ -77,12 +77,15 @@ CLAUDE.md).
     including position tips for fragile ranged cores (Drow Ranger, Lina,
     Shadow Fiend lose 41 to 48% at every medal, `low-bracket-meta.md`).
     Done in `coach/rules/death_tip.py` (`STAGE_TIPS`, `hero_tip`).
-14. [ ] **"What should I focus on now?"** A voice question, answered while
+14. [x] **"What should I focus on now?"** A voice question, answered while
     alive with the same stage and role lines as the built-in death tips
     (`STAGE_TIPS`, `hero_tip` in `coach/rules/death_tip.py`), plus the
     stat-based ones (low last hits, no Town Portal). *Why:* Castien asked
     for it (2026-11-04); a beginner gets one clear priority without having
     to die first.
+    Done: `BuiltinTips.focus` (low health first, lines worded for now, not
+    "next life"), voice intent `focus` and typed `focus`, and said once
+    unasked at 10:30 (`coach/rules/focus_check.py`, Castien OK'd 2026-11-04).
 15. [ ] **Builds for the next most-picked heroes.** Shadow Shaman,
     Windranger, Anti-Mage, Earthshaker, Necrophos, Crystal Maiden, Lina,
     Dragon Knight, Lifestealer, Phantom Lancer, Tidehunter, Lich and Sven are

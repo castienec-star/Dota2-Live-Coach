@@ -334,3 +334,31 @@ def test_streak_can_be_turned_off(payload):
         rule._pool.submit(lambda: None).result()  # the tip is said before the next life
     rule.close()
     assert said == ["Model tip."] * 3
+
+
+def test_focus_puts_low_health_first(payload):
+    snap = calm(Snapshot.from_payload(payload), 900)
+    snap.health, snap.max_health = 100, 1000
+    assert BuiltinTips(position=lambda s: 1).focus(snap).startswith("Your health is low")
+
+
+def test_focus_uses_the_stage_lines_worded_for_now(payload):
+    from coach.rules.death_tip import STAGE_TIPS, now_worded
+
+    snap = calm(Snapshot.from_payload(payload), 300, "npc_dota_hero_axe")
+    snap.health = snap.max_health = 1000
+    tips = BuiltinTips(position=lambda s: 1)
+    said = [tips.focus(snap) for _ in range(3)]
+    assert set(said) == {now_worded(line) for line in STAGE_TIPS[("laning phase", "core")]}
+    assert not any("Next life" in line for line in said)
+    assert said[0] == "Last hit when a creep's health drops under one hit, and don't chase kills."
+
+
+def test_focus_names_the_stat_problem_first(payload):
+    snap = calm(Snapshot.from_payload(payload), 900, "npc_dota_hero_axe")
+    snap.health = snap.max_health = 1000
+    snap.last_hits = 10
+    assert "last hits" in BuiltinTips(position=lambda s: 1).focus(snap)
+    snap.last_hits = 400
+    snap.items = []
+    assert "Town Portal" in BuiltinTips(position=lambda s: 1).focus(snap)

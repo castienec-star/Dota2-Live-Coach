@@ -31,6 +31,7 @@ from .item_advisor import Advice, ItemAdvisor
 from .items import load_items
 from .lineup import Question
 from .rules import PositionOf, timers
+from .rules.death_tip import BuiltinTips
 from .rules.hero import ItemReady, parse_builds
 from .state import MatchState, Snapshot
 
@@ -40,8 +41,8 @@ RATE = 16000  # samples per second, 16-bit mono: what both speech models expect
 FRAME = 1280  # samples per microphone read (80 ms)
 
 UNKNOWN = (
-    "I can't help with that yet. Ask me how you're doing, what to buy, "
-    "or about your next item, buyback or runes."
+    "I can't help with that yet. Ask me how you're doing, what to focus on, "
+    "what to buy, or about your next item, buyback or runes."
 )
 
 # First match wins, so the narrower questions come first.
@@ -69,6 +70,13 @@ INTENTS: list[tuple[str, re.Pattern[str]]] = [
     (
         "what_to_buy",
         re.compile(r"\b(items?|buy|build|purchase|shop|recommend|counters?|what (should|do|can) i get)\b"),
+    ),    # "What should I focus on?", "what should I do now?", "any tips?"
+    (
+        "focus",
+        re.compile(
+            r"\b(focus|concentrate|priority|what (should|do) i (do|be doing|work on)"
+            r"|what now|any tips?|give me a tip|tips? for now)\b"
+        ),
     ),
 ]
 
@@ -125,6 +133,7 @@ class Answers:
         self.advice = advice or Advice(ItemAdvisor(None), builds, position, self.benchmarks, enemies, notes)
         self.enemy_items = enemy_items
         self.chat = chat
+        self.tips = BuiltinTips(self.notes, position)
 
     def answer(self, text: str, snap: Snapshot) -> str:
         """The spoken answer; "" when there is nothing to say any more."""
@@ -166,6 +175,12 @@ class Answers:
     def how_am_i_doing(self, snap: Snapshot) -> str:
         hero = self.heroes.by_key(snap.hero_name)
         return status(self.benchmarks, snap, hero, self.position(snap) if self.position else 0)
+
+    def focus(self, snap: Snapshot) -> str:
+        # The death tips' checks and lines, worded for now (death_tip.py).
+        if not snap.alive:
+            return self.tips(snap)
+        return self.tips.focus(snap)
 
     def buyback(self, snap: Snapshot) -> str:
         if snap.buyback_cost <= 0:

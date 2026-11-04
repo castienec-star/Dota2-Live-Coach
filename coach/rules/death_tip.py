@@ -215,6 +215,14 @@ STAGE_TIPS = {
     ],
 }
 
+def now_worded(line: str) -> str:
+    """A death tip's line said to a living player: without "Next life,"."""
+    if line.startswith("Next life, "):
+        rest = line.removeprefix("Next life, ")
+        return rest[0].upper() + rest[1:]
+    return line
+
+
 # Heroes that lose at low MMR from where they stand or from farming alone,
 # not from their items (docs/strategy/low-bracket-meta.md); after laning.
 FRAGILE_RANGED = {"drow_ranger", "sniper", "lina", "nevermore"}
@@ -248,6 +256,7 @@ class BuiltinTips:
         self._next = 0
         self._last = ""  # never the same rotating line twice in a row
         self._named_trouble = False  # the trouble hero tip was the last one
+        self._focus_trouble = False  # the same, for "what should I focus on?"
         self._heroes: HeroIndex | None = None
 
     def role(self, snap: Snapshot) -> str:
@@ -278,10 +287,48 @@ class BuiltinTips:
             return "Your team is losing fights. Next life, wait for them and fight together near your towers."
         if not any(i.name == "item_tpscroll" for i in snap.items):
             return "Buy a Town Portal scroll before you leave the fountain."
+        return self._rotate(self._stage_lines(snap, role))
+
+    def focus(self, snap: Snapshot) -> str:
+        """The one thing to focus on now, while alive: "what should I focus
+        on?". The same checks and lines as the death tips, worded for now
+        instead of the next life, with low health first."""
+        if snap.max_health and snap.health_percent < 30:
+            return "Your health is low. Back off and heal before anything else."
+        minutes = max(snap.clock_time or 0, 0) / 60
+        notes = self.notes()
+        role = self.role(snap)
+        if minutes >= 30 and snap.buyback_cooldown == 0 and snap.gold < snap.buyback_cost and role == "core":
+            return "Save gold for buyback before you take the next fight."
+        # Every other time, so asking twice gives the next priority too.
+        if notes is not None and notes.trouble is not None and not self._focus_trouble:
+            self._focus_trouble = True
+            name = notes.trouble.name
+            return f"Find {name} on the minimap before you fight, and don't meet {name} alone."
+        self._focus_trouble = False
+        if minutes >= 10 and snap.last_hits < minutes * 4 and role == "core":
+            return "Your last hits are low. Farm safe lanes and jungle camps between waves."
+        if snap.deaths >= 3 and snap.deaths > snap.kills + snap.assists:
+            return "You are dying often. Play closer to your team and back off earlier."
+        if notes is not None and notes.fights == "lost":
+            return "Your team is losing fights. Wait for them and fight together near your towers."
+        if not any(i.name == "item_tpscroll" for i in snap.items):
+            return "Buy a Town Portal scroll and keep it on you, so you can join fights and save towers."
+        return self.stage_line(snap)
+
+    def stage_line(self, snap: Snapshot) -> str:
+        """The next line for the player's role and game stage, worded for now."""
+        return self._rotate([now_worded(line) for line in self._stage_lines(snap, self.role(snap))])
+
+    def _stage_lines(self, snap: Snapshot, role: str) -> list[str]:
         lines = list(STAGE_TIPS[(phase(snap), role)])
         hero = self._heroes.by_key(snap.hero_name) if self._heroes else None
         if hero is not None and (line := hero_tip(snap, hero.name)):
             lines.insert(0, line)
+        return lines
+
+    def _rotate(self, lines: list[str]) -> str:
+        """The next line in turn, never the same one twice in a row."""
         tip = lines[self._next % len(lines)]
         self._next += 1
         if tip == self._last:
