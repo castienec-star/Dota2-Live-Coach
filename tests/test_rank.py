@@ -364,6 +364,7 @@ def test_refresh_brackets_command(tmp_path, monkeypatch):
 
 def test_refresh_brackets_saves_nothing_when_offline(tmp_path, monkeypatch):
     monkeypatch.setattr("coach.config.user_dir", lambda: tmp_path)
+    monkeypatch.setattr("coach.rank.time.sleep", lambda s: None)
     monkeypatch.setattr("coach.opendota.OpenDota.get", lambda self, path, max_age=None: None)
     out = tmp_path / "brackets.json"
     assert main(["--config", str(tmp_path / "none.toml"), "refresh-brackets", "--out", str(out)]) == 1
@@ -382,8 +383,92 @@ def test_opendota_player_rank(tmp_path):
 def test_stops_when_opendota_stops_answering(monkeypatch):
     monkeypatch.setattr("coach.rank.time.sleep", lambda s: None)
     get = lambda path: None if path.startswith("/matches/") else fake_opendota(path)  # noqa: E731
-    with pytest.raises(RuntimeError, match="stopped answering"):
-        rank_mod.fetch(get, {}, matches=40)
+    data = rank_mod.fetch(get, {}, matches=40)
+    assert "stopped answering" in data["stopped"]
+    assert data["brackets"] == {} and data["missing"] == list(rank_mod.GROUPS)
+
+
+def test_keeps_the_medals_done_before_opendota_stops(monkeypatch):
+    monkeypatch.setattr("coach.rank.time.sleep", lambda s: None)
+
+    def get(path):
+        if "min_rank=20" in path:  # Guardian onwards
+            raise rank_mod.RateLimited("too many requests")
+        return fake_opendota(path)
+
+    data = rank_mod.fetch(get, {}, matches=40)
+    assert set(data["brackets"]) == {"herald"}
+    assert data["missing"] == [g for g in rank_mod.GROUPS if g != "herald"]
+
+
+class FakeStats:
+    """Stands in for OpenDota: answers from "replies" in turn, 429 for None."""
+
+    def __init__(self, replies, cached=()):
+        self.replies = list(replies)
+        self.cached = set(cached)
+        self.last_status = None
+        self._offline_until = 0.0
+        self.asked = []
+
+    def fresh(self, path, max_age):
+        return path in self.cached
+
+    def get(self, path, max_age=None):
+        self.asked.append(path)
+        reply = self.replies.pop(0)
+        self.last_status = None if reply is not None else 429
+        return reply
+
+
+def test_polite_get_paces_requests_and_waits_on_too_many():
+    slept, said = [], []
+    stats = FakeStats([None, None, {"ok": 1}])
+    get = rank_mod.PoliteGet(stats, pause=2, waits=(60, 120), sleep=slept.append, progress=said.append)
+    assert get("/matches/1") == {"ok": 1}
+    assert slept == [2, 60, 120]
+    assert "too many requests" in said[0]
+
+
+def test_polite_get_skips_the_pause_for_saved_answers_and_gives_up():
+    slept = []
+    get = rank_mod.PoliteGet(FakeStats([{"ok": 1}], cached={"/matches/1"}), sleep=slept.append)
+    assert get("/matches/1") == {"ok": 1} and slept == []
+    get = rank_mod.PoliteGet(FakeStats([None, None]), waits=(60,), sleep=slept.append)
+    with pytest.raises(rank_mod.RateLimited):
+        get("/matches/2")
+
+
+def test_polite_get_passes_other_failures_through():
+    stats = FakeStats([None])
+    stats.get = lambda path, max_age=None: None  # offline: no status
+    assert rank_mod.PoliteGet(stats, sleep=lambda s: None)("/matches/1") is None
+
+
+def test_refresh_brackets_saves_the_medals_it_finished(tmp_path, monkeypatch, caplog):
+    monkeypatch.setattr("coach.config.user_dir", lambda: tmp_path)
+    partial = {"patch": "7.41", "percentiles": P, "brackets": {"herald": group(0.7)},
+               "stopped": "OpenDota keeps saying too many requests", "missing": ["guardian", "crusader"]}
+    monkeypatch.setattr("coach.rank.fetch", lambda *a, **k: partial)
+    out = tmp_path / "brackets.json"
+    assert main(["--config", str(tmp_path / "none.toml"), "refresh-brackets", "--out", str(out)]) == 2
+    saved = json.loads(out.read_text(encoding="utf-8"))
+    assert set(saved["brackets"]) == {"herald"} and "stopped" not in saved
+    assert "Guardian, Crusader are still missing" in caplog.text
+
+
+def test_opendota_remembers_too_many_requests(tmp_path, monkeypatch):
+    import urllib.error
+
+    from coach.opendota import OpenDota
+
+    def refuse(request, timeout=None):
+        raise urllib.error.HTTPError(request.full_url, 429, "Too Many Requests", {}, None)
+
+    monkeypatch.setattr("urllib.request.urlopen", refuse)
+    stats = OpenDota(tmp_path)
+    assert stats.get("/matches/1") is None and stats.last_status == 429
+    assert not stats.fresh("/matches/1", 60)
 
 
 def test_chat_gets_the_medal_as_a_bracket_number(tmp_path):

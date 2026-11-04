@@ -551,28 +551,39 @@ def cmd_refresh_brackets(cfg: config_mod.Config, args: argparse.Namespace) -> in
 
     stats = OpenDota(cfg.app_dir / "opendota", timeout=20)
     out = args.out or rank.BRACKETS_FILE
-
-    def get(path: str):
-        # One failed match shouldn't make the rest skip the network.
-        stats._offline_until = 0.0
-        return stats.get(path, max_age=86400)
+    show = lambda text: print(text, flush=True)  # noqa: E731
+    get = rank.PoliteGet(stats, args.pause, progress=show)
 
     groups = len(rank.GROUPS)
-    minutes = round(groups * args.matches * 1.2 / 60)
-    print(f"Reading {args.matches} ranked matches for each of {groups} medals from OpenDota (about {minutes} minutes)...")
+    minutes = round(groups * args.matches * (args.pause + 0.3) / 60)
+    print(
+        f"Reading {args.matches} ranked matches for each of {groups} medals from OpenDota "
+        f"(about {minutes} minutes; a run that was stopped picks up where it left off)..."
+    )
     keys = {h.id: h.key for h in load_heroes().values()}
     try:
-        data = rank.fetch(get, keys, args.matches, progress=lambda text: print(text, flush=True))
+        data = rank.fetch(get, keys, args.matches, progress=show)
     except RuntimeError as exc:
-        logging.error(
-            "%s. Nothing saved. Try again later or tomorrow: matches already read are kept for a day.", exc
-        )
+        logging.error("%s. Nothing saved. Check your internet connection and try again.", exc)
         return 1
-    if len(data["brackets"]) < 4:
-        logging.error("Only %d medals came back; nothing saved. Try again later.", len(data["brackets"]))
+    if not data["brackets"]:
+        logging.error(
+            "%s. Nothing saved. Run it again in an hour or tomorrow: the matches already read are "
+            "kept for 3 days, so it goes on from where it stopped.",
+            data.get("stopped") or "No medal had enough matches",
+        )
         return 1
     saved = rank.save(data, out)
     print(f"Saved {saved} medals ({data['patch']}) to {out}")
+    if data.get("stopped"):
+        logging.warning(
+            "%s, so %s are still missing (players of those medals are compared with everyone). Run it "
+            "again in an hour or tomorrow: the matches already read are kept for 3 days, so it goes "
+            "on from where it stopped.",
+            data["stopped"],
+            ", ".join(rank.name(m) for m in data["missing"]),
+        )
+        return 2
     return 0
 
 
@@ -641,7 +652,8 @@ def main(argv: list[str] | None = None) -> int:
     p_bench.add_argument("--out", type=Path, default=None, help="where to save (default: the bundled data file)")
     p_ranks = sub.add_parser("refresh-brackets", help="save what players of each medal reach, from OpenDota")
     p_ranks.add_argument("--out", type=Path, default=None, help="where to save (default: the bundled data file)")
-    p_ranks.add_argument("--matches", type=int, default=250, help="matches to read per medal")
+    p_ranks.add_argument("--matches", type=int, default=150, help="matches to read per medal")
+    p_ranks.add_argument("--pause", type=float, default=2.0, help="seconds between requests to OpenDota")
     p_stats = sub.add_parser("refresh-hero-stats", help="save this patch's public win rates per hero from OpenDota")
     p_stats.add_argument("--out", type=Path, default=None, help="where to save (default: the bundled data file)")
     p_review = sub.add_parser("review", help="print the post-game review of a recorded match")

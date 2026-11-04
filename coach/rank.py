@@ -383,6 +383,51 @@ def players(match: dict) -> list[tuple[int, bool, dict[str, float]]]:
     return out
 
 
+class RateLimited(RuntimeError):
+    """OpenDota kept answering "too many requests"."""
+
+
+TOO_MANY = 429
+# A refresh reads each match once and keeps it this long, so a run stopped by
+# OpenDota's limit picks up where it left off (match data never changes).
+KEEP = 3 * 86400
+
+
+class PoliteGet:
+    """Reads OpenDota for the refresh within its free limits: at most one
+    request every "pause" seconds (answers already saved don't count), and on
+    "too many requests" it waits, longer each time, before asking again."""
+
+    def __init__(
+        self,
+        stats,  # an OpenDota
+        pause: float = 2.0,
+        waits: tuple[float, ...] = (60, 120, 300, 600),
+        sleep: Callable[[float], None] | None = None,
+        progress: Callable[[str], None] = lambda text: None,
+    ) -> None:
+        self.stats = stats
+        self.pause = pause
+        self.waits = waits
+        self.sleep = sleep or (lambda seconds: time.sleep(seconds))
+        self.progress = progress
+
+    def __call__(self, path: str) -> Any:
+        if not self.stats.fresh(path, KEEP):
+            self.sleep(self.pause)
+        for wait in (*self.waits, None):
+            # One failed request shouldn't make the rest skip the network.
+            self.stats._offline_until = 0.0
+            data = self.stats.get(path, max_age=KEEP)
+            if data is not None or self.stats.last_status != TOO_MANY:
+                return data
+            if wait is None:
+                raise RateLimited("OpenDota keeps saying too many requests (its free daily limit?)")
+            self.progress(f"OpenDota says too many requests; waiting {wait:.0f} seconds before going on")
+            self.sleep(wait)
+        return None
+
+
 Sample = dict[str, dict[str, list[float]]]  # "core", "support" or hero id: {metric: values}
 # This many matches in a row without an answer: OpenDota stopped answering.
 GIVE_UP = 20
@@ -393,7 +438,7 @@ def sample(
     group: str,
     matches: int,
     since: int,
-    pause: float = 1.1,
+    pause: float = 0.0,
     progress: Callable[[str], None] = lambda text: None,
     pages: int = 60,
 ) -> tuple[int, Sample]:
@@ -450,16 +495,26 @@ def _rounded(values: list[float]) -> list[float]:
 def fetch(
     get: Callable[[str], Any],
     hero_keys: dict[int, str],
-    matches: int = 250,
-    pause: float = 1.1,
+    matches: int = 150,
+    pause: float = 0.0,
     progress: Callable[[str], None] = lambda text: None,
 ) -> dict:
     """The brackets file's contents, sampled from OpenDota. Medals with too
-    few matches are left out."""
+    few matches are left out. When OpenDota stops answering, the medals done
+    so far are kept, and "stopped" says why and "missing" which are left."""
     patch, since = patch_start(get)
     brackets = {}
+    stopped, missing = "", []
     for group in GROUPS:
-        read, found = sample(get, group, matches, since, pause, progress)
+        if stopped:
+            missing.append(group)
+            continue
+        try:
+            read, found = sample(get, group, matches, since, pause, progress)
+        except RuntimeError as exc:
+            stopped = str(exc)
+            missing.append(group)
+            continue
         if read < max(10, matches // 4) or "core" not in found or "support" not in found:
             progress(f"{name(group)}: only {read} matches on this patch, left out")
             continue
@@ -475,7 +530,7 @@ def fetch(
             "support": {m: _rounded(v) for m, v in found["support"].items()},
             "heroes": dict(sorted(heroes.items())),
         }
-    return {
+    data = {
         "source": "OpenDota public matches (/publicMatches, /matches): ranked, not Turbo, 15 minutes or "
         f"longer, nobody abandoned. Fetched {date.today().isoformat()}, patch {patch}.",
         "note": "Each medal holds only players of that medal (Divine also has Immortal). Whole-match "
@@ -485,10 +540,14 @@ def fetch(
         "percentiles": PERCENTILES,
         "brackets": brackets,
     }
+    if stopped:
+        data["stopped"], data["missing"] = stopped, missing
+    return data
 
 
 def save(data: dict, path: Path = BRACKETS_FILE) -> int:
     """Writes the file; returns how many medals it holds."""
+    data = {k: v for k, v in data.items() if k not in ("stopped", "missing")}
     path.write_text(json.dumps(data, indent=1) + "\n", encoding="utf-8")
     load_brackets.cache_clear()
     return len(data["brackets"])
