@@ -231,10 +231,19 @@ Choose where tips come from with `provider` in `[reminders.death_tip]`:
 | --- | --- | --- |
 | `ollama` (default) | Free | [Ollama](https://ollama.com) running on your PC with a model pulled |
 | `claude` | About a cent per tip | A Claude API key in `ANTHROPIC_API_KEY` |
-| `builtin` | Free | Nothing; written tips based on your stats |
+| `builtin` | Free | Nothing; written tips based on your stats, role and game stage |
 
 If the model is not running or takes longer than `timeout` seconds, the coach
 falls back to a built-in tip, so you always get one.
+
+Built-in tips fit your role and the game stage. A support dying at 6:00
+hears about vision and the river, a core at 15:00 about farming the jungle
+between waves and taking a tower after a won fight, anyone after 25:00 about
+never farming a side lane alone. Drow Ranger, Sniper, Lina and Shadow Fiend
+hear where to stand in fights, and Anti-Mage and Nature's Prophet hear to join
+fights in the mid game, since that is how those heroes lose at low MMR.
+Supports don't hear the last-hit or buyback lines. The same line is never
+said twice in a row.
 
 **Free local tips with Ollama (Windows):**
 

@@ -179,28 +179,90 @@ def ollama_asker(model: str, url: str, timeout: float) -> Ask:
     return llm.ollama_asker(model, url, timeout, SYSTEM_PROMPT, label="Ollama tip", temperature=0.4)
 
 
-BUILTIN_TIPS = [
-    "Use your death timer to plan your next item and where you will farm.",
-    "Next life, stay near your team and avoid farming alone far from your towers.",
-    "Buy a Town Portal scroll if you don't have one, so you can join fights fast.",
-    "Check your wards before walking into the jungle again.",
-    "Look at the minimap every few seconds when you farm a side lane.",
-]
+# Written tips by game stage and role, from docs/strategy/fundamentals.md
+# (what to say at each stage, for cores and supports). The offlane gets the
+# core lines.
+STAGE_TIPS = {
+    ("laning phase", "core"): [
+        "Next life, last hit when a creep's health drops under one hit, and don't chase kills.",
+        "Early deaths usually come from walking past the river without vision. Stay on your side of the lane.",
+        "Go back or use your regen when your health is low, instead of staying for one more creep.",
+    ],
+    ("laning phase", "support"): [
+        "Early deaths usually come from walking past the river without vision. Ward before you walk forward.",
+        "Stack the nearest camp when the clock shows 53 seconds, and take the gold runes for your team.",
+        "Go back or use your regen when your health is low, instead of staying for one more hit.",
+    ],
+    ("mid game", "core"): [
+        "Next life, farm the jungle camp between waves instead of walking around the map.",
+        "Farm on your side of the map. The far lanes are where you get caught alone.",
+        "After a won fight, take a tower or Roshan instead of going back to farm.",
+    ],
+    ("mid game", "support"): [
+        "As a support, stay with your team, and buy wards and a Glimmer Cape or Force Staff.",
+        "Keep wards up on your side of the map and walk with your cores, not alone.",
+        "After a won fight, take a tower or Roshan with your team.",
+    ],
+    ("late game", "core"): [
+        "Never farm a side lane alone now. One death this late can lose the game.",
+        "Go to the enemy high ground only with your whole team, best with Aegis.",
+        "Defend your base together. Don't trade a Barracks for farm in a far lane.",
+    ],
+    ("late game", "support"): [
+        "Stay with your team now. One pick-off this late can lose the game.",
+        "Go to the enemy high ground only with your whole team, best with Aegis.",
+        "Defend your base together, and keep a Town Portal scroll to get there.",
+    ],
+}
+
+# Heroes that lose at low MMR from where they stand or from farming alone,
+# not from their items (docs/strategy/low-bracket-meta.md); after laning.
+FRAGILE_RANGED = {"drow_ranger", "sniper", "lina", "nevermore"}
+LONE_FARMERS = {"furion", "antimage"}
+
+
+def hero_tip(snap: Snapshot, name: str) -> str | None:
+    """The line for a hero that loses games the same way at every medal."""
+    stage = phase(snap)
+    if stage == "laning phase":
+        return None
+    key = (snap.hero_name or "").removeprefix("npc_dota_hero_")
+    if key in FRAGILE_RANGED:
+        return f"As {name}, stand behind your team and attack from as far away as you can. You are fragile."
+    if key in LONE_FARMERS and stage == "mid game":
+        return f"As {name}, join the next fight with your team instead of farming alone."
+    return None
 
 
 class BuiltinTips:
-    """Free written tips picked from your own stats and what you told the
-    coach; never fails."""
+    """Free written tips picked from your own stats, your role, the game
+    stage and what you told the coach; never fails."""
 
-    def __init__(self, notes: Callable[[], Notes | None] | None = None) -> None:
+    def __init__(
+        self,
+        notes: Callable[[], Notes | None] | None = None,
+        position: PositionOf | None = None,
+    ) -> None:
         self.notes = notes or (lambda: None)
+        self.position = position
         self._next = 0
+        self._last = ""  # never the same rotating line twice in a row
         self._named_trouble = False  # the trouble hero tip was the last one
+        self._heroes: HeroIndex | None = None
+
+    def role(self, snap: Snapshot) -> str:
+        """"support" for positions 4 and 5 (or a support hero while the
+        position isn't known), else "core"."""
+        position = self.position(snap) if self.position else 0
+        if self._heroes is None:
+            self._heroes = HeroIndex()
+        return "support" if is_support(self._heroes.by_key(snap.hero_name), position) else "core"
 
     def __call__(self, snap: Snapshot) -> str:
         minutes = max(snap.clock_time or 0, 0) / 60
         notes = self.notes()
-        if minutes >= 30 and snap.buyback_cooldown == 0 and snap.gold < snap.buyback_cost:
+        role = self.role(snap)
+        if minutes >= 30 and snap.buyback_cooldown == 0 and snap.gold < snap.buyback_cost and role == "core":
             return "Save gold for buyback before you take the next fight."
         # Every other death, so it doesn't turn into nagging.
         if notes is not None and notes.trouble is not None and not self._named_trouble:
@@ -208,7 +270,7 @@ class BuiltinTips:
             name = notes.trouble.name
             return f"Next life, find {name} on the minimap before you fight, and don't meet {name} alone."
         self._named_trouble = False
-        if minutes >= 10 and snap.last_hits < minutes * 4:
+        if minutes >= 10 and snap.last_hits < minutes * 4 and role == "core":
             return "Your last hits are low. Farm safer lanes and jungle camps next life."
         if snap.deaths >= 3 and snap.deaths > snap.kills + snap.assists:
             return "You are dying often. Play closer to your team and back off earlier."
@@ -216,8 +278,16 @@ class BuiltinTips:
             return "Your team is losing fights. Next life, wait for them and fight together near your towers."
         if not any(i.name == "item_tpscroll" for i in snap.items):
             return "Buy a Town Portal scroll before you leave the fountain."
-        tip = BUILTIN_TIPS[self._next % len(BUILTIN_TIPS)]
+        lines = list(STAGE_TIPS[(phase(snap), role)])
+        hero = self._heroes.by_key(snap.hero_name) if self._heroes else None
+        if hero is not None and (line := hero_tip(snap, hero.name)):
+            lines.insert(0, line)
+        tip = lines[self._next % len(lines)]
         self._next += 1
+        if tip == self._last:
+            tip = lines[self._next % len(lines)]
+            self._next += 1
+        self._last = tip
         return tip
 
 
@@ -251,7 +321,7 @@ class DeathTip:
         self.say = say
         self.ask = ask
         self.notes = notes or (lambda: None)
-        self.fallback = fallback or BuiltinTips(self.notes)
+        self.fallback = fallback or BuiltinTips(self.notes, position)
         self.min_respawn = min_respawn
         self.position = position
         self.items = items if items is not None else load_items()
