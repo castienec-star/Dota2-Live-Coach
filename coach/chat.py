@@ -4,7 +4,8 @@
 questions, so it goes to the same model as the death tips (Ollama on your PC
 by default, or Claude). The prompt holds only your own hero's GSI numbers,
 your build and what to buy now, the ahead/behind verdict, the heroes you told
-the coach (and what you said they have) and your answers to its in-match questions, plus the last few
+the coach (and what you said they have), this patch's win rates of those
+heroes in your own rank bracket (coach/hero_stats.py) and your answers to its in-match questions, plus the last few
 questions of this match so "and after that?" works.
 
 The model must answer in a sentence or two. A reply that names a hero nobody
@@ -17,7 +18,7 @@ from __future__ import annotations
 import logging
 from collections.abc import Callable
 
-from . import llm, situational
+from . import hero_stats, llm, situational
 from .game_questions import Notes
 from .grounding import Grounding
 from .heroes import HeroInfo
@@ -34,7 +35,8 @@ SYSTEM_PROMPT = """\
 You are a friendly Dota 2 coach for new and low-ranked players, talking through \
 their headset during a match. Answer the player's question in one or two short \
 sentences of plain spoken English: no lists, no emoji. Use only the player's own \
-data below, what they told you and general Dota knowledge. You cannot see the \
+data below, what they told you, this patch's win rates below and general Dota \
+knowledge. You cannot see the \
 map, the enemies or their items: never claim to know where enemies are or what \
 they have unless the player told you, and never name a hero that isn't in the \
 data below. If you don't know, say so in a few words. For what to buy, use the \
@@ -101,9 +103,13 @@ class Chat:
         items: dict[str, ItemInfo] | None = None,
         off: str = OFF,
         enemy_items: Callable[[], list[str]] | None = None,
+        stats: dict[int, dict[str, hero_stats.HeroStat]] | None = None,
+        bracket: Callable[[], int | None] | None = None,
     ) -> None:
         """current() is the latest snapshot, checked once the reply is back;
-        enemy_items() what the player said the enemies have."""
+        enemy_items() what the player said the enemies have; stats this
+        patch's win rates per bracket (default: the saved hero_stats.json)
+        and bracket() the player's own, 1 Herald to 8 Immortal, or None."""
         self.ask = ask
         self.advice = advice
         self.position = position
@@ -117,6 +123,8 @@ class Chat:
         self.history: list[tuple[str, str]] = []
         self._match: tuple | None = None
         self._grounding: Grounding | None = None  # loaded on the first reply
+        self.stats = stats
+        self.bracket = bracket or (lambda: None)
 
     def __call__(self, question: str, snap: Snapshot) -> str | None:
         """The spoken reply; "" when it came too late to say."""
@@ -187,6 +195,11 @@ class Chat:
         others = [h for h in allies if h != me]
         lines.append("Teammates: " + (", ".join(h.name for h in others) if others else "not known"))
         lines.append("Enemies: " + (", ".join(h.name for h in enemies) if enemies else "not known"))
+        bracket = self.bracket()
+        if bracket is not None:
+            if self.stats is None:
+                self.stats = hero_stats.load()
+            lines += hero_stats.describe(self.stats, bracket, [me, *others, *enemies])
         notes = self.notes()
         # notes_of() already holds the reported enemy items; each fact once.
         told = list(dict.fromkeys((notes.told() if notes is not None else []) + self.enemy_items()))
@@ -228,6 +241,7 @@ def build(
     notes: Callable[[], Notes | None] | None = None,
     current: Callable[[], Snapshot] | None = None,
     enemy_items: Callable[[], list[str]] | None = None,
+    bracket: Callable[[], int | None] | None = None,
 ) -> Chat | None:
     """[listen] chat, with the death tips' model and provider; None when off."""
     if not listen.get("chat", True):
@@ -259,4 +273,4 @@ def build(
         )
     else:
         ask = None
-    return Chat(ask, advice, position, allies, enemies, notes, current, off=off, enemy_items=enemy_items)
+    return Chat(ask, advice, position, allies, enemies, notes, current, off=off, enemy_items=enemy_items, bracket=bracket)

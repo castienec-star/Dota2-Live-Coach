@@ -384,3 +384,14 @@ def test_stops_when_opendota_stops_answering(monkeypatch):
     get = lambda path: None if path.startswith("/matches/") else fake_opendota(path)  # noqa: E731
     with pytest.raises(RuntimeError, match="stopped answering"):
         rank_mod.fetch(get, {}, matches=40)
+
+
+def test_chat_gets_the_medal_as_a_bracket_number(tmp_path):
+    from coach.__main__ import bracket_of
+
+    player = PlayerRank("", tmp_path / "rank.json")
+    bracket = bracket_of(Benchmarks(rank=player))
+    assert bracket() is None
+    player.heard("legend")
+    assert bracket() == 5
+    assert bracket_of(Benchmarks())() is None

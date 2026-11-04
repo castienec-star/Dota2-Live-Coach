@@ -1,6 +1,15 @@
 # Dota 2 Live Coach settings.
 # Copy this file to %APPDATA%\Dota2LiveCoach\coach.toml to override the defaults.
 
+[coach]
+# How talkative the coach is.
+#   "beginner"    - every reminder and tip below, and questions during the match.
+#   "experienced" - only gold for your next item, stacks, the power rune and
+#                   buyback (plus the review after the match). It still answers
+#                   when you ask. A reminder you turn on or off yourself in your
+#                   own coach.toml stays as you set it, in either mode.
+mode = "beginner"
+
 [server]
 # The listener only ever binds to this machine. Non-loopback hosts are refused.
 host = "127.0.0.1"
