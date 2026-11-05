@@ -217,6 +217,9 @@ def test_top_low_bracket_picks_have_their_own_build(tmp_path):
         # ROADMAP item 20: the next most-picked heroes without a build.
         "rubick", "invoker", "techies", "skywrath_mage", "obsidian_destroyer", "undying",
         "hoodwink", "magnataur", "silencer", "spectre", "vengefulspirit", "furion",
+        # ROADMAP item 21: the batch after that.
+        "nevermore", "queenofpain", "jakiro", "faceless_void", "snapfire", "venomancer",
+        "ancient_apparition", "dawnbreaker", "disruptor", "ursa", "dark_willow", "slardar",
     ):
         assert builds.get(hero), f"no build for {hero}"
 
