@@ -79,3 +79,30 @@ Heroes with ids 1 to 54 only (see above).
   Shaman, Windranger, Anti-Mage, Earthshaker, Necrophos, Crystal Maiden,
   Lina, Dragon Knight, Lifestealer, Phantom Lancer, Tidehunter, Lich and
   Sven got hand-written builds in `config/coach.toml` (ROADMAP item 15).
+
+## Next most-picked heroes (ROADMAP item 20)
+
+Herald-to-Ancient picks summed from the bundled-data snapshot of
+OpenDota's `/api/heroStats` taken on 2026-11-04 (PR #82,
+`coach/data/hero_stats.json`, all 127 heroes). Among the top 50, these had
+no hand-written build and now have one in `config/coach.toml`, chosen from
+what players buy on them this patch (`coach/data/item_popularity.json`):
+
+| Rank | Hero | Herald-Ancient win % | Build idea for a beginner |
+|---|---|---|---|
+| 4 | Rubick | 49.4 | Blink and Force Staff to land and survive spells |
+| 8 | Invoker | 50.7 | Kaya, then Black King Bar before the Scepter |
+| 19 | Techies | 51.0 | Support saves (Force, Glimmer, Solar Crest) |
+| 27 | Skywrath Mage | 49.9 | Rod of Atos to hold a target, Force and Glimmer to live |
+| 29 | Outworld Destroyer | 53.1 | Witch Blade, Hurricane Pike to keep distance |
+| 31 | Undying | 50.0 | Shard first, then saves |
+| 33 | Hoodwink | 47.1 | Force Staff and Shard before Blink |
+| 34 | Magnus | 49.1 | Blink, then Black King Bar so the Reverse Polarity lands |
+| 36 | Silencer | 50.6 | Support saves, then Scepter |
+| 40 | Spectre | 53.0 | Radiance and Manta, Black King Bar before late items |
+| 41 | Vengeful Spirit | 52.4 | Support by default; a pos 1 build when you say you're carry |
+| 42 | Nature's Prophet | 43.1 | Maelstrom and a Pike, but the real fix is joining fights |
+
+Hoodwink (47.1%) and Nature's Prophet (43.1%) lose a lot at these medals;
+their builds favour escape items because both die alone on the map.
+

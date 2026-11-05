@@ -390,3 +390,21 @@ shadow_shaman = ["Tranquil Boots", "Blink Dagger", "Aghanim's Scepter", "Glimmer
 sven = ["Power Treads", "Echo Sabre", "Black King Bar", "Daedalus", "Satanic"]
 tidehunter = ["Arcane Boots", "Blink Dagger", "Pipe of Insight", "Aghanim's Scepter", "Shiva's Guard"]
 windrunner = ["Power Treads", "Maelstrom", "Black King Bar", "Daedalus", "Monkey King Bar"]
+# Next most-picked heroes from Herald to Ancient that had no build (ROADMAP
+# item 20), checked against what players buy on them this patch
+# (coach/data/item_popularity.json) and kept forgiving: boots first, then a
+# save or escape item before the big damage item.
+rubick = ["Arcane Boots", "Blink Dagger", "Force Staff", "Aether Lens", "Aghanim's Scepter"]
+invoker = ["Power Treads", "Kaya", "Black King Bar", "Aghanim's Scepter", "Octarine Core"]
+techies = ["Arcane Boots", "Force Staff", "Glimmer Cape", "Solar Crest", "Eul's Scepter of Divinity"]
+skywrath_mage = ["Arcane Boots", "Rod of Atos", "Force Staff", "Glimmer Cape", "Aghanim's Scepter"]
+obsidian_destroyer = ["Power Treads", "Witch Blade", "Hurricane Pike", "Black King Bar", "Aghanim's Scepter"]
+undying = ["Arcane Boots", "Aghanim's Shard", "Force Staff", "Glimmer Cape", "Aghanim's Scepter"]
+hoodwink = ["Arcane Boots", "Force Staff", "Aghanim's Shard", "Blink Dagger", "Glimmer Cape"]
+magnataur = ["Power Treads", "Blink Dagger", "Black King Bar", "Aghanim's Scepter", "Refresher Orb"]
+silencer = ["Arcane Boots", "Force Staff", "Glimmer Cape", "Solar Crest", "Aghanim's Scepter"]
+spectre = ["Power Treads", "Radiance", "Manta Style", "Black King Bar", "Abyssal Blade"]
+furion = ["Power Treads", "Maelstrom", "Hurricane Pike", "Black King Bar", "Daedalus"]
+# Vengeful Spirit is mostly a support at low MMR; the core version is pos 1.
+vengefulspirit = ["Tranquil Boots", "Force Staff", "Glimmer Cape", "Solar Crest", "Aghanim's Scepter"]
+vengefulspirit_pos1 = ["Power Treads", "Manta Style", "Aghanim's Scepter", "Black King Bar", "Butterfly"]

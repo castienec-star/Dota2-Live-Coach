@@ -214,8 +214,21 @@ def test_top_low_bracket_picks_have_their_own_build(tmp_path):
         "shadow_shaman", "windrunner", "antimage", "earthshaker", "necrolyte",
         "crystal_maiden", "lina", "dragon_knight", "life_stealer", "phantom_lancer",
         "tidehunter", "lich", "sven",
+        # ROADMAP item 20: the next most-picked heroes without a build.
+        "rubick", "invoker", "techies", "skywrath_mage", "obsidian_destroyer", "undying",
+        "hoodwink", "magnataur", "silencer", "spectre", "vengefulspirit", "furion",
     ):
         assert builds.get(hero), f"no build for {hero}"
+
+
+def test_every_bundled_build_starts_with_boots(tmp_path):
+    # The popularity fallback could start without boots (Necrophos began
+    # with Radiance); a hand-written build never should.
+    from coach import config
+    from coach.rules.hero import BOOTS
+
+    for hero, found in parse_builds(config.load(app_dir=tmp_path).builds, load_items()).items():
+        assert found[0].key in BOOTS, f"the build for {hero} doesn't start with boots"
 
 
 def test_default_builds_never_list_an_item_and_its_upgrade(tmp_path):
