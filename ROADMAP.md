@@ -124,7 +124,7 @@ CLAUDE.md).
     server) to toggle reminders, pick the voice and mode, and edit the build
     for the current hero. *Why:* paying users expect not to edit TOML.
 
-20. [ ] **Hand-written builds for the next most-picked heroes.** Take the
+20. [x] **Hand-written builds for the next most-picked heroes.** Take the
     most-picked heroes from Herald to Ancient that still use OpenDota's
     popular-items fallback (pick counts in `coach/data/hero_stats.json`
     once it is bundled, otherwise `low-bracket-meta.md`) and write a
@@ -132,6 +132,14 @@ CLAUDE.md).
     lists can skip boots (Necrophos started with Radiance) or name bare
     components; Castien chose hand-written builds over patching the
     fallback (2026-11-04).
+    Done for the 12 most-picked heroes still on the fallback (Rubick,
+    Invoker, Techies, Skywrath Mage, Outworld Destroyer, Undying, Hoodwink,
+    Magnus, Silencer, Spectre, Vengeful Spirit with a pos 1 version, Nature's
+    Prophet), ranked by Herald-to-Ancient picks in the week-old
+    `hero_stats.json` from PR #82. A test now checks every bundled build
+    starts with boots. Next batch: Snapfire, Shadow Fiend, Queen of Pain,
+    Dawnbreaker, Jakiro, Faceless Void, Ancient Apparition and the heroes
+    after them.
 
 ## Ideas to look at later
 
