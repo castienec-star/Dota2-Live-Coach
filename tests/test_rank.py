@@ -480,3 +480,20 @@ def test_chat_gets_the_medal_as_a_bracket_number(tmp_path):
     player.heard("legend")
     assert bracket() == 5
     assert bracket_of(Benchmarks())() is None
+
+
+def test_bundled_file_covers_herald_to_divine_on_this_patch():
+    from coach.heroes import load_heroes
+
+    loaded = rank_mod.load_brackets.__wrapped__(rank_mod.BRACKETS_FILE)
+    assert set(loaded) == set(rank_mod.GROUPS)
+    keys = {h.key for h in load_heroes().values()}
+    for medal, numbers in loaded.items():
+        for role in ("core", "support"):
+            assert set(numbers[role]) == set(rank_mod.METRICS)
+            for curve in numbers[role].values():
+                values = [v for _, v in curve]
+                assert len(values) == len(P) and values == sorted(values)
+        assert set(numbers["heroes"]) <= keys
+    data = json.loads(rank_mod.BRACKETS_FILE.read_text(encoding="utf-8"))
+    assert (rank_mod.BRACKETS_FILE.parent / "PATCH").read_text(encoding="utf-8").startswith(data["patch"])

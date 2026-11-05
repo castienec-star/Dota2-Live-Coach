@@ -102,6 +102,11 @@ only with Legend players.
   the same early ramp as the verdict (0.73 at 10:00), from when the creeps
   meet. A middle core overall (about 5.5 a minute) gives the old 15 and 35;
   a Herald core on 3.5 a minute gets 10 and 25.
+- The bundled file was fetched 2026-11-04 on patch 7.41: 150 matches for
+  each of Herald to Divine, with 6 to 10 heroes per medal having their own
+  numbers (Pudge, Lion, Shadow Shaman and the like). Middle cores reach 4.8
+  last hits a minute in Herald and 6.8 in Divine, so the 10:00 target
+  runs from 35 (Herald, Guardian) to 45 (Divine).
 - Without the file, or for a medal it doesn't cover, everything works as
   before, against all players, and the coach says so when you tell it your
   rank.
