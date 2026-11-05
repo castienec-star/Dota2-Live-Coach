@@ -75,8 +75,8 @@ def test_build_choice_empty_box():
     items = load_items()
     # Pudge has a bundled build: empty turns the item reminder off.
     assert settings.build_choice("pudge", "", DEFAULTS, items) == ([], [])
-    # Techies has none: empty keeps the fallback.
-    assert settings.build_choice("techies", "  ", DEFAULTS, items) == (None, [])
+    # Razor has none: empty keeps the fallback.
+    assert settings.build_choice("razor", "  ", DEFAULTS, items) == (None, [])
 
 
 def test_build_override_and_back_to_default():
