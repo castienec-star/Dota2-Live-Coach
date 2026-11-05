@@ -62,6 +62,19 @@ class SapiBackend:
         self.voice.Speak(text)
 
 
+def installed_voices() -> list[str]:
+    """Names of Windows' installed voices; empty when SAPI isn't there."""
+    try:
+        import comtypes
+        import comtypes.client
+
+        comtypes.CoInitialize()
+        tokens = comtypes.client.CreateObject("SAPI.SpVoice").GetVoices()
+        return [tokens.Item(i).GetDescription() for i in range(tokens.Count)]
+    except Exception:  # not Windows, or no speech engine
+        return []
+
+
 def make_backend(name: str, voice: str = "", rate: int = 0) -> Backend:
     if name == "sapi":
         try:

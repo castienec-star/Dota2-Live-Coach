@@ -640,6 +640,19 @@ def cmd_say(cfg: config_mod.Config, args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_settings(cfg: config_mod.Config, args: argparse.Namespace) -> int:
+    """Opens the settings window."""
+    try:
+        from .settings_window import open_window
+    except ImportError as exc:  # Python installed without tkinter
+        logging.error("The settings window needs tkinter (%s). Edit coach.toml instead.", exc)
+        return 1
+    user_file = args.config or cfg.app_dir / "coach.toml"
+    print(f"Settings are saved to {user_file}")
+    open_window(user_file, cfg.record_dir)
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="coach", description="Dota 2 Live Coach")
     parser.add_argument("--config", type=Path, help="path to a coach.toml")
@@ -663,6 +676,7 @@ def main(argv: list[str] | None = None) -> int:
     p_stats.add_argument("--out", type=Path, default=None, help="where to save (default: the bundled data file)")
     p_review = sub.add_parser("review", help="print the post-game review of a recorded match")
     p_review.add_argument("recording", type=Path)
+    sub.add_parser("settings", help="open the settings window")
     p_say = sub.add_parser("say", help="test the voice")
     p_say.add_argument("text", nargs="?", default="Power rune in 15 seconds.")
     args = parser.parse_args(argv)
@@ -682,6 +696,7 @@ def main(argv: list[str] | None = None) -> int:
         "refresh-hero-stats": cmd_refresh_hero_stats,
         "review": cmd_review,
         "say": cmd_say,
+        "settings": cmd_settings,
     }
     return commands[args.command or "run"](cfg, args)
 

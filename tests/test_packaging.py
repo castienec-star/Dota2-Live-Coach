@@ -79,3 +79,9 @@ def test_app_without_build_file_says_unknown(tmp_path, monkeypatch):
 def test_version_flag_prints_and_exits(capsys):
     assert cli.main(["--version"]) == 0
     assert capsys.readouterr().out.startswith("Dota 2 Live Coach, version from ")
+
+
+def test_settings_bat_opens_the_settings_window():
+    bat = build_exe.SETTINGS_BAT.format(name="DotaCoach")
+    assert '"%~dp0DotaCoach.exe" settings' in bat
+    assert "Coach settings.bat" in build_exe.START_HERE

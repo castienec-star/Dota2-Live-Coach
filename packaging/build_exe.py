@@ -46,6 +46,12 @@ echo Then start the coach by double-clicking {name}.exe.
 pause
 """
 
+SETTINGS_BAT = """\
+@echo off
+rem Opens the coach's settings window (mode, voice, reminders, builds).
+start "" "%~dp0{name}.exe" settings
+"""
+
 START_HERE = """\
 Dota 2 Live Coach
 =================
@@ -58,8 +64,9 @@ Dota 2 Live Coach
 3. Double-click {name}.exe before a match and keep its window open.
 
 The coach only speaks. It never reads your screen or the game's memory.
-Settings: copy _internal\\config\\coach.toml to %APPDATA%\\Dota2LiveCoach\\
-and change your copy. On the first start the coach downloads its speech models
+Settings: double-click "Coach settings.bat" (mode, voice, reminders, item
+builds). Everything else: copy _internal\\config\\coach.toml to
+%APPDATA%\\Dota2LiveCoach\\ and change your copy. On the first start the coach downloads its speech models
 (about 200 MB) once.
 
 Version: {version}
@@ -114,6 +121,7 @@ def main() -> int:
 
     app = dist / NAME
     (app / "Set up Dota 2.bat").write_text(SETUP_BAT.format(name=NAME), encoding="utf-8")
+    (app / "Coach settings.bat").write_text(SETTINGS_BAT.format(name=NAME), encoding="utf-8")
     (app / "START HERE.txt").write_text(START_HERE.format(name=NAME, version=stamp), encoding="utf-8")
     shutil.copy(ROOT / "THIRD_PARTY_NOTICES.md", app / "THIRD_PARTY_NOTICES.md")
     print(f"Built {app} (version from {stamp})")
