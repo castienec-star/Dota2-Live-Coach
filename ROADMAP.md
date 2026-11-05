@@ -140,9 +140,17 @@ CLAUDE.md).
     Magnus, Silencer, Spectre, Vengeful Spirit with a pos 1 version, Nature's
     Prophet), ranked by Herald-to-Ancient picks in the week-old
     `hero_stats.json` from PR #82. A test now checks every bundled build
-    starts with boots. Next batch: Snapfire, Shadow Fiend, Queen of Pain,
-    Dawnbreaker, Jakiro, Faceless Void, Ancient Apparition and the heroes
-    after them.
+    starts with boots. Next batch: item 21.
+21. [x] **Builds for the batch after that.** The 12 most-picked heroes from
+    Herald to Ancient still on the fallback after item 20. *Why:* same as
+    item 20; these heroes are each in 3 to 4% of low-bracket matches.
+    Done: Shadow Fiend, Queen of Pain, Jakiro, Faceless Void, Snapfire,
+    Venomancer, Ancient Apparition, Dawnbreaker, Disruptor, Ursa, Dark
+    Willow and Slardar, ranked by Herald-to-Ancient picks in
+    `hero_stats.json` (PR #82). Shadow Fiend and Queen of Pain, who lose
+    more than they win at these medals, get Dragon Lance or a Black King Bar
+    before more damage. Next batch: Razor, Riki, Grimstroke, Night Stalker
+    and the heroes after them.
 
 ## Ideas to look at later
 

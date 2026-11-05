@@ -346,8 +346,8 @@ position = 0
 # Don't list an item and then its upgrade (Dragon Lance, then Hurricane Pike):
 # the coach cannot tell the first one was built into the second.
 # Some keys differ from the hero's name: Wraith King is skeleton_king, Zeus is
-# zuus, Windranger is windrunner, Necrophos is necrolyte and Lifestealer is
-# life_stealer.
+# zuus, Windranger is windrunner, Necrophos is necrolyte, Lifestealer is
+# life_stealer, Shadow Fiend is nevermore and Queen of Pain is queenofpain.
 [builds]
 default = ["Power Treads", "Black King Bar", "Satanic"]
 default_support = ["Arcane Boots", "Glimmer Cape", "Force Staff", "Aghanim's Scepter"]
@@ -408,3 +408,20 @@ furion = ["Power Treads", "Maelstrom", "Hurricane Pike", "Black King Bar", "Daed
 # Vengeful Spirit is mostly a support at low MMR; the core version is pos 1.
 vengefulspirit = ["Tranquil Boots", "Force Staff", "Glimmer Cape", "Solar Crest", "Aghanim's Scepter"]
 vengefulspirit_pos1 = ["Power Treads", "Manta Style", "Aghanim's Scepter", "Black King Bar", "Butterfly"]
+# The next batch (ROADMAP item 21), ranked by Herald-to-Ancient picks in
+# coach/data/hero_stats.json and checked against item_popularity.json.
+# Shadow Fiend (41 to 45%, docs/strategy/low-bracket-meta.md) and Queen of
+# Pain (48%) lose more than they win from Herald to Ancient, mostly by dying,
+# so their builds get range or a Black King Bar before more damage.
+nevermore = ["Power Treads", "Dragon Lance", "Black King Bar", "Satanic", "Daedalus"]
+queenofpain = ["Power Treads", "Kaya and Sange", "Black King Bar", "Aghanim's Scepter", "Shiva's Guard"]
+jakiro = ["Arcane Boots", "Force Staff", "Glimmer Cape", "Aghanim's Scepter", "Aether Lens"]
+faceless_void = ["Power Treads", "Battle Fury", "Black King Bar", "Manta Style", "Butterfly"]
+snapfire = ["Arcane Boots", "Aghanim's Shard", "Blink Dagger", "Force Staff", "Glimmer Cape"]
+venomancer = ["Arcane Boots", "Spirit Vessel", "Force Staff", "Glimmer Cape", "Aghanim's Scepter"]
+ancient_apparition = ["Arcane Boots", "Glimmer Cape", "Force Staff", "Aghanim's Shard", "Blink Dagger"]
+dawnbreaker = ["Phase Boots", "Echo Sabre", "Black King Bar", "Aghanim's Shard", "Assault Cuirass"]
+disruptor = ["Arcane Boots", "Glimmer Cape", "Force Staff", "Aghanim's Scepter", "Blink Dagger"]
+ursa = ["Phase Boots", "Blink Dagger", "Black King Bar", "Abyssal Blade", "Monkey King Bar"]
+dark_willow = ["Tranquil Boots", "Eul's Scepter of Divinity", "Force Staff", "Blink Dagger", "Aghanim's Shard"]
+slardar = ["Power Treads", "Blink Dagger", "Black King Bar", "Aghanim's Shard", "Assault Cuirass"]
