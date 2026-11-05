@@ -347,7 +347,8 @@ position = 0
 # the coach cannot tell the first one was built into the second.
 # Some keys differ from the hero's name: Wraith King is skeleton_king, Zeus is
 # zuus, Windranger is windrunner, Necrophos is necrolyte, Lifestealer is
-# life_stealer, Shadow Fiend is nevermore and Queen of Pain is queenofpain.
+# life_stealer, Shadow Fiend is nevermore, Queen of Pain is queenofpain and
+# Timbersaw is shredder.
 [builds]
 default = ["Power Treads", "Black King Bar", "Satanic"]
 default_support = ["Arcane Boots", "Glimmer Cape", "Force Staff", "Aghanim's Scepter"]
@@ -425,3 +426,19 @@ disruptor = ["Arcane Boots", "Glimmer Cape", "Force Staff", "Aghanim's Scepter",
 ursa = ["Phase Boots", "Blink Dagger", "Black King Bar", "Abyssal Blade", "Monkey King Bar"]
 dark_willow = ["Tranquil Boots", "Eul's Scepter of Divinity", "Force Staff", "Blink Dagger", "Aghanim's Shard"]
 slardar = ["Power Treads", "Blink Dagger", "Black King Bar", "Aghanim's Shard", "Assault Cuirass"]
+# The batch after that (ROADMAP item 22), same ranking and checks. Timbersaw,
+# Weaver, Tinker, Storm Spirit and Ember Spirit lose more than they win from
+# Herald to Ancient (44 to 49% in hero_stats.json), so they get range, an
+# escape or a Black King Bar before the late damage items.
+razor = ["Power Treads", "Sange and Yasha", "Black King Bar", "Satanic", "Butterfly"]
+riki = ["Power Treads", "Diffusal Blade", "Manta Style", "Black King Bar", "Abyssal Blade"]
+grimstroke = ["Arcane Boots", "Blink Dagger", "Glimmer Cape", "Aghanim's Scepter", "Force Staff"]
+night_stalker = ["Phase Boots", "Blink Dagger", "Black King Bar", "Aghanim's Shard", "Assault Cuirass"]
+warlock = ["Arcane Boots", "Glimmer Cape", "Aghanim's Scepter", "Force Staff", "Refresher Orb"]
+shredder = ["Phase Boots", "Kaya and Sange", "Black King Bar", "Shiva's Guard", "Heart of Tarrasque"]
+weaver = ["Power Treads", "Dragon Lance", "Desolator", "Black King Bar", "Daedalus"]
+dazzle = ["Arcane Boots", "Holy Locket", "Glimmer Cape", "Force Staff", "Aghanim's Scepter"]
+winter_wyvern = ["Arcane Boots", "Force Staff", "Glimmer Cape", "Blink Dagger", "Aghanim's Scepter"]
+tinker = ["Power Treads", "Blink Dagger", "Kaya and Sange", "Black King Bar", "Shiva's Guard"]
+storm_spirit = ["Power Treads", "Kaya and Sange", "Black King Bar", "Aghanim's Scepter", "Shiva's Guard"]
+ember_spirit = ["Phase Boots", "Kaya and Sange", "Black King Bar", "Aghanim's Scepter", "Shiva's Guard"]

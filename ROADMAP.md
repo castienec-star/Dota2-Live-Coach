@@ -150,7 +150,17 @@ CLAUDE.md).
     `hero_stats.json` (PR #82). Shadow Fiend and Queen of Pain, who lose
     more than they win at these medals, get Dragon Lance or a Black King Bar
     before more damage. Next batch: Razor, Riki, Grimstroke, Night Stalker
-    and the heroes after them.
+    and the heroes after them: item 22.
+22. [x] **Builds for the third batch.** The next 12 most-picked heroes from
+    Herald to Ancient still on the fallback. *Why:* same as item 20.
+    Done: Razor, Riki, Grimstroke, Night Stalker, Warlock, Timbersaw,
+    Weaver, Dazzle, Winter Wyvern, Tinker, Storm Spirit and Ember Spirit,
+    ranked by Herald-to-Ancient picks in `hero_stats.json` (PR #82) and
+    checked against `item_popularity.json`. The five that lose more than
+    they win at these medals (Timbersaw, Weaver, Tinker, Storm Spirit, Ember
+    Spirit, 44 to 49%) get Dragon Lance, Blink Dagger or a Black King Bar
+    before late damage. Next batch: Centaur Warrunner, Templar Assassin,
+    Arc Warden, Monkey King and the heroes after them.
 
 ## Ideas to look at later
 

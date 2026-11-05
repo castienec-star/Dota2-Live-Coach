@@ -75,8 +75,10 @@ def test_build_choice_empty_box():
     items = load_items()
     # Pudge has a bundled build: empty turns the item reminder off.
     assert settings.build_choice("pudge", "", DEFAULTS, items) == ([], [])
-    # Razor has none: empty keeps the fallback.
-    assert settings.build_choice("razor", "  ", DEFAULTS, items) == (None, [])
+    # A hero with no bundled build: empty keeps the fallback. Picked from the
+    # hero list so new bundled builds don't break this test.
+    unbuilt = next(h.key for h in load_heroes().values() if h.key not in DEFAULTS["builds"])
+    assert settings.build_choice(unbuilt, "  ", DEFAULTS, items) == (None, [])
 
 
 def test_build_override_and_back_to_default():
