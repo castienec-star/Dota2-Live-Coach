@@ -166,3 +166,28 @@ def test_numbers_and_stage():
 def test_bad_mode():
     with pytest.raises(ValueError):
         ReplayReview(set(), None, "sometimes", None, lambda: None, print)
+
+
+def test_improvised_item_advice_and_fake_kills_are_dropped():
+    rig = Rig(mode="continuous", replies=[
+        "You could have used the wand to farm creeps, gaining gold and experience.",
+        "Staying near your creeps would have helped you get those early kills.",
+        "You let the wave push to their tower and lost three last hits.",
+    ])
+    rig.play(31)
+    assert len(rig.asked) == 3
+    assert [text for text, _ in rig.said] == ["You let the wave push to their tower and lost three last hits."]
+    assert "wand" not in rig.asked[0][0].lower()  # the inventory isn't listed
+
+
+def test_unused_wand_at_death_may_be_mentioned():
+    rig = Rig(replies=["You died with fifteen wand charges. Breaking the wand in that fight would have saved you."])
+    wand = {"slot0": {"name": "item_magic_wand", "charges": 15, "can_cast": True, "cooldown": 0}}
+    for _ in range(5):
+        p = replay(clock=(rig.review.snap.clock_time or 239) + 1)
+        p["items"]["team2"]["player0"] = wand
+        rig.send(p)
+        rig.review.tick()
+    rig.send(replay(clock=245, health=0, alive=False), dt=0.1)
+    assert "still had ready: magic wand (15 charges)" in rig.asked[-1][0]
+    assert len(rig.said) == 1

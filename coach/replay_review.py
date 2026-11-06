@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import difflib
 import logging
+import re
 import threading
 import time
 from collections import deque
@@ -85,8 +86,11 @@ team's vision. Never the scoreboard, enemy gold or net worth.
 talk about last hits, denies, trading hits, creep equilibrium, staying near \
 your creeps, runes and rotations; never tell them to leave their lane or \
 move to another lane.
-- Magic Wand, Stick and potions are for health, mana or escaping, never for \
-last hits or denies.
+- Never talk about items or using items, unless the facts list items the \
+player still had ready when they died. Then say they should have used them \
+in that fight (Magic Wand charges are saved for fights like that).
+- Last hits are creeps the player finished for gold. A kill means an enemy \
+hero died. Never call last hits kills.
 - If nothing clearly went wrong, answer only: skip
 - Don't repeat a point you already made, even in other words.
 - One or two short sentences, at most 30 words, spoken aloud, no lists."""
@@ -220,17 +224,29 @@ class ReplayReview:
             self._busy = False
             return False
         self._last_ask = now
-        prompt = self.prompt(reason, since)
+        window = [snap for t, snap in self.history if t >= since] + [self.snap]
+        unused = unused_at_death(window) if reason == DIED else []
+        fought = any(s.kills > window[0].kills or s.deaths > window[0].deaths or not s.alive for s in window)
+        prompt = self.prompt(reason, since, unused)
         picked = spread(frames, FRAMES_PER_LOOK)
-        self._run(lambda: self._answer(prompt, picked, reason))
+        self._run(lambda: self._answer(prompt, picked, reason, unused, fought))
         return True
 
-    def _answer(self, prompt: str, frames: list[Frame], reason: str) -> None:
+    def _answer(self, prompt: str, frames: list[Frame], reason: str, unused: list[str] | None = None,
+                fought: bool = False) -> None:
         try:
             reply = self.ask(prompt, frames)
         finally:
             self._busy = False
         if not reply or reply.strip(" .\"'").lower() in ("skip", "omitir") or not self.gate.open:
+            return
+        # Small vision models improvise item advice ("use your wand to farm")
+        # and call last hits kills (Castien, 2026-11-06): those lines go.
+        if not unused and mentions_items(reply, self.snap):
+            log.info("Replay review: dropped item advice: %s", reply)
+            return
+        if not fought and KILLS.search(reply):
+            log.info("Replay review: dropped a line about kills that didn't happen: %s", reply)
             return
         if self.repeats(reply):
             log.info("Replay review: dropped a repeat: %s", reply)
@@ -242,17 +258,16 @@ class ReplayReview:
         words = _words(reply)
         return any(difflib.SequenceMatcher(None, words, _words(old)).ratio() >= SAME for old in self.recent)
 
-    def prompt(self, reason: str, since: float) -> str:
+    def prompt(self, reason: str, since: float, unused: list[str] | None = None) -> str:
+        # Items are only named when one went unused at a death: listing the
+        # inventory made the model talk about items all the time.
         s = self.snap
         hero = (s.hero_name or "unknown").removeprefix("npc_dota_hero_").replace("_", " ")
-        items = ", ".join(i.name.removeprefix("item_").replace("_", " ") for i in s.items if i.slot.startswith("slot"))
-        ready = ", ".join(a.name.split("_", 1)[-1].replace("_", " ") for a in s.abilities if a.can_cast and a.level)
         facts = [
             f"The player is {hero}, level {s.level}.",
             stage(s.clock_time),
             numbers([snap for t, snap in self.history if t >= since] + [s]),
-            f"Items now: {items}." if items else "",
-            f"Spells ready now: {ready}." if ready else "",
+            f"When they died they still had ready: {', '.join(unused)}." if unused else "",
             REASONS[reason],
         ]
         if self.recent:
@@ -311,6 +326,42 @@ def numbers(snaps: list[Snapshot]) -> str:
         parts.append(f"{b.kills - a.kills} kill(s)")
     span = f"From {clock(a)} to {clock(b)}" if b.clock_time != a.clock_time else f"At {clock(b)}"
     return f"{span}: " + ", ".join(parts) + "."
+
+
+# Items the model brings up on its own; the player's own item names are added.
+ITEM_WORDS = {"wand", "stick", "item", "items", "potion", "salve", "tango", "tangos", "clarity", "mango",
+              "faerie", "bottle", "regen", "consumable", "consumables", "buy", "bought", "purchase",
+              "varita", "objeto", "objetos", "poción", "pocion", "comprar", "compraste"}
+KILLS = re.compile(r"\b(kills?|asesinatos?|kill\s+gold)\b", re.IGNORECASE)
+# Charges worth saving for a fight.
+CHARGES_WORTH = 5
+
+
+def mentions_items(reply: str, snap: Snapshot) -> bool:
+    words = set(_words(reply))
+    spells = {w for a in snap.abilities for w in a.name.split("_")}
+    own = {w for i in snap.items for w in i.name.removeprefix("item_").split("_") if len(w) > 3} - spells
+    return bool(words & (ITEM_WORDS | own))
+
+
+def unused_at_death(snaps: list[Snapshot]) -> list[str]:
+    """Items and spells the player could still use right before dying."""
+    alive = [s for s in snaps if s.alive and s.hero_name]
+    if not alive:
+        return []
+    last = alive[-1]
+    out = []
+    for i in last.items:
+        if not i.slot.startswith("slot") or not i.can_cast or i.cooldown:
+            continue
+        if i.name in ("item_magic_wand", "item_magic_stick") and (i.charges or 0) < CHARGES_WORTH:
+            continue
+        name = i.name.removeprefix("item_").replace("_", " ")
+        out.append(f"{name} ({i.charges} charges)" if i.charges else name)
+    for a in last.abilities:
+        if a.can_cast and a.level and not a.cooldown:
+            out.append(a.name.split("_", 1)[-1].replace("_", " "))
+    return out
 
 
 def _words(text: str) -> list[str]:
