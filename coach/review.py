@@ -14,6 +14,10 @@ review files) the review ends with one calm line suggesting a ten-minute
 break before queueing again, at most once a day (docs/strategy/
 fundamentals.md: "Don't chain-queue after losses").
 
+After a win that ends the third game or more of the day, the review ends
+with "a good game to stop on if you're tired", also at most once a day, so
+players who never ask how their day went still hear it.
+
 "How did I do today?" reads the same files back: today's wins and losses,
 the point that came up most, and whether the last game is a good one to stop
 on (day_summary).
@@ -54,6 +58,8 @@ BREAK_AFTER = 3  # losses in a row before the review suggests a break
 # rarely longer than this.
 SITTING_GAP = 90 * 60
 BREAK_FILE = "break.txt"  # the day the break line was last said
+STOP_AFTER = 3  # games today, the last one a win, before the review says it's a good game to stop on
+STOP_FILE = "stop.txt"  # the day the stop line was last said
 STAMP = "%Y%m%d-%H%M%S"  # how review files are named, before "-<hero>.txt"
 _RESULT = re.compile(r", \d+ minutes, (won|lost|result unknown)\.")
 # How each kind of point to fix starts in a saved review ("2. You died ..."),
@@ -306,6 +312,28 @@ def break_line(losses: int) -> str:
     )
 
 
+def stop_line(games: int) -> str:
+    return f"{_count(games, 'game').capitalize()} today and you won this one: a good game to stop on if you're tired."
+
+
+def _day(when: float) -> str:
+    return time.strftime("%Y-%m-%d", time.localtime(when))
+
+
+def _once_a_day(path: Path, today: str) -> bool:
+    """True the first time this is asked for today (and remembers it in path)."""
+    try:
+        if path.read_text(encoding="utf-8").strip() == today:
+            return False
+    except OSError:
+        pass  # never said yet
+    try:
+        path.write_text(today, encoding="utf-8")
+    except OSError as exc:
+        log.warning("Could not save the day in %s: %s", path, exc)
+    return True
+
+
 class Review:
     """Watches the match and gives the review once it reaches post-game."""
 
@@ -317,10 +345,12 @@ class Review:
         heroes: HeroIndex | None = None,
         items: dict[str, ItemInfo] | None = None,
         break_after: int = BREAK_AFTER,
+        stop_after: int = STOP_AFTER,
         clock: Callable[[], float] = time.time,
     ) -> None:
         self.say = say
         self.break_after = int(break_after)  # 0 = never suggest a break
+        self.stop_after = int(stop_after)  # 0 = never say "a good game to stop on"
         self.clock = clock
         self.folder = folder
         self.position = position
@@ -362,7 +392,7 @@ class Review:
                 lines = [opener] + lines[: MAX_POINTS - 1]
         self.saved = self.save(summary, lines)
         # Said in one go: a second line would wait behind the review and miss its deadline.
-        rest = self.suggest_break() if summary.won is False else None
+        rest = {False: self.suggest_break, True: self.suggest_stop}.get(summary.won, lambda: None)()
         self.say(spoken(lines) + (f" {rest}" if rest else ""))
         found = found_points(summary, support, self.items)
         self.last = Last(summary, support, found[0][0] if found else None)
@@ -377,18 +407,21 @@ class Review:
         losses = losing_streak(saved_results(self.folder), now)
         if losses < self.break_after:
             return None
-        today = time.strftime("%Y-%m-%d", time.localtime(now))
-        said = self.folder / BREAK_FILE
-        try:
-            if said.read_text(encoding="utf-8").strip() == today:
-                return None
-        except OSError:
-            pass  # never said yet
-        try:
-            said.write_text(today, encoding="utf-8")
-        except OSError as exc:
-            log.warning("Could not save when the break was suggested: %s", exc)
+        if not _once_a_day(self.folder / BREAK_FILE, _day(now)):
+            return None
         return break_line(losses)
+
+    def suggest_stop(self) -> str | None:
+        """After a win (this match's review already saved) that makes
+        stop_after or more games today: the stop line, at most once a day;
+        else None."""
+        if self.stop_after <= 0 or self.folder is None or self.saved is None:
+            return None
+        today = _day(self.clock())
+        games = sum(1 for when, _ in saved_results(self.folder) if _day(when) == today)
+        if games < self.stop_after or not _once_a_day(self.folder / STOP_FILE, today):
+            return None
+        return stop_line(games)
 
     def save_last(self) -> None:
         if self.last_path is None or self.last is None:

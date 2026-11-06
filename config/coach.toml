@@ -259,6 +259,9 @@ enabled = true
 # apart), the review ends with one calm line suggesting a ten-minute break
 # before the next queue. At most once a day; 0 turns it off.
 break_after_losses = 3
+# After a win that makes this many games today or more, the review ends with
+# "a good game to stop on if you're tired". At most once a day; 0 turns it off.
+stop_after_games = 3
 
 [reminders.power_window]
 # Says when the stretches the pre-game briefing found begin: when your lineup
