@@ -22,6 +22,10 @@ from . import rank as rank_mod
 from .profile import MatchSummary, Profile
 
 ASK_EVERY_DAYS = 3
+# From this MMR (Ancient) the app switches a beginner-mode coach to
+# experienced once, so a high-rank player isn't told the basics.
+EXPERIENCED_FROM_MMR = 3850
+MODE_FLAG = "mode_from_mmr.json"  # the one switch already happened
 MMR_FILE = "mmr.json"
 RANK_FILE = "rank.json"  # PlayerRank's store (coach/__main__.make_rank)
 MAX_MMR = 15000
@@ -73,6 +77,23 @@ class MmrHistory:
         if not points:
             return True
         return (self._today() - date.fromisoformat(points[-1].day)).days >= ASK_EVERY_DAYS
+
+
+def latest_mmr(app_dir: Path) -> int | None:
+    points = MmrHistory(app_dir).points()
+    return points[-1].mmr if points else None
+
+
+def mode_switch_due(app_dir: Path, mode: str) -> bool:
+    """True once: the latest MMR is EXPERIENCED_FROM_MMR or more while the
+    coach is still in beginner mode. After the switch (or if the player sets
+    beginner again by hand) it isn't done again."""
+    mmr = latest_mmr(app_dir)
+    return mode == "beginner" and mmr is not None and mmr >= EXPERIENCED_FROM_MMR and not (app_dir / MODE_FLAG).exists()
+
+
+def mode_switched(app_dir: Path) -> None:
+    (app_dir / MODE_FLAG).write_text(json.dumps({"mmr": latest_mmr(app_dir), "mode": "experienced"}), encoding="utf-8")
 
 
 def hero_label(key: str, names: dict[str, str]) -> str:

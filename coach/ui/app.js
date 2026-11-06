@@ -493,6 +493,10 @@ async function saveMmr(input, msg) {
   if (msg) $(msg).textContent = out.message;
   toast(out.message, !out.ok);
   if (out.ok) { $(input).value = ""; await progress(); }
+  if (out.mode_switched) {
+    saved = out.values; current = clone(saved); drawAll();
+    toast(out.mode_switched);
+  }
 }
 $("#mmr-go").addEventListener("click", () => saveMmr("#mmr-input", "#mmr-msg"));
 $("#mmr-quick-go").addEventListener("click", () => saveMmr("#mmr-quick"));
@@ -532,6 +536,7 @@ async function boot(bridge) {
   schema = data.schema; voices = data.voices;
   saved = data.values; current = clone(saved);
   drawAll();
+  if (data.notice) toast(data.notice);
   await progress().catch((err) => console.error(err));
   await poll();
   polling = setInterval(poll, 400);

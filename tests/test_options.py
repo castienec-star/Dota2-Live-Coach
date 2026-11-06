@@ -137,3 +137,33 @@ def test_api_refuses_bad_values_without_writing(tmp_path):
     sent["fields"]["reminders.stack.until"] = "late"
     out = api.save_settings(sent)
     assert not out["ok"] and out["errors"] and not (tmp_path / "coach.toml").exists()
+
+
+def test_a_high_mmr_switches_beginner_to_experienced_once(tmp_path):
+    coach = FakeCoach()
+    api = Api(tmp_path, coach=coach, voices=[])
+    out = api.add_mmr("5800")
+    assert out["ok"] and out["mode_switched"] and out["values"]["mode"] == "experienced"
+    assert 'mode = "experienced"' in (tmp_path / "coach.toml").read_text(encoding="utf-8")
+    # the player goes back to beginner by hand: the app doesn't switch it again
+    sent = api.load_settings()["values"]
+    back = api.switch_mode(sent, "beginner")
+    assert api.save_settings(back)["ok"]
+    assert not api.add_mmr("5900")["mode_switched"]
+    data = api.load_settings()
+    assert data["values"]["mode"] == "beginner" and data["notice"] == ""
+
+
+def test_a_low_mmr_keeps_beginner_mode(tmp_path):
+    api = Api(tmp_path, coach=FakeCoach(), voices=[])
+    out = api.add_mmr("2400")
+    assert out["ok"] and not out["mode_switched"]
+    assert api.load_settings()["values"]["mode"] == "beginner"
+
+
+def test_opening_the_app_applies_an_mmr_entered_before(tmp_path):
+    from coach import progress
+
+    progress.MmrHistory(tmp_path).add("5800")
+    data = Api(tmp_path, coach=FakeCoach(), voices=[]).load_settings()
+    assert data["values"]["mode"] == "experienced" and data["notice"]
