@@ -154,10 +154,13 @@ CLAUDE.md).
 
 ## Ideas to look at later
 
-- "How did I do today?": a voice and typed question answering today's
-  record from the saved reviews (wins, losses, the point that came up most),
-  so a player can decide to stop on a good note. Builds on
-  `review.saved_results` from item 16.
+- Done: "How did I do today?" (voice, or typed `today`): today's record
+  from the saved reviews, the point that came up most with one thing to try
+  next game, and a good-game-to-stop-on or short-break line
+  (`review.day_summary`, backed by `docs/strategy/fundamentals.md`, "Don't
+  chain-queue after losses"). Next: say it unasked once, after the review of
+  a win that follows two or more games today, so players who never ask still
+  hear "a good game to stop on".
 - App follow-ups to item 17: publish the app folder as a zip on a GitHub
   Release when a version is tagged (artifact downloads need a GitHub login
   and expire after 30 days); say `DotaCoach.exe install` instead of

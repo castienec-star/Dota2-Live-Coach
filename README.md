@@ -499,6 +499,14 @@ with a local model (see below):
   built-in death tips (last hitting and lane safety early, farming jungle
   camps and taking objectives mid game, staying grouped late). Asking again
   gives the next line. No microphone? Type `focus` in the coach window.
+- "How did I do today?" (or "what's my record?", "how many games tonight?"),
+  any time, also in the menu between games: today's wins and losses, the
+  point to fix that came up most in today's match reviews with one thing to
+  try next game, and either "you won the last one, a good game to stop on"
+  or, after two losses in a row, a nudge to take a short break. It only
+  reads the coach's own review files in `reviews\`, so games played with
+  the coach closed don't count. No microphone? Type `today` in the coach
+  window.
 - "Can I buy back?": the buyback cost against your gold, or its cooldown.
 - "When is the next rune?": the next power rune, gold runes and wisdom
   shrines.

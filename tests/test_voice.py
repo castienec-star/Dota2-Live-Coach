@@ -219,3 +219,17 @@ def test_focus_answer_while_alive_and_dead(snap):
     assert alive and "Next life" not in alive and alive != UNKNOWN
     snap.alive = False
     assert answers.answer("what should I focus on?", snap)
+
+
+@pytest.mark.parametrize(
+    "text",
+    ["How did I do today?", "what's my record", "how many games did I play tonight", "wins and losses this session"],
+)
+def test_today_intent(text):
+    assert intent(text) == "today"
+
+
+def test_today_answers_without_a_hero(tmp_path, snap):
+    snap.hero_name = None  # asked in the menu between games
+    answers = Answers({}, BUILDS, reviews=tmp_path, clock=lambda: 1_800_000_000.0)
+    assert answers.answer("how did I do today?", snap).startswith("No games today yet.")

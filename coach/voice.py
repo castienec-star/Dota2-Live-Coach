@@ -19,8 +19,10 @@ import re
 import threading
 import time
 from collections.abc import Callable, Iterable, Iterator
+from pathlib import Path
 
 from . import rank as rank_mod
+from . import review as review_mod
 from . import situational
 from .benchmarks import Benchmarks, status
 from .chat import Chat
@@ -42,7 +44,7 @@ FRAME = 1280  # samples per microphone read (80 ms)
 
 UNKNOWN = (
     "I can't help with that yet. Ask me how you're doing, what to focus on, "
-    "what to buy, or about your next item, buyback or runes."
+    "what to buy, how you did today, or about your next item, buyback or runes."
 )
 
 # First match wins, so the narrower questions come first.
@@ -70,12 +72,21 @@ INTENTS: list[tuple[str, re.Pattern[str]]] = [
     (
         "what_to_buy",
         re.compile(r"\b(items?|buy|build|purchase|shop|recommend|counters?|what (should|do|can) i get)\b"),
-    ),    # "What should I focus on?", "what should I do now?", "any tips?"
+    ),
+    # "What should I focus on?", "what should I do now?", "any tips?"
     (
         "focus",
         re.compile(
             r"\b(focus|concentrate|priority|what (should|do) i (do|be doing|work on)"
             r"|what now|any tips?|give me a tip|tips? for now)\b"
+        ),
+    ),
+    # "How did I do today?", "what's my record?", "how many games did I win?"
+    (
+        "today",
+        re.compile(
+            r"\b(today|tonight|this session|my record|how many games|win loss|wins and losses"
+            r"|how did i do|how have i done)\b"
         ),
     ),
 ]
@@ -120,6 +131,8 @@ class Answers:
         advice: Advice | None = None,
         enemy_items: EnemyItems | None = None,
         chat: Chat | None = None,
+        reviews: Path | None = None,
+        clock: Callable[[], float] = time.time,
     ) -> None:
         settings = {name: reminders.get(name, {}) for name, _ in self.RUNES}
         self.timers = {r.name: r for r in timers.build(settings) if r.name in dict(self.RUNES)}
@@ -134,6 +147,8 @@ class Answers:
         self.enemy_items = enemy_items
         self.chat = chat
         self.tips = BuiltinTips(self.notes, position)
+        self.reviews = reviews  # the saved post-game reviews, for "how did I do today?"
+        self.clock = clock
 
     def answer(self, text: str, snap: Snapshot) -> str:
         """The spoken answer; "" when there is nothing to say any more."""
@@ -149,6 +164,8 @@ class Answers:
             return self.chat.off if reply is None else reply
         if kind == "rank":
             return rank_mod.tell(self.benchmarks.rank, text)
+        if kind == "today":
+            return review_mod.day_summary(self.reviews, self.clock())
         if snap.hero_name is None:
             return "I can't see your hero yet. Ask me again once the game has started."
         return getattr(self, kind)(snap)
@@ -433,6 +450,7 @@ def start(
     advice: Advice | None = None,
     enemy_items: EnemyItems | None = None,
     chat: Chat | None = None,
+    reviews: Path | None = None,
 ) -> threading.Thread | None:
     """Start listening on a background thread, if [listen] is on and installed."""
     if not settings.get("enabled", False):
@@ -453,7 +471,7 @@ def start(
     except Exception as exc:
         log.warning("Voice questions unavailable (%s)", exc)
         return None
-    answers = Answers(reminders, builds, position, benchmarks, enemies, notes, advice, enemy_items, chat)
+    answers = Answers(reminders, builds, position, benchmarks, enemies, notes, advice, enemy_items, chat, reviews)
     loop = VoiceLoop(
         wake,
         transcribe,

@@ -13,6 +13,10 @@ After the third loss in a row in one sitting (read back from the saved
 review files) the review ends with one calm line suggesting a ten-minute
 break before queueing again, at most once a day (docs/strategy/
 fundamentals.md: "Don't chain-queue after losses").
+
+"How did I do today?" reads the same files back: today's wins and losses,
+the point that came up most, and whether the last game is a good one to stop
+on (day_summary).
 """
 
 from __future__ import annotations
@@ -52,6 +56,19 @@ SITTING_GAP = 90 * 60
 BREAK_FILE = "break.txt"  # the day the break line was last said
 STAMP = "%Y%m%d-%H%M%S"  # how review files are named, before "-<hero>.txt"
 _RESULT = re.compile(r", \d+ minutes, (won|lost|result unknown)\.")
+# How each kind of point to fix starts in a saved review ("2. You died ..."),
+# matching death_point, last_hit_point and item_point below.
+POINT_KINDS = (
+    ("deaths", re.compile(r"\d+\. You died ")),
+    ("last_hits", re.compile(r"\d+\. You had \d+ last hits at 10 minutes; aim for ")),
+    ("item", re.compile(r"\d+\. (Your first big item|You didn't finish an item)")),
+)
+# What to try next game, for the point that came up most today.
+NEXT_GAME = {
+    "deaths": ("Deaths", "walk back to your tower when your health is low, and don't chase into the fog"),
+    "last_hits": ("Last hits", "watch the creeps' health and only hit when one is about to die"),
+    "item": ("A late first item", "farm the jungle camps next to your lane between waves"),
+}
 NUMBERS = {2: "two", 3: "three", 4: "four", 5: "five", 6: "six", 7: "seven", 8: "eight", 9: "nine", 10: "ten"}
 
 
@@ -242,22 +259,33 @@ def text(m: MatchSummary, lines: list[str], heroes: HeroIndex | None = None) -> 
     return f"{head}\n\n{body}\n"
 
 
-def saved_results(folder: Path) -> list[tuple[float, bool | None]]:
-    """(when saved, won) for each review file in folder, oldest first. Won is
-    None for a result the coach couldn't see; unreadable files are skipped."""
-    results = []
+def _kinds(lines: list[str]) -> list[str]:
+    """The kinds of the points to fix in a review file's lines."""
+    return [kind for kind, pattern in POINT_KINDS if any(pattern.match(line) for line in lines)]
+
+
+def saved_reviews(folder: Path) -> list[tuple[float, bool | None, list[str]]]:
+    """(when saved, won, kinds of its points to fix) for each review file in
+    folder, oldest first. Won is None for a result the coach couldn't see;
+    unreadable files are skipped."""
+    reviews = []
     for path in sorted(folder.glob("*.txt")):
         try:
             when = time.mktime(time.strptime(path.name[: len("20260101-000000")], STAMP))
             with path.open(encoding="utf-8") as f:
-                first = f.readline()
+                lines = f.read().splitlines()
         except (OSError, ValueError, UnicodeDecodeError):
             continue
-        found = _RESULT.search(first)
+        found = _RESULT.search(lines[0]) if lines else None
         if found is None:
             continue
-        results.append((when, {"won": True, "lost": False}.get(found.group(1))))
-    return results
+        reviews.append((when, {"won": True, "lost": False}.get(found.group(1)), _kinds(lines[1:])))
+    return reviews
+
+
+def saved_results(folder: Path) -> list[tuple[float, bool | None]]:
+    """(when saved, won) for each review file in folder, oldest first."""
+    return [(when, won) for when, won, _ in saved_reviews(folder)]
 
 
 def losing_streak(results: list[tuple[float, bool | None]], now: float, gap: float = SITTING_GAP) -> int:
@@ -383,3 +411,46 @@ class Review:
             return None
         log.info("Match review saved to %s", path)
         return path
+
+
+def _number(n: int) -> str:
+    return {0: "no", 1: "one", **NUMBERS}.get(n, str(n))
+
+
+def _count(n: int, word: str) -> str:
+    return f"{_number(n)} {word}{'' if n == 1 else ('es' if word.endswith('s') else 's')}"
+
+
+def day_summary(folder: Path | None, now: float) -> str:
+    """The answer to "how did I do today?", from today's saved reviews."""
+    if folder is None:
+        return "Match reviews are off, so I don't keep count of today's games."
+    today = time.strftime("%Y-%m-%d", time.localtime(now))
+    games = [
+        (when, won, kinds)
+        for when, won, kinds in (saved_reviews(folder) if folder.is_dir() else [])
+        if time.strftime("%Y-%m-%d", time.localtime(when)) == today
+    ]
+    if not games:
+        return "No games today yet. I count them from my match reviews, so ask me again after a game."
+    wins = sum(1 for _, won, _ in games if won is True)
+    losses = sum(1 for _, won, _ in games if won is False)
+    record = [_count(wins, "win"), _count(losses, "loss")]
+    unknown = len(games) - wins - losses
+    if unknown:
+        record.append(f"{_number(unknown)} I couldn't see the end of")
+    parts = [f"Today: {_count(len(games), 'game')}, {', '.join(record[:-1])} and {record[-1]}."]
+    counts = {kind: sum(1 for _, _, kinds in games if kind in kinds) for kind in NEXT_GAME}
+    kind, times = max(counts.items(), key=lambda kv: kv[1])  # ties: the more important kind
+    if times >= 2:
+        what, tip = NEXT_GAME[kind]
+        parts.append(f"{what} came up most, in {times} of {len(games)} reviews. Next game, {tip}.")
+    elif len(games) >= 2:
+        parts.append("No point came up twice: steady games.")
+    if games[-1][1] is True:
+        parts.append("You won the last one, a good game to stop on if you're tired.")
+    else:
+        losses_now = losing_streak([(when, won) for when, won, _ in games], now)
+        if losses_now >= 2:
+            parts.append(f"That's {_count(losses_now, 'loss')} in a row: a short break helps before the next one.")
+    return " ".join(parts)
