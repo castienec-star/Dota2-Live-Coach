@@ -134,3 +134,10 @@ def test_refresh_command_refuses_a_newer_patch_or_no_network(tmp_path, monkeypat
     monkeypatch.setattr("coach.opendota.OpenDota.get", lambda self, path, max_age=None: None)
     assert main(["--config", str(tmp_path / "none.toml"), "refresh-hero-stats", "--out", str(out)]) == 1
     assert not out.exists()
+
+
+def test_bundled_file_is_this_patch_with_every_bracket_but_immortal():
+    stats = load()
+    assert all(len(stats[b]) > 100 for b in range(1, 8))
+    assert stats[8] == {}  # OpenDota sends no Immortal numbers
+    assert describe(stats, 8, [HEROES.by_key("pudge")]) == []
