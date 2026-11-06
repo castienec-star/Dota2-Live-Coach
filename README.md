@@ -86,12 +86,17 @@ didn't change on purpose (for example `enabled = false` under `[listen]`).
 
 ## Run
 
-The app window: press **Start** before your match, see whether Dota 2 is
-connected and read back what the coach said. Settings, Dota setup and your
-match reviews open from its buttons. In the Windows app, double-click
-`Dota 2 Live Coach.exe`; with Python:
+The app window: a dashboard with **Start coach**, whether Dota 2 is
+connected and a live feed of what the coach says, plus pages to turn every
+reminder on or off and change its timings (how early runes are called, the
+low-health line, the minutes of the last-hit and game checks...), the voice,
+the questions the coach asks, your position and rank. Saving writes only what
+differs from the defaults to your own `%APPDATA%\Dota2LiveCoach\coach.toml`,
+and restarts a running coach so the change applies at once. In the Windows
+app, open "Dota 2 Live Coach" from the Start menu; with Python:
 
 ```
+py -m pip install -e ".[app]"
 py -m coach app
 ```
 

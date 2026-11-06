@@ -108,7 +108,7 @@ def pyinstaller_args(build_file: Path, work: Path, dist: Path, collect: list[str
 def app_args(work: Path, dist: Path) -> list[str]:
     """The PyInstaller command line for the windowed app.
 
-    It imports only the window (tkinter), so its own folder (APP_CONTENTS,
+    It imports only the window (pywebview), so its own folder (APP_CONTENTS,
     next to _internal) stays small; the coach runs as NAME.exe beside it.
     """
     return [
@@ -122,6 +122,10 @@ def app_args(work: Path, dist: Path) -> list[str]:
         "--workpath", str(work / "app"),
         "--distpath", str(dist / "app"),
         "--specpath", str(work / "app"),
+        # The page, and the defaults the settings pages compare with.
+        "--add-data", f"{ROOT / 'coach/ui'}{os.pathsep}coach/ui",
+        "--add-data", f"{ROOT / 'config/coach.toml'}{os.pathsep}config",
+        "--collect-all", "webview",
     ]
 
 

@@ -643,7 +643,12 @@ def cmd_review(cfg: config_mod.Config, args: argparse.Namespace) -> int:
 
 
 def cmd_say(cfg: config_mod.Config, args: argparse.Namespace) -> int:
-    speaker = make_speaker(cfg)
+    if args.voice is not None or args.rate is not None:  # the app's "Test the voice"
+        voice = cfg.voice_name if args.voice is None else args.voice
+        rate = cfg.voice_rate if args.rate is None else args.rate
+        speaker = Speaker(lambda: make_backend(cfg.voice_backend, voice, rate), cfg.voice_max_delay)
+    else:
+        speaker = make_speaker(cfg)
     speaker.say(args.text)
     speaker.close(timeout=30)
     return 0
@@ -663,12 +668,19 @@ def cmd_settings(cfg: config_mod.Config, args: argparse.Namespace) -> int:
 
 
 def cmd_app(cfg: config_mod.Config, args: argparse.Namespace) -> int:
-    """Opens the app window: start/stop the coach and see what it says."""
+    """Opens the app window: start/stop the coach, see what it says, and
+    choose every reminder and its timings."""
     try:
-        from .app_window import open_window
-    except ImportError as exc:  # Python installed without tkinter
-        logging.error("The app window needs tkinter (%s). Run  py -m coach  instead.", exc)
-        return 1
+        import webview  # noqa: F401  (pip install -e ".[app]")
+
+        from .app_web import open_window
+    except ImportError:
+        try:
+            from .app_window import open_window
+        except ImportError as exc:  # Python installed without tkinter
+            logging.error("The app window needs pywebview or tkinter (%s). Run  py -m coach  instead.", exc)
+            return 1
+        logging.info('Simple window: install the full app window with  py -m pip install -e ".[app]"')
     open_window(cfg.app_dir)
     return 0
 
@@ -700,6 +712,8 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("app", help="open the app window (start, stop and see the coach)")
     p_say = sub.add_parser("say", help="test the voice")
     p_say.add_argument("text", nargs="?", default="Power rune in 15 seconds.")
+    p_say.add_argument("--voice", default=None, help="an installed voice, instead of coach.toml's")
+    p_say.add_argument("--rate", type=int, default=None, help="speed from -10 to 10, instead of coach.toml's")
     args = parser.parse_args(argv)
     if args.version:
         print(f"Dota 2 Live Coach, version from {version()}")

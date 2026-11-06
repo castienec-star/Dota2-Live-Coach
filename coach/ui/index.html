@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dota 2 Live Coach</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="side">
+    <div class="brand">
+      <span class="mark" aria-hidden="true"></span>
+      <div><div class="brand-name">Live Coach</div><div class="brand-sub">for Dota 2</div></div>
+    </div>
+    <nav>
+      <button class="nav active" data-page="home"><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z"/></svg>Dashboard</button>
+      <button class="nav" data-page="reminders"><svg viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0-6 6v4l-2 3h16l-2-3V9a6 6 0 0 0-6-6zM10 19a2 2 0 0 0 4 0"/></svg>Reminders</button>
+      <button class="nav" data-page="voice"><svg viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3"/></svg>Voice &amp; questions</button>
+      <button class="nav" data-page="game"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/></svg>Game &amp; profile</button>
+      <button class="nav" data-page="account"><svg viewBox="0 0 24 24"><path d="M15 7a3 3 0 1 1 0 .01M3 21l8.5-8.5M7 17l2 2M9 15l2 2"/></svg>Licence</button>
+    </nav>
+    <div class="side-foot">
+      <div class="pill" id="side-pill"><span class="dot"></span><span id="side-state">Off</span></div>
+      <div class="muted small" id="side-version"></div>
+    </div>
+  </aside>
+
+  <main>
+    <!-- Dashboard -->
+    <section class="page active" id="page-home">
+      <header class="page-head">
+        <div><h1>Dashboard</h1><p class="muted">Start the coach before your match. It speaks; it never reads your screen.</p></div>
+      </header>
+      <div class="hero-card">
+        <div class="ring" id="ring"><span></span></div>
+        <div class="hero-text">
+          <div class="eyebrow" id="state-eyebrow">Coach off</div>
+          <div class="headline" id="headline">The coach is off. Press Start before your match.</div>
+          <div class="muted" id="detail"></div>
+        </div>
+        <button class="btn primary big" id="go">Start coach</button>
+      </div>
+      <div class="tiles">
+        <div class="tile"><div class="tile-label">Lines said</div><div class="tile-value" id="t-lines">0</div></div>
+        <div class="tile"><div class="tile-label">Dota 2</div><div class="tile-value" id="t-dota">Not connected</div></div>
+        <div class="tile"><div class="tile-label">Mode</div><div class="tile-value" id="t-mode">Beginner</div></div>
+        <div class="tile"><div class="tile-label">Reminders on</div><div class="tile-value" id="t-on">-</div></div>
+      </div>
+      <div class="grid2">
+        <div class="card feed-card">
+          <div class="card-head"><h2>Live feed</h2>
+            <label class="check small"><input type="checkbox" id="details"><span>Show details</span></label></div>
+          <ol class="feed" id="feed"><li class="empty">Lines the coach says will appear here.</li></ol>
+        </div>
+        <div class="card actions">
+          <h2>Quick actions</h2>
+          <button class="action" id="a-setup"><b>Set up Dota 2</b><span>Adds Valve's Game State Integration file.</span></button>
+          <button class="action" id="a-reviews"><b>Match reviews</b><span>Your saved post-game reviews.</span></button>
+          <button class="action" id="a-builds"><b>Item builds</b><span>Edit the build of any hero.</span></button>
+          <div class="note">Add <code>-gamestateintegration</code> to Dota 2's launch options in Steam once.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Reminders -->
+    <section class="page" id="page-reminders">
+      <header class="page-head">
+        <div><h1>Reminders</h1><p class="muted">Choose exactly what the coach tells you, and when.</p></div>
+        <div class="seg" id="mode">
+          <button data-mode="beginner">Beginner</button><button data-mode="experienced">Experienced</button>
+        </div>
+      </header>
+      <div class="toolbar">
+        <input class="search" id="search" type="search" placeholder="Search reminders">
+        <span class="muted small" id="count"></span>
+        <span class="spacer"></span>
+        <button class="btn ghost small" id="all-on">All on</button>
+        <button class="btn ghost small" id="all-off">All off</button>
+        <button class="btn ghost small" id="reset">Reset to defaults</button>
+      </div>
+      <div id="groups"></div>
+    </section>
+
+    <section class="page" id="page-voice">
+      <header class="page-head"><div><h1>Voice &amp; questions</h1><p class="muted">How the coach sounds, and what you can ask it.</p></div></header>
+      <div id="general-voice"></div>
+    </section>
+
+    <section class="page" id="page-game">
+      <header class="page-head"><div><h1>Game &amp; profile</h1><p class="muted">The pre-game briefing and what the coach knows about you.</p></div></header>
+      <div id="general-game"></div>
+    </section>
+
+    <section class="page" id="page-account">
+      <header class="page-head"><div><h1>Licence</h1><p class="muted">Your subscription unlocks the coach on this PC.</p></div></header>
+      <div class="card narrow">
+        <div id="lic-state" class="lic-state"></div>
+        <label class="field-label" for="lic-key">Licence key</label>
+        <div class="row"><input id="lic-key" class="input grow" placeholder="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX">
+          <button class="btn primary" id="lic-go">Activate</button></div>
+        <div class="muted small" id="lic-msg">The key is in the receipt email from your purchase.</div>
+        <button class="btn link" id="lic-buy">Get a subscription: $2.50 a month or $25 a year</button>
+      </div>
+    </section>
+
+    <div class="savebar" id="savebar">
+      <span id="save-msg">You have unsaved changes.</span>
+      <span class="spacer"></span>
+      <button class="btn ghost" id="discard">Discard</button>
+      <button class="btn primary" id="save">Save changes</button>
+    </div>
+  </main>
+</div>
+
+<div class="gate" id="gate" hidden>
+  <div class="gate-card">
+    <span class="mark big" aria-hidden="true"></span>
+    <h1>Welcome to Live Coach</h1>
+    <p class="muted" id="gate-msg">Enter your licence key to start.</p>
+    <input id="gate-key" class="input" placeholder="Licence key from your receipt email">
+    <button class="btn primary big" id="gate-go">Unlock the coach</button>
+    <button class="btn link" id="gate-buy">No key yet? Subscribe for $2.50 a month</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script src="app.js"></script>
+</body>
+</html>

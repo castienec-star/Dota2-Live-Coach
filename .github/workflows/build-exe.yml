@@ -10,6 +10,9 @@ on:
       - "packaging/**"
       - "coach/app.py"
       - "coach/app_window.py"
+      - "coach/app_web.py"
+      - "coach/app_api.py"
+      - "coach/ui/**"
       - "pyproject.toml"
       - ".github/workflows/build-exe.yml"
   workflow_dispatch:
@@ -22,7 +25,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install -e ".[voice,build]"
+      - run: pip install -e ".[voice,build,app]"
       - run: python packaging/build_exe.py
       - name: Smoke test the app
         shell: pwsh
