@@ -15,6 +15,8 @@ dependencies = [
 dev = ["pytest>=8", "pytest-aiohttp>=1.0"]
 # Hands-free questions ("hey coach, what's my next item?"), all on this PC.
 voice = ["faster-whisper>=1.0", "sounddevice>=0.4.6", "vosk>=0.3.45"]
+# The app window (py -m coach app): a page in Windows' own WebView2.
+app = ["pywebview>=5.4"]
 # Builds the Windows app folder: py packaging/build_exe.py
 build = ["pyinstaller>=6.6"]
 
@@ -26,7 +28,7 @@ build-backend = "setuptools.build_meta"
 packages = ["coach", "coach.rules"]
 
 [tool.setuptools.package-data]
-coach = ["data/*.json"]
+coach = ["data/*.json", "ui/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

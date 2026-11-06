@@ -93,6 +93,9 @@ def test_app_window_is_built_windowed_next_to_the_coach(tmp_path):
     assert "--windowed" in args and args[args.index("--name") + 1] == "Dota 2 Live Coach"
     # Its own contents folder, so copying it next to DotaCoach.exe can't clash with _internal.
     assert args[args.index("--contents-directory") + 1] == build_exe.APP_CONTENTS != "_internal"
+    data = [args[i + 1] for i, a in enumerate(args) if a == "--add-data"]
+    assert f"{ROOT / 'coach/ui'}{os.pathsep}coach/ui" in data
+    assert f"{ROOT / 'config/coach.toml'}{os.pathsep}config" in data
     assert "Dota 2 Live Coach" in build_exe.START_HERE.format(name="DotaCoach", app="Dota 2 Live Coach", version="x")
 
 
