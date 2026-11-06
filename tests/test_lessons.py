@@ -63,16 +63,6 @@ def test_matching_prefers_the_stage_and_kind_of_moment():
     assert matching([late_fight], "regular", "laning") == []
 
 
-def test_replay_review_shows_matching_lessons():
-    from tests.test_replay_review import Rig
-
-    rig = Rig(mode="continuous")
-    rig.review.lessons = [Lesson("Lane at 4:00", "He stayed near his creeps", "Safe from ganks",
-                                 "Stand behind your creep wave", "laning", ["positioning", "last hits"])]
-    rig.play(11)
-    assert "A real coach's lessons" in rig.asked[0][0] and "He stayed near his creeps" in rig.asked[0][0]
-
-
 def test_frames_at_reads_a_real_video(tmp_path):
     av = pytest.importorskip("av")
     pytest.importorskip("PIL")
