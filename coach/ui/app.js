@@ -51,15 +51,15 @@ function render(status) {
   const state = !status.running ? "off" : status.connected ? "live" : "on";
   $("#ring").className = "ring " + state;
   $("#side-pill").className = "pill " + state;
-  $("#side-state").textContent = { off: "Off", on: "Waiting for Dota", live: "Coaching" }[state];
-  $("#state-eyebrow").textContent = { off: "Coach off", on: "Coach running", live: "Live" }[state];
+  $("#side-state").textContent = t({ off: "Off", on: "Waiting for Dota", live: "Coaching" }[state]);
+  $("#state-eyebrow").textContent = t({ off: "Coach off", on: "Coach running", live: "Live" }[state]);
   $("#headline").textContent = status.headline;
-  $("#detail").textContent = status.problem || (status.last_said ? "Last line: " + status.last_said : "");
+  $("#detail").textContent = status.problem || (status.last_said ? t("Last line: ") + status.last_said : "");
   const go = $("#go");
-  go.textContent = status.running ? "Stop coach" : "Start coach";
+  go.textContent = t(status.running ? "Stop coach" : "Start coach");
   go.className = "btn big " + (status.running ? "stop" : "primary");
-  $("#t-dota").textContent = status.connected ? "Connected" : status.running ? "Waiting" : "Not connected";
-  if (status.version) $("#side-version").textContent = "Version " + status.version;
+  $("#t-dota").textContent = t(status.connected ? "Connected" : status.running ? "Waiting" : "Not connected");
+  if (status.version) $("#side-version").textContent = t("Version ") + status.version;
 }
 
 function addEvents(events) {
@@ -70,7 +70,7 @@ function addEvents(events) {
     $(".empty", feed)?.remove();
     feed.append(el("li", { class: e.kind },
       el("span", { class: "t" }, e.time || ""),
-      el("span", { class: "k" }, KIND[e.kind] || e.kind),
+      el("span", { class: "k" }, t(KIND[e.kind] || e.kind)),
       el("span", { class: "x" }, e.text)));
     while (feed.children.length > 400) feed.firstChild.remove();
     feed.scrollTop = feed.scrollHeight;
@@ -92,9 +92,9 @@ $("#go").addEventListener("click", async () => {
 });
 $("#details").addEventListener("change", (e) => (showDetails = e.target.checked));
 $("#a-setup").addEventListener("click", async () => {
-  toast("Setting up Dota 2...");
+  toast(t("Setting up Dota 2..."));
   const out = await api.set_up_dota();
-  toast(out.ok ? "Dota 2 is set up. Restart Dota if it is open." : out.text, !out.ok);
+  toast(out.ok ? t("Dota 2 is set up. Restart Dota if it is open.") : out.text, !out.ok);
 });
 $("#a-reviews").addEventListener("click", () => api.open_folder("reviews"));
 $("#a-builds").addEventListener("click", () => api.open_builds());
@@ -105,15 +105,15 @@ function dirty() { return JSON.stringify(current) !== JSON.stringify(saved); }
 function changed() {
   $("#savebar").classList.toggle("show", dirty());
   $("#savebar").classList.remove("error");
-  $("#save-msg").textContent = "You have unsaved changes.";
+  $("#save-msg").textContent = t("You have unsaved changes.");
   summary();
 }
 function summary() {
   const on = Object.values(current.reminders).filter(Boolean).length;
   const all = Object.keys(current.reminders).length;
-  $("#count").textContent = `${on} of ${all} on`;
-  $("#t-on").textContent = `${on} of ${all}`;
-  $("#t-mode").textContent = current.mode === "experienced" ? "Experienced" : "Beginner";
+  $("#count").textContent = t("{on} of {all} on", { on, all });
+  $("#t-on").textContent = t("{on} of {all}", { on, all });
+  $("#t-mode").textContent = t(current.mode === "experienced" ? "Experienced" : "Beginner");
   $$("#mode button").forEach((b) => b.classList.toggle("active", b.dataset.mode === current.mode));
 }
 
@@ -128,17 +128,17 @@ function control(f) {
   if (f.kind === "toggle") return switchEl(!!value, (e) => set(e.target.checked), f.label);
   if (f.kind === "choice" || f.kind === "voice") {
     const opts = f.kind === "voice"
-      ? [["", "Windows default"], ...voices.map((v) => [v, v]), ...(value && !voices.includes(value) ? [[value, value]] : [])]
+      ? [["", t("Windows default")], ...voices.map((v) => [v, v]), ...(value && !voices.includes(value) ? [[value, value]] : [])]
       : f.choices;
     const sel = el("select", { class: "input", onchange: (e) => set(e.target.value) },
       opts.map(([k, label]) => el("option", { value: k, selected: String(value) === k }, label)));
     if (f.kind !== "voice") return sel;
     return el("div", { class: "row grow" }, sel,
-      el("button", { class: "btn small", onclick: () => api.test_voice(current.fields["voice.name"], +current.fields["voice.rate"] || 0) }, "Test"));
+      el("button", { class: "btn small", onclick: () => api.test_voice(current.fields["voice.name"], +current.fields["voice.rate"] || 0) }, t("Test")));
   }
   const input = el("input", { class: "input", value, inputmode: f.kind === "text" ? "text" : "numeric",
     oninput: (e) => set(e.target.value) });
-  const unit = UNITS[f.kind];
+  const unit = UNITS[f.kind] && t(UNITS[f.kind]);
   return unit ? el("div", { class: "unit" }, input, el("em", {}, unit)) : input;
 }
 
@@ -167,9 +167,9 @@ function drawReminders() {
       const main = el("div", { class: "item-main" },
         switchEl(on, (e) => { current.reminders[r.name] = e.target.checked; item.classList.toggle("off", !e.target.checked); changed(); }, r.label),
         el("div", { class: "item-text" },
-          el("div", { class: "item-title" }, r.label, r.experienced ? el("span", { class: "badge" }, "Essential") : null),
+          el("div", { class: "item-title" }, r.label, r.experienced ? el("span", { class: "badge" }, t("Essential")) : null),
           el("div", { class: "item-help" }, r.help)),
-        r.fields.length ? el("button", { class: "more", onclick: () => item.classList.toggle("open") }, "Timing", chevron()) : null);
+        r.fields.length ? el("button", { class: "more", onclick: () => item.classList.toggle("open") }, t("Timing"), chevron()) : null);
       item.append(main);
       if (r.fields.length) item.append(el("div", { class: "fields" }, r.fields.map(field)));
       list.append(item);
@@ -198,7 +198,7 @@ function drawGeneral(target, ids) {
 
 function drawAll() {
   drawReminders();
-  drawGeneral("#general-voice", ["voice", "listen"]);
+  drawGeneral("#general-voice", ["language", "voice", "listen"]);
   drawGeneral("#general-game", ["game"]);
   summary();
 }
@@ -224,7 +224,7 @@ $("#all-off").addEventListener("click", () => setAll(false));
 $("#reset").addEventListener("click", async () => {
   current = await api.reset_settings(current.mode);
   drawAll(); changed();
-  toast("Defaults restored. Save to keep them.");
+  toast(t("Defaults restored. Save to keep them."));
 });
 $("#discard").addEventListener("click", () => { current = clone(saved); drawAll(); changed(); });
 $("#save").addEventListener("click", async () => {
@@ -234,9 +234,10 @@ $("#save").addEventListener("click", async () => {
     $("#save-msg").textContent = out.errors.join(" · ");
     return;
   }
+  if (out.language_changed) { location.reload(); return; }  // the whole page in the new language
   saved = out.values; current = clone(saved);
   drawAll(); changed();
-  toast(out.restarted ? "Saved. The coach restarted with your settings." : "Saved. The coach uses them next time it starts.");
+  toast(t(out.restarted ? "Saved. The coach restarted with your settings." : "Saved. The coach uses them next time it starts."));
 });
 
 // Progress --------------------------------------------------------------
@@ -247,7 +248,7 @@ function svg(tag, attrs = {}) {
   for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
   return n;
 }
-const fmt = (n) => Number(n).toLocaleString("en-US");
+const fmt = (n) => Number(n).toLocaleString(locale());
 function niceStep(span) {
   const raw = span / 4, p = 10 ** Math.floor(Math.log10(raw || 1));
   return [1, 2, 2.5, 5, 10].map((m) => m * p).find((s) => s >= raw);
@@ -256,38 +257,38 @@ function niceStep(span) {
 function mmrChart(points) {
   const box = $("#mmr-chart");
   box.replaceChildren();
-  if (!points.length) { box.append(el("div", { class: "chart-empty" }, "Save your MMR to start your graph.")); return; }
+  if (!points.length) { box.append(el("div", { class: "chart-empty" }, t("Save your MMR to start your graph."))); return; }
   const W = 640, H = 240, L = 48, R = 56, T = 14, B = 28;
   const values = points.map((p) => p.mmr);
   let lo = Math.min(...values), hi = Math.max(...values);
   const pad = Math.max(50, (hi - lo) * 0.15); lo -= pad; hi += pad;
   const step = niceStep(hi - lo); lo = Math.max(0, Math.floor(lo / step) * step); hi = Math.ceil(hi / step) * step;
-  const t = points.map((p) => new Date(p.day + "T00:00:00").getTime());
-  const t0 = t[0], t1 = t[t.length - 1] === t0 ? t0 + 86400000 : t[t.length - 1];
+  const ts = points.map((p) => new Date(p.day + "T00:00:00").getTime());
+  const t0 = ts[0], t1 = ts[ts.length - 1] === t0 ? t0 + 86400000 : ts[ts.length - 1];
   const x = (v) => points.length === 1 ? L + (W - L - R) / 2 : L + ((v - t0) / (t1 - t0)) * (W - L - R);
   const y = (v) => T + (1 - (v - lo) / (hi - lo)) * (H - T - B);
-  const s = svg("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "MMR over time" });
+  const s = svg("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": t("MMR over time") });
   for (let v = lo; v <= hi + 1e-9; v += step) {
     s.append(svg("line", { class: "grid", x1: L, x2: W - R, y1: y(v), y2: y(v) }));
     const lab = svg("text", { class: "axis", x: L - 8, y: y(v) + 4, "text-anchor": "end" });
     lab.textContent = fmt(v);
     s.append(lab);
   }
-  const day = (i) => new Date(t[i]).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const day = (i) => new Date(ts[i]).toLocaleDateString(locale(), { month: "short", day: "numeric" });
   const ticks = points.length <= 6 ? points.map((_, i) => i) : [0, Math.floor((points.length - 1) / 2), points.length - 1];
   for (const i of ticks) {
-    const lab = svg("text", { class: "axis", x: x(t[i]), y: H - 8, "text-anchor": "middle" });
+    const lab = svg("text", { class: "axis", x: x(ts[i]), y: H - 8, "text-anchor": "middle" });
     lab.textContent = day(i);
     s.append(lab);
   }
-  const path = points.map((p, i) => `${i ? "L" : "M"}${x(t[i]).toFixed(1)},${y(p.mmr).toFixed(1)}`).join("");
+  const path = points.map((p, i) => `${i ? "L" : "M"}${x(ts[i]).toFixed(1)},${y(p.mmr).toFixed(1)}`).join("");
   if (points.length > 1) {
-    s.append(svg("path", { class: "area", d: `${path}L${x(t[t.length - 1])},${H - B}L${x(t[0])},${H - B}Z` }));
+    s.append(svg("path", { class: "area", d: `${path}L${x(ts[ts.length - 1])},${H - B}L${x(ts[0])},${H - B}Z` }));
     s.append(svg("path", { class: "line", d: path }));
   }
   const last = points.length - 1;
-  s.append(svg("circle", { class: "pt", cx: x(t[last]), cy: y(values[last]), r: 4.5 }));
-  const end = svg("text", { class: "end-label", x: x(t[last]) + 10, y: y(values[last]) + 4 });
+  s.append(svg("circle", { class: "pt", cx: x(ts[last]), cy: y(values[last]), r: 4.5 }));
+  const end = svg("text", { class: "end-label", x: x(ts[last]) + 10, y: y(values[last]) + 4 });
   end.textContent = fmt(values[last]);
   s.append(end);
   // Hover: a crosshair and the nearest entry.
@@ -299,8 +300,8 @@ function mmrChart(points) {
   hit.addEventListener("mousemove", (e) => {
     const r = s.getBoundingClientRect(), px = ((e.clientX - r.left) / r.width) * W;
     let i = 0;
-    t.forEach((v, j) => { if (Math.abs(x(v) - px) < Math.abs(x(t[i]) - px)) i = j; });
-    const cx = x(t[i]), cy = y(values[i]);
+    ts.forEach((v, j) => { if (Math.abs(x(v) - px) < Math.abs(x(ts[i]) - px)) i = j; });
+    const cx = x(ts[i]), cy = y(values[i]);
     cross.setAttribute("x1", cx); cross.setAttribute("x2", cx); cross.setAttribute("visibility", "visible");
     dot.setAttribute("cx", cx); dot.setAttribute("cy", cy); dot.setAttribute("visibility", "visible");
     const change = i ? values[i] - values[i - 1] : null;
@@ -320,19 +321,19 @@ function heroChart(heroes) {
   const box = $("#hero-chart");
   box.replaceChildren();
   if (!heroes.length) {
-    box.append(el("div", { class: "chart-empty" }, "Play a match with the coach running and your heroes show up here."));
+    box.append(el("div", { class: "chart-empty" }, t("Play a match with the coach running and your heroes show up here.")));
     return;
   }
   const bars = el("div", { class: "bars", role: "list" });
   for (const h of heroes.slice(0, 12)) {
     const wr = h.win_rate;
     bars.append(el("div", { class: "bar-row", role: "listitem",
-      title: `${h.name}: ${h.wins} wins, ${h.losses} losses in ${h.games} games · average K/D/A ${h.kda}` },
+      title: t("{name}: {wins} wins, {losses} losses in {games} games · average K/D/A {kda}", h) },
       el("div", { class: "bar-name" }, h.name),
       el("div", { class: "bar-track" }, el("div", { class: "half" }),
         el("div", { class: "bar-fill", style: `width: ${wr ?? 0}%` })),
       el("div", { class: "bar-value" }, wr == null ? "-" : wr + "%",
-        el("span", {}, `  ${h.wins}-${h.losses} · ${h.games} game${h.games === 1 ? "" : "s"}`))));
+        el("span", {}, `  ${h.wins}-${h.losses} · ${h.games} ${t(h.games === 1 ? "game" : "games")}`))));
   }
   box.append(bars);
 }
@@ -341,7 +342,7 @@ function recs(list) {
   const box = $("#recs");
   box.replaceChildren();
   if (!list.length) {
-    box.append(el("div", { class: "muted" }, "Play a few games with the coach running and its recommendations show up here."));
+    box.append(el("div", { class: "muted" }, t("Play a few games with the coach running and its recommendations show up here.")));
     return;
   }
   for (const r of list) {
@@ -358,14 +359,14 @@ function trendChart() {
   const box = $("#trend-chart");
   box.replaceChildren();
   const games = trendData;
-  if (!games.length) { box.append(el("div", { class: "chart-empty" }, "No recorded games yet.")); return; }
+  if (!games.length) { box.append(el("div", { class: "chart-empty" }, t("No recorded games yet."))); return; }
   const W = 960, H = 220, L = 40, R = 10, T = 16, B = 34;
   const vals = games.map((g) => g[trendMetric]);
   const max = Math.max(1, ...vals.filter((v) => v != null));
   const step = niceStep(max), top = Math.ceil(max / step) * step;
   const y = (v) => T + (1 - v / top) * (H - T - B);
   const band = (W - L - R) / games.length, bar = Math.min(24, band * 0.6);
-  const s = svg("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": METRICS[trendMetric] + " in the last games" });
+  const s = svg("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": t("{metric} in the last games", { metric: t(METRICS[trendMetric]) }) });
   for (let v = 0; v <= top + 1e-9; v += step) {
     s.append(svg("line", { class: "grid", x1: L, x2: W - R, y1: y(v), y2: y(v) }));
     const lab = svg("text", { class: "axis", x: L - 8, y: y(v) + 4, "text-anchor": "end" });
@@ -384,8 +385,8 @@ function trendChart() {
     const hit = svg("rect", { class: "col-hit", x: cx - band / 2, y: T, width: band, height: H - T - B });
     hit.addEventListener("mouseenter", () => {
       col.classList.add("hover");
-      const result = g.won === true ? "Win" : g.won === false ? "Loss" : "Result unknown";
-      tip.replaceChildren(el("b", {}, v == null ? "-" : `${fmt(v)} ${METRICS[trendMetric].toLowerCase()}`), `${g.date} · ${result}`);
+      const result = t(g.won === true ? "Win" : g.won === false ? "Loss" : "Result unknown");
+      tip.replaceChildren(el("b", {}, v == null ? "-" : `${fmt(v)} ${t(METRICS[trendMetric]).toLowerCase()}`), `${g.date} · ${result}`);
       const rect = s.getBoundingClientRect();
       tip.hidden = false;
       tip.style.left = (cx / W) * rect.width + "px";
@@ -414,35 +415,35 @@ $$("#trend-metric button").forEach((b) => b.addEventListener("click", () => {
 
 async function loadDetails(m, target, button) {
   button.disabled = true;
-  button.textContent = "Loading...";
+  button.textContent = t("Loading...");
   const out = await api.match_details(m.match_id, m.account_id);
   if (!out.ok) {
     target.replaceChildren(el("div", { class: "muted small" }, out.message));
-    button.textContent = "Try again";
+    button.textContent = t("Try again");
     button.disabled = false;
     return;
   }
   button.remove();
   target.replaceChildren(
     out.stats.length ? el("div", { class: "kv" }, out.stats.map((s) => el("div", {}, el("span", {}, s.label), fmt(s.value)))) : "",
-    out.ranks.length ? el("h3", {}, "Against all games on this hero") : "",
-    ...out.ranks.map((r) => el("div", { class: "pct", title: `Better than ${r.pct}% of games on this hero` },
+    out.ranks.length ? el("h3", {}, t("Against all games on this hero")) : "",
+    ...out.ranks.map((r) => el("div", { class: "pct", title: t("Better than {pct}% of games on this hero", r) },
       el("span", {}, r.label), el("div", { class: "track" }, el("div", { class: "mid" }), el("div", { class: "fill", style: `width: ${r.pct}%` })),
       el("span", {}, r.pct + "%"))),
-    out.tips.length ? el("h3", {}, "What to work on") : "",
-    out.tips.length ? el("ul", { class: "notes" }, out.tips.map((t) => el("li", { class: /strength/.test(t) ? "good" : "" }, t))) : "");
+    out.tips.length ? el("h3", {}, t("What to work on")) : "",
+    out.tips.length ? el("ul", { class: "notes" }, out.tips.map((x) => el("li", { class: /strength|fortaleza/.test(x) ? "good" : "" }, x))) : "");
 }
 
 function matchTable(rows) {
   const table = $("#matches");
-  const head = ["Date", "Hero", "Result", "K/D/A", "LH/DN", "GPM", "XPM", "Length", ""];
+  const head = ["Date", "Hero", "Result", "K/D/A", "LH/DN", "GPM", "XPM", "Length", ""].map((h) => t(h));
   table.replaceChildren(el("thead", {}, el("tr", {}, head.map((h) => el("th", {}, h)))));
   const body = el("tbody");
-  if (!rows.length) body.append(el("tr", {}, el("td", { colspan: head.length, class: "muted" }, "No recorded matches yet.")));
+  if (!rows.length) body.append(el("tr", {}, el("td", { colspan: head.length, class: "muted" }, t("No recorded matches yet."))));
   for (const m of rows) {
     const row = el("tr", { class: "mrow" },
       el("td", {}, m.date), el("td", {}, m.hero),
-      el("td", { class: m.result === "Win" ? "win" : m.result === "Loss" ? "loss" : "" }, m.result),
+      el("td", { class: m.result === "Win" ? "win" : m.result === "Loss" ? "loss" : "" }, t(m.result)),
       el("td", {}, m.kda), el("td", {}, m.last_hits), el("td", {}, String(m.gpm)), el("td", {}, String(m.xpm)),
       el("td", {}, m.duration),
       el("td", {}, m.link ? el("a", { onclick: (e) => { e.stopPropagation(); api.open_url(m.link); } }, "OpenDota") : ""));
@@ -452,13 +453,13 @@ function matchTable(rows) {
       row.classList.add("open");
       const od = el("div");
       const button = m.match_id && m.account_id
-        ? el("button", { class: "btn small", onclick: () => loadDetails(m, od, button) }, "Load OpenDota numbers") : null;
+        ? el("button", { class: "btn small", onclick: () => loadDetails(m, od, button) }, t("Load OpenDota numbers")) : null;
       const facts = [
-        m.last_hits_10 != null ? `${m.last_hits_10} last hits at 10:00` : null,
-        m.deaths_early ? `${m.deaths_early} death${m.deaths_early === 1 ? "" : "s"} before 10:00` : null,
+        m.last_hits_10 != null ? t("{n} last hits at 10:00", { n: m.last_hits_10 }) : null,
+        m.deaths_early ? t(m.deaths_early === 1 ? "{n} death before 10:00" : "{n} deaths before 10:00", { n: m.deaths_early }) : null,
       ].filter(Boolean).join(" · ");
       detail = el("tr", { class: "detail" }, el("td", { colspan: head.length }, el("div", { class: "detail-grid detail" },
-        el("div", {}, el("h3", {}, "Coach's review"), facts ? el("div", { class: "muted small", style: "margin-bottom: 8px" }, facts) : "",
+        el("div", {}, el("h3", {}, t("Coach's review")), facts ? el("div", { class: "muted small", style: "margin-bottom: 8px" }, facts) : "",
           el("ul", { class: "notes" }, m.notes.map((n) => el("li", { class: n.tone }, n.text)))),
         el("div", {}, el("h3", {}, "OpenDota"), od, button))));
       row.after(detail);
@@ -472,16 +473,16 @@ async function progress() {
   const p = await api.progress();
   const pts = p.mmr;
   const latest = pts.length ? pts[pts.length - 1] : null;
-  $("#p-mmr").textContent = latest ? fmt(latest.mmr) + (p.medal ? ` · ${p.medal}` : "") : "Not set";
+  $("#p-mmr").textContent = latest ? fmt(latest.mmr) + (p.medal ? ` · ${p.medal}` : "") : t("Not set");
   const diff = pts.length > 1 ? latest.mmr - pts[0].mmr : null;
   $("#p-change").textContent = diff == null ? "-" : (diff >= 0 ? "+" : "") + fmt(diff);
   $("#p-games").textContent = p.games;
   $("#p-wr").textContent = p.finished ? `${Math.round((100 * p.wins) / p.finished)}%  (${p.wins}-${p.finished - p.wins})` : "-";
-  $("#mmr-sub").textContent = pts.length ? `${pts.length} entr${pts.length === 1 ? "y" : "ies"} since ${pts[0].day}` : "";
+  $("#mmr-sub").textContent = pts.length ? t(pts.length === 1 ? "{n} entry since {day}" : "{n} entries since {day}", { n: pts.length, day: pts[0].day }) : "";
   $("#mmr-banner").hidden = !p.mmr_due;
   $("#mmr-banner-text").textContent = latest
-    ? `Last updated ${latest.day}. Update it every ${p.ask_every_days} days to track your progress.`
-    : "Enter it once and the coach won't ask your rank during games.";
+    ? t("Last updated {day}. Update it every {n} days to track your progress.", { day: latest.day, n: p.ask_every_days })
+    : t("Enter it once and the coach won't ask your rank during games.");
   recs(p.recommendations);
   trendData = p.trend;
   mmrChart(pts); trendChart(); heroChart(p.heroes); matchTable(p.matches);
@@ -505,9 +506,9 @@ async function licence() {
   const ok = !state.required || state.ok;
   $("#lic-state").replaceChildren(
     el("span", { class: "dot", style: `background: var(${ok ? "--green" : "--amber"})` }),
-    !state.required ? "Free test build: no licence needed yet." : ok ? "Active on this PC." : state.message);
+    !state.required ? t("Free test build: no licence needed yet.") : ok ? t("Active on this PC.") : state.message);
   $("#gate").hidden = ok;
-  $("#gate-msg").textContent = state.message || "Enter your licence key to start.";
+  $("#gate-msg").textContent = state.message || t("Enter your licence key to start.");
   const buy = () => state.store && api.open_url(state.store);
   $("#lic-buy").onclick = buy; $("#gate-buy").onclick = buy;
   $("#lic-buy").hidden = $("#gate-buy").hidden = !state.store;
@@ -525,6 +526,7 @@ $("#lic-go").addEventListener("click", () => activate("#lic-key", "#lic-msg"));
 
 async function boot(bridge) {
   api = bridge;
+  translatePage(await api.language());
   await licence();
   const data = await api.load_settings();
   schema = data.schema; voices = data.voices;

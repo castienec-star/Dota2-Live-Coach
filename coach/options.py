@@ -26,6 +26,7 @@ import re
 from dataclasses import dataclass, field
 
 from . import config as config_mod
+from . import i18n
 from .settings import _prune, mode_default
 
 
@@ -145,6 +146,11 @@ REMINDER_GROUPS = (
 )
 
 GENERAL = (
+    Group("language", "Language", "What the coach speaks and the app shows.", fields=(
+        Field("coach.language", "Coach language", "choice",
+              "Spoken lines, answers and this window. Spanish needs a Spanish Windows voice "
+              "(Settings > Time & language > Speech).", choices=i18n.LANGUAGES),
+    )),
     Group("voice", "Voice", "How the coach sounds.", fields=(
         Field("voice.name", "Voice", "voice", "An installed Windows voice."),
         Field("voice.rate", "Speed", "count", "From -10 (slow) to 10 (fast).", -10, 10),
@@ -329,24 +335,35 @@ def saved(defaults: dict, user: dict, sent: dict) -> tuple[dict, list[str]]:
     return _prune(new), []
 
 
-def schema() -> dict:
-    """OPTIONS as plain data for the window."""
+def schema(lang: str = "en") -> dict:
+    """OPTIONS as plain data for the window, in the app's language."""
+
+    def t(text: str) -> str:
+        return i18n.ui(text, lang)
 
     def fields(fs):
-        return [{"path": f.path, "label": f.label, "kind": f.kind, "help": f.help, "low": f.low,
-                 "high": 100 if f.kind == "percent" else f.high, "choices": [list(c) for c in f.choices]}
+        return [{"path": f.path, "label": t(f.label), "kind": f.kind, "help": t(f.help), "low": f.low,
+                 "high": 100 if f.kind == "percent" else f.high,
+                 # Language names stay in their own language.
+                 "choices": [[k, v if f.path == "coach.language" else t(v)] for k, v in f.choices]}
                 for f in fs]
 
     return {
         "reminders": [
-            {"id": g.id, "title": g.title, "help": g.help, "reminders": [
-                {"name": r.name, "label": r.label, "help": r.help, "fields": fields(r.fields),
+            {"id": g.id, "title": t(g.title), "help": t(g.help), "reminders": [
+                {"name": r.name, "label": t(r.label), "help": t(r.help), "fields": fields(r.fields),
                  "experienced": r.name in config_mod.EXPERIENCED}
                 for r in g.reminders]}
             for g in REMINDER_GROUPS
         ],
-        "general": [{"id": g.id, "title": g.title, "help": g.help, "fields": fields(g.fields)} for g in GENERAL],
+        "general": [{"id": g.id, "title": t(g.title), "help": t(g.help), "fields": fields(g.fields)}
+                    for g in GENERAL],
     }
+
+
+def language_of(defaults: dict, user: dict) -> str:
+    """The app's language: the player's coach.toml, else the defaults."""
+    return i18n.normalize(_get(user, "coach.language", _get(defaults, "coach.language", "en")))
 
 
 def remode(sent: dict, old: str, new: str, defaults: dict) -> dict:

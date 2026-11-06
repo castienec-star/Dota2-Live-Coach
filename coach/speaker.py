@@ -15,6 +15,8 @@ import time
 from collections.abc import Callable
 from typing import Protocol
 
+from .i18n import spanish_voice
+
 log = logging.getLogger(__name__)
 
 # How important a line is. Higher is spoken first when several are waiting.
@@ -75,7 +77,16 @@ def installed_voices() -> list[str]:
         return []
 
 
-def make_backend(name: str, voice: str = "", rate: int = 0) -> Backend:
+def make_backend(name: str, voice: str = "", rate: int = 0, language: str = "en") -> Backend:
+    if name == "sapi" and not voice and language == "es":
+        # Windows' default voice is usually English: a Spanish line in an
+        # English voice is hard to follow, so pick an installed Spanish one.
+        voice = spanish_voice(installed_voices()) or ""
+        if not voice:
+            log.warning(
+                "No Spanish voice is installed, so Spanish lines use Windows' default voice. "
+                "Add one in Windows Settings > Time & language > Speech."
+            )
     if name == "sapi":
         try:
             return SapiBackend(voice, rate)
@@ -85,8 +96,17 @@ def make_backend(name: str, voice: str = "", rate: int = 0) -> Backend:
 
 
 class Speaker:
-    def __init__(self, backend_factory=PrintBackend, max_delay: float = 4.0) -> None:
+    def __init__(
+        self,
+        backend_factory=PrintBackend,
+        max_delay: float = 4.0,
+        translate: Callable[[str], str] | None = None,
+    ) -> None:
         self.max_delay = max_delay
+        # Turns a line into the coach's language just before it is spoken
+        # (coach/i18n.py Translator); it runs on the speaker's thread, so a
+        # slow translation never holds up the game state.
+        self.translate = translate
         # (-priority, order, queued at, max delay, text); None closes.
         self._queue: list[tuple[int, int, float, float, str]] = []
         self._order = itertools.count()
@@ -139,15 +159,27 @@ class Speaker:
             except Exception:
                 log.exception("Could not note the line %r", text)
 
+    def _in_language(self, text: str, quick: bool = False) -> str:
+        if self.translate is None:
+            return text
+        try:
+            quick_one = getattr(self.translate, "quick", None)
+            return quick_one(text) if quick and quick_one is not None else self.translate(text)
+        except Exception:
+            log.exception("Could not translate %r", text)
+            return text
+
     def _run(self) -> None:
         backend = self._factory()
         while (item := self._next()) is not None:
             queued_at, delay, text = item
             try:
                 if time.monotonic() - queued_at > delay:
+                    text = self._in_language(text, quick=True)
                     log.info("Skipped late line: %s", text)
                     self._tell(text, False)
                     continue
+                text = self._in_language(text)
                 self._tell(text, True)
                 backend.speak(text)
             except Exception:

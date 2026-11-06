@@ -16,6 +16,8 @@ import tkinter as tk
 from pathlib import Path
 from tkinter import ttk
 
+from . import config as config_mod
+from . import i18n, options
 from .app import CoachProcess, Event, Status, _hidden, command
 
 POLL_MS = 200
@@ -45,6 +47,9 @@ class AppWindow:
         self.coach = coach or CoachProcess()
         self.status = Status()
         self.show_all = tk.BooleanVar(value=False)
+        user = app_dir / "coach.toml"
+        self.lang = options.language_of(config_mod._read_toml(config_mod.DEFAULTS_FILE),
+                                        config_mod._read_toml(user) if user.is_file() else {})
 
         root.title("Dota 2 Live Coach")
         root.configure(bg=BG)
@@ -92,7 +97,7 @@ class AppWindow:
         self.headline.pack(anchor="w")
         self.detail = ttk.Label(text, text="", style="Panel.TLabel", wraplength=360)
         self.detail.pack(anchor="w")
-        self.go = ttk.Button(panel, text="Start", style="Go.TButton", command=self.toggle)
+        self.go = ttk.Button(panel, text=self._t("Start"), style="Go.TButton", command=self.toggle)
         self.go.pack(side="right")
 
         log_frame = ttk.Frame(outer)
@@ -110,15 +115,18 @@ class AppWindow:
 
         bottom = ttk.Frame(outer)
         bottom.pack(fill="x", pady=(12, 0))
-        ttk.Button(bottom, text="Settings", command=lambda: self._side("settings")).pack(side="left")
-        ttk.Button(bottom, text="Set up Dota 2", command=self.set_up).pack(side="left", padx=8)
-        ttk.Button(bottom, text="Match reviews", command=self.open_reviews).pack(side="left")
-        ttk.Checkbutton(bottom, text="Show details", variable=self.show_all).pack(side="right")
+        ttk.Button(bottom, text=self._t("Settings"), command=lambda: self._side("settings")).pack(side="left")
+        ttk.Button(bottom, text=self._t("Set up Dota 2"), command=self.set_up).pack(side="left", padx=8)
+        ttk.Button(bottom, text=self._t("Match reviews"), command=self.open_reviews).pack(side="left")
+        ttk.Checkbutton(bottom, text=self._t("Show details"), variable=self.show_all).pack(side="right")
 
-        self._write(Event("log", "Lines the coach says will appear here."))
+        self._write(Event("log", self._t("Lines the coach says will appear here.")))
         self._refresh()
         root.protocol("WM_DELETE_WINDOW", self.close)
         root.after(POLL_MS, self.poll)
+
+    def _t(self, text: str) -> str:
+        return i18n.ui(text, self.lang)
 
     def toggle(self) -> None:
         if self.coach.running:
@@ -140,8 +148,9 @@ class AppWindow:
         self.log.configure(state="normal")
         if event.time:
             self.log.insert("end", event.time + "  ", "time")
-        prefix = "(too late, skipped) " if event.kind == "skipped" else ""
-        self.log.insert("end", prefix + event.text + "\n", event.kind)
+        prefix = self._t("(too late, skipped)") + " " if event.kind == "skipped" else ""
+        text = event.text if event.kind in ("said", "skipped") else self._t(event.text)
+        self.log.insert("end", prefix + text + "\n", event.kind)
         excess = int(self.log.index("end-1c").split(".")[0]) - MAX_LINES
         if excess > 0:
             self.log.delete("1.0", f"{excess + 1}.0")
@@ -154,11 +163,11 @@ class AppWindow:
             self.status.connected = False
         colour = GREEN if self.status.connected else (AMBER if self.status.running else MUTED)
         self.light.itemconfigure(self.dot, fill=colour)
-        self.headline.configure(text=self.status.headline())
-        self.detail.configure(text=self.status.problem or (f"Last line: {self.status.last_said}"
-                                                           if self.status.last_said else ""))
-        self.go.configure(text="Stop" if self.status.running else "Start")
-        self.version.configure(text=f"version {self.status.version}" if self.status.version else "")
+        self.headline.configure(text=self._t(self.status.headline()))
+        self.detail.configure(text=self._t(self.status.problem) or (self._t("Last line: {line}").replace("{line}", self.status.last_said)
+                                                                    if self.status.last_said else ""))
+        self.go.configure(text=self._t("Stop" if self.status.running else "Start"))
+        self.version.configure(text=self._t(f"version {self.status.version}") if self.status.version else "")
 
     def _side(self, *args: str) -> None:
         """Runs another coach command (settings, install) next to the app."""
@@ -167,7 +176,7 @@ class AppWindow:
     def set_up(self) -> None:
         proc = CoachProcess(args=("install",))
         proc.start()
-        self._write(Event("log", "Setting up Dota 2's Game State Integration..."))
+        self._write(Event("log", self._t("Setting up Dota 2's Game State Integration...")))
 
         def done() -> None:
             if proc.running:
