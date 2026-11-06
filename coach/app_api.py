@@ -32,10 +32,14 @@ class Api:
         self._license = lic or license_mod.License(app_dir)
         self._voices = voices
         self._lock = threading.Lock()
+        self._replay = None  # the Replay review window's api, once opened
+        self._replay_window = None
 
     # The coach -----------------------------------------------------------
 
     def start(self) -> dict:
+        if self._replay is not None:
+            self._replay.stop()  # both listen on the same port
         self._coach.start()
         self._status.running = True
         return self.poll()
@@ -57,6 +61,42 @@ class Api:
                 "events": [asdict(e) for e in events],
                 "status": {**asdict(self._status), "headline": self._status.headline()},
             }
+
+    def shutdown(self) -> None:
+        """The main window closed: stop the coach and any replay review."""
+        self.stop()
+        if self._replay is not None:
+            self._replay.stop()
+
+    # Replay review -------------------------------------------------------
+
+    def open_replay(self) -> None:
+        """The Replay review window, a second window next to this one."""
+        import webview
+
+        from .app_web import UI
+        from .replay_api import ReplayApi
+
+        if self._replay is None:
+            self._replay = ReplayApi(self._app_dir, stop_live=self.stop)
+        if self._replay_window is not None:
+            try:
+                self._replay_window.show()
+                self._replay_window.restore()
+                return
+            except Exception:
+                self._replay_window = None
+        window = webview.create_window(
+            "Replay review", url=str(UI / "replay.html"), js_api=self._replay,
+            width=980, height=760, min_size=(760, 600), background_color="#070708",
+        )
+        self._replay_window = window
+
+        def closed() -> None:
+            self._replay.stop()
+            self._replay_window = None
+
+        window.events.closed += closed
 
     # Settings ------------------------------------------------------------
 

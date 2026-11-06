@@ -13,15 +13,20 @@ the gate at once, and it stays closed until spectator updates come back.
 
 from __future__ import annotations
 
+import json
 import time
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, Callable
+
+from .opendota import account_id
 
 TEAMS = {"team2": "radiant", "team3": "dire"}
 
-# A spectator update older than this no longer counts: Dota sends a heartbeat
-# at least every 30 s, and far more often while a replay plays.
-FRESH_SECONDS = 10.0
+# A spectator update older than this no longer counts. Dota sends updates
+# many times a second while a replay plays, and a heartbeat every 30 s while
+# it is paused (install.py), so a paused replay keeps the gate open.
+FRESH_SECONDS = 35.0
 
 
 def is_spectating(payload: dict[str, Any]) -> bool:
@@ -121,6 +126,76 @@ class ReplayView:
             paused=bool(game.get("paused", False)),
             heroes=heroes,
         )
+
+
+# The blocks GSI keys by team and player slot while you spectate.
+PER_PLAYER = ("player", "hero", "abilities", "items", "wearables")
+
+
+def find_slot(payload: dict[str, Any], accounts: set[int], hero: str | None = None) -> tuple[str, str] | None:
+    """(team key, slot) of the player's own hero in a replay: the hero they
+    picked in the replay window, else the one played from their Steam
+    account. None while neither is in this update."""
+    if not is_spectating(payload):
+        return None
+    players = payload.get("player") or {}
+    heroes = payload.get("hero") or {}
+    for team_key in TEAMS:
+        for slot, p in (players.get(team_key) or {}).items():
+            h = (heroes.get(team_key) or {}).get(slot) or {}
+            if hero:
+                if h.get("name") == hero:
+                    return team_key, slot
+            elif isinstance(p, dict) and (
+                account_id(p.get("accountid")) in accounts or account_id(p.get("steamid")) in accounts
+            ):
+                return team_key, slot
+    return None
+
+
+def own_payload(payload: dict[str, Any], where: tuple[str, str]) -> dict[str, Any]:
+    """The replay update cut down to what your own game sent you: your hero
+    only, in the same shape as a live match. The other nine heroes are
+    dropped, so the coach knows no more than you did while playing."""
+    team_key, slot = where
+    out = {k: v for k, v in payload.items() if k not in PER_PLAYER and k not in ("minimap", "allplayers")}
+    for key in PER_PLAYER:
+        block = payload.get(key)
+        if isinstance(block, dict):
+            mine = (block.get(team_key) or {}).get(slot)
+            if isinstance(mine, dict):
+                out[key] = dict(mine)
+    player = out.get("player")
+    if isinstance(player, dict):
+        player.setdefault("team_name", TEAMS[team_key])
+    return out
+
+
+def known_accounts(record_dir: Path, files: int = 10, lines: int = 400) -> set[int]:
+    """Steam accounts seen in your own recorded matches: your own account,
+    since live GSI only ever describes you."""
+    found: set[int] = set()
+    try:
+        paths = sorted(record_dir.glob("*.jsonl"), key=lambda p: p.stat().st_mtime, reverse=True)[:files]
+    except OSError:
+        return found
+    for path in paths:
+        try:
+            with path.open(encoding="utf-8") as f:
+                for _, line in zip(range(lines), f):
+                    try:
+                        player = (json.loads(line).get("payload") or {}).get("player") or {}
+                    except (ValueError, AttributeError):
+                        continue
+                    if not isinstance(player, dict) or any(k in player for k in TEAMS):
+                        continue
+                    acc = account_id(player.get("accountid")) or account_id(player.get("steamid"))
+                    if acc:
+                        found.add(acc)
+                        break
+        except OSError:
+            continue
+    return found
 
 
 class ScreenGate:

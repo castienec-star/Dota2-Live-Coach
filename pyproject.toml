@@ -9,6 +9,8 @@ dependencies = [
     "anthropic>=2.0",
     "comtypes>=1.2; sys_platform == 'win32'",
     "numpy>=1.26",
+    # Screen frames for replay review only (coach/vision.py).
+    "pillow>=10",
 ]
 
 [project.optional-dependencies]

@@ -31,5 +31,5 @@ def open_window(app_dir: Path, debug: bool = False) -> None:
         min_size=(980, 660),
         background_color="#070708",
     )
-    window.events.closed += lambda: api.stop()
+    window.events.closed += lambda: api.shutdown()
     webview.start(debug=debug)

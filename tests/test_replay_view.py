@@ -1,4 +1,8 @@
-from coach.replay_view import ReplayView, ScreenGate, is_own_match, is_spectating
+import json
+
+from coach.replay_view import ReplayView, ScreenGate, find_slot, is_own_match, is_spectating, known_accounts
+from coach.replay_view import own_payload as to_own
+from coach.state import Snapshot
 
 
 def spectator_payload() -> dict:
@@ -61,3 +65,35 @@ def test_screen_gate_opens_only_while_spectating():
     assert not gate.open  # a live match shuts it at once
     gate.see({"provider": {"name": "Dota 2"}})
     assert not gate.open
+
+
+def test_find_slot_by_account_or_picked_hero():
+    p = spectator_payload()
+    p["player"]["team3"]["player5"]["accountid"] = "131521297"
+    assert find_slot(p, {131521297}) == ("team3", "player5")
+    assert find_slot(p, set()) is None
+    assert find_slot(p, set(), hero="npc_dota_hero_juggernaut") == ("team2", "player0")
+    assert find_slot(own_payload(), {1}) is None
+
+
+def test_own_hero_payload_drops_the_other_nine():
+    p = spectator_payload()
+    p["abilities"] = {"team2": {"player0": {"ability0": {"name": "juggernaut_blade_fury", "level": 1}}},
+                      "team3": {"player5": {"ability0": {"name": "lion_impale", "level": 2}}}}
+    mine = to_own(p, ("team2", "player0"))
+    assert mine["player"]["name"] == "Ana" and mine["player"]["team_name"] == "radiant"
+    assert mine["hero"]["name"] == "npc_dota_hero_juggernaut"
+    assert "lion" not in json.dumps(mine)
+    assert not is_spectating(mine)
+    snap = Snapshot.from_payload(mine)
+    assert snap.hero_name == "npc_dota_hero_juggernaut" and snap.team == "radiant"
+    assert [i.name for i in snap.items if i.slot.startswith("slot")] == ["item_power_treads"]
+
+
+def test_known_accounts_come_from_own_recordings(tmp_path):
+    (tmp_path / "a-match-1.jsonl").write_text(
+        json.dumps({"t": 1, "payload": {"provider": {}}}) + "\n"
+        + json.dumps({"t": 2, "payload": {"player": {"steamid": "76561198091787025"}}}) + "\n"
+    )
+    assert known_accounts(tmp_path) == {131521297}
+    assert known_accounts(tmp_path / "missing") == set()

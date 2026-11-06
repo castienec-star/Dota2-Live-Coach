@@ -41,6 +41,7 @@ function show(page) {
   $("main").scrollTop = 0;
 }
 $$(".nav").forEach((b) => b.addEventListener("click", () => {
+  if (!b.dataset.page) return;  // Replay review opens its own window
   show(b.dataset.page);
   if (b.dataset.page === "progress") progress().catch((err) => console.error(err));
 }));
@@ -98,6 +99,8 @@ $("#a-setup").addEventListener("click", async () => {
 });
 $("#a-reviews").addEventListener("click", () => api.open_folder("reviews"));
 $("#a-builds").addEventListener("click", () => api.open_builds());
+$("#a-replay").addEventListener("click", () => api.open_replay());
+$("#nav-replay").addEventListener("click", () => api.open_replay());
 
 // Settings --------------------------------------------------------------
 
