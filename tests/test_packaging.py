@@ -94,3 +94,12 @@ def test_app_window_is_built_windowed_next_to_the_coach(tmp_path):
     # Its own contents folder, so copying it next to DotaCoach.exe can't clash with _internal.
     assert args[args.index("--contents-directory") + 1] == build_exe.APP_CONTENTS != "_internal"
     assert "Dota 2 Live Coach" in build_exe.START_HERE.format(name="DotaCoach", app="Dota 2 Live Coach", version="x")
+
+
+def test_installer_ships_the_built_app_folder_and_starts_the_window():
+    iss = (ROOT / "packaging" / "installer.iss").read_text(encoding="utf-8")
+    assert f'#define AppExe "{build_exe.APP_NAME}.exe"' in iss
+    assert f'Source: "..\\dist\\{build_exe.NAME}\\*"' in iss
+    assert f'{{app}}\\{build_exe.NAME}.exe"; Parameters: "install"' in iss
+    # Per-user install: no admin prompt, and updates find the same app.
+    assert "PrivilegesRequired=lowest" in iss and "AppId={{" in iss

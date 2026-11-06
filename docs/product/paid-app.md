@@ -7,14 +7,16 @@ Squeezy's hosted store page is the shop).
 
 ## Pieces, in build order
 
-1. **App window** (done in this PR): `coach/app_window.py`, opened by
+1. **App window** (done): `coach/app_window.py`, opened by
    `Dota 2 Live Coach.exe` or `py -m coach app`. Start/Stop, a "Dota
    connected" light, what the coach said, and buttons for settings, Dota
    setup and match reviews. The coach runs as its own process
    (`coach/app.py`), unchanged.
-2. **Installer**: Inno Setup script that turns the `DotaCoach` folder into
-   `DotaCoachSetup.exe` (Start menu and desktop shortcut to the app window,
-   uninstaller), built by the existing GitHub Action.
+2. **Installer** (done in this PR): `packaging/installer.iss` (Inno Setup)
+   turns the `DotaCoach` folder into `DotaCoachSetup.exe`: per-user install
+   (no admin prompt), Start menu and optional desktop shortcut to the app
+   window, uninstaller, and it writes Dota's GSI file during setup. Built by
+   the "windows app" GitHub Action as the **DotaCoachSetup** download.
 3. **Licence key gate**: on first start the window asks for the key from the
    Lemon Squeezy receipt email, activates it with Lemon Squeezy's License API
    (`/v1/licenses/activate`, one PC per key by default), then validates it at
