@@ -11,8 +11,8 @@ const ES = {
   "Voice & questions": "Voz y preguntas", "Game & profile": "Partida y perfil", "Licence": "Licencia",
   "Off": "Apagado", "Waiting for Dota": "Esperando a Dota", "Coaching": "Entrenando",
   // Dashboard
-  "Start the coach before your match. It speaks; it never reads your screen.":
-    "Inicia el coach antes de tu partida. Habla; nunca lee tu pantalla.",
+  "Start the coach before your match. It speaks; it never reads your screen during your games.":
+    "Inicia el coach antes de tu partida. Habla; nunca lee tu pantalla durante tus partidas.",
   "What's your MMR now?": "¿Cuál es tu MMR ahora?",
   "Keep it up to date so the coach compares you with players of your rank.":
     "Mantenlo al día para que el coach te compare con jugadores de tu rango.",

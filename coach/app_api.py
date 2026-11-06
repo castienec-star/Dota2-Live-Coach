@@ -130,7 +130,29 @@ class Api:
     def _user(self) -> dict:
         return config_mod._read_toml(self._user_file) if self._user_file.is_file() else {}
 
+    def follow_mmr(self) -> str:
+        """Switches beginner mode to experienced once the player's MMR is high
+        (progress.mode_switch_due), keeping reminders they set by hand, and
+        restarts a running coach. Returns the message to show, or ""."""
+        from . import progress
+
+        defaults, user = self._defaults(), self._user()
+        if not progress.mode_switch_due(self._app_dir, options.mode_of(defaults, user)):
+            return ""
+        sent = options.remode(options.values(defaults, user), "beginner", "experienced", defaults)
+        data, errors = options.saved(defaults, user, sent)
+        if errors:
+            return ""
+        settings.save(self._user_file, data)
+        progress.mode_switched(self._app_dir)
+        if self._coach.running:
+            self._coach.stop()
+            self._coach.start()
+        return self._t("Switched to Experienced mode for your rank: only item gold, stacks, the power rune "
+                       "and buyback. Change it any time on the Reminders page.")
+
     def load_settings(self) -> dict:
+        switched = self.follow_mmr()
         if self._voices is None:
             from .speaker import installed_voices
 
@@ -142,6 +164,7 @@ class Api:
             "defaults": options.values(self._defaults(), {}),
             "voices": list(self._voices),
             "file": str(self._user_file),
+            "notice": switched,
         }
 
     def switch_mode(self, sent: dict, new: str) -> dict:
@@ -229,7 +252,9 @@ class Api:
         from . import progress
 
         ok, message = progress.MmrHistory(self._app_dir).add(value)
-        return {"ok": ok, "message": self._t(message)}
+        switched = self.follow_mmr() if ok else ""
+        return {"ok": ok, "message": self._t(message), "mode_switched": switched,
+                "values": options.values(self._defaults(), self._user()) if switched else None}
 
     # Licence -------------------------------------------------------------
 

@@ -746,6 +746,10 @@ UI_ES: list[tuple[str, str]] = [
     ("Write your MMR as a number, like 2450.", "Escribe tu MMR como número, por ejemplo 2450."),
     ("Saved: {mmr} MMR ({medal}).", "Guardado: {mmr} MMR ({medal})."),
     ("Saved: {mmr} MMR.", "Guardado: {mmr} MMR."),
+    ("Switched to Experienced mode for your rank: only item gold, stacks, the power rune and buyback. "
+     "Change it any time on the Reminders page.",
+     "Cambiado al modo Experimentado por tu rango: solo oro para objetos, stacks, la runa de poder y buyback. "
+     "Cámbialo cuando quieras en la página Avisos."),
     ("Win", "Victoria"),
     ("Loss", "Derrota"),
     ("A steady game with nothing big to fix.", "Una partida estable, sin nada grande que corregir."),
