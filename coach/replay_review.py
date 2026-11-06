@@ -33,6 +33,7 @@ from collections import deque
 from collections.abc import Callable
 from typing import Any
 
+from . import lessons as lessons_mod
 from .replay_view import ScreenGate, find_slot, is_own_match, is_spectating, own_payload
 from .speaker import HIGH, NORMAL
 from .state import MatchState, Snapshot
@@ -119,12 +120,14 @@ class ReplayReview:
         clock: Callable[[], float] = time.monotonic,
         run: Callable[[Callable[[], None]], None] | None = None,
         busy: Callable[[], bool] = lambda: False,
+        lessons: list | None = None,
     ) -> None:
         if mode not in MODES:
             raise ValueError(f"mode must be one of {MODES}")
         self.accounts, self.hero, self.mode = accounts, hero, mode
         self.ask, self.grab, self.say, self.clock = ask, grab, say, clock
         self.speaking = busy
+        self.lessons = lessons or []  # lesson cards from coaching videos (coach/lessons.py)
         self.interval = interval or DEFAULT_INTERVAL[mode]
         self.gate = ScreenGate(clock)
         self.where: tuple[str, str] | None = None
@@ -276,6 +279,11 @@ class ReplayReview:
             f"When they died they still had ready: {', '.join(unused)}." if unused else "",
             REASONS[reason],
         ]
+        examples = lessons_mod.matching(self.lessons, reason, stage_name(s.clock_time))
+        if examples:
+            facts.append("A real coach's lessons from similar moments, for how to think about it "
+                         "(only use one if the frames show the same thing):")
+            facts += [f"- {ex.text()}" for ex in examples]
         if self.recent:
             facts.append("Points you already made: " + " | ".join(self.recent))
         return "\n".join(f for f in facts if f)
@@ -307,6 +315,13 @@ def stage(clock: int | None) -> str:
     if clock < 1800:
         return f"Game time {when}: the mid game."
     return f"Game time {when}: the late game."
+
+
+def stage_name(clock: int | None) -> str:
+    """The lesson cards' name for the stage: laning, mid or late."""
+    if clock is None or clock < 600:
+        return "laning"
+    return "mid" if clock < 1800 else "late"
 
 
 def numbers(snaps: list[Snapshot]) -> str:
