@@ -572,7 +572,8 @@ def cmd_replay_review(cfg: config_mod.Config, args: argparse.Namespace) -> int:
 
 def cmd_learn_video(cfg: config_mod.Config, args: argparse.Namespace) -> int:
     """Lesson cards for replay review from a coaching video on this PC."""
-    if not args.video.is_file():
+    found = lessons_mod.videos(args.video) if args.video.exists() else []
+    if not found:
         print(f"No video at {args.video}")
         return 1
     url = cfg.reminders.get("death_tip", {}).get("ollama_url", llm.DEFAULT_URL)
@@ -587,8 +588,21 @@ def cmd_learn_video(cfg: config_mod.Config, args: argparse.Namespace) -> int:
         return 1
     ask = vision.ollama_vision(args.vision_model, url, 120, lessons_mod.SYSTEM, num_predict=300,
                                fmt=lessons_mod.CARD_SCHEMA)
-    segments = lessons_mod.transcribe(args.video, args.whisper, args.language or None)
-    lessons_mod.learn(args.video, cfg.app_dir, ask, segments, say=lambda text: print(text, flush=True))
+    for video in found:
+        print(f"Learning from {video.name}...", flush=True)
+        segments = lessons_mod.transcribe(video, args.whisper, args.language or None)
+        lessons_mod.learn(video, cfg.app_dir, ask, segments, say=lambda text: print(text, flush=True))
+    return 0
+
+
+def cmd_export_lessons(cfg: config_mod.Config, args: argparse.Namespace) -> int:
+    """The saved lessons as a training set for fine-tuning the vision model."""
+    out = args.out or cfg.app_dir / "training"
+    train, test = lessons_mod.export(cfg.app_dir, out, system=replay_review_mod.SYSTEM)
+    print(f"{train} training examples and {test} test examples in {out}")
+    if train < 300:
+        print("Fewer than about 500 examples mostly teaches the coach's tone, not how to judge "
+              "a moment. Add more coaching videos with learn-video first.")
     return 0
 
 
@@ -815,10 +829,12 @@ def main(argv: list[str] | None = None) -> int:
     p_rr.add_argument("--hero", default="", help="your hero in the replay, when the coach can't tell")
     p_rr.add_argument("--timeout", type=float, default=60.0, help="seconds to wait for the vision model")
     p_learn = sub.add_parser("learn-video", help="lessons for replay review from a coaching video on this PC")
-    p_learn.add_argument("video", type=Path)
+    p_learn.add_argument("video", type=Path, help="a video file, or a folder of them")
     p_learn.add_argument("--vision-model", default=vision.DEFAULT_MODEL)
     p_learn.add_argument("--whisper", default="small", help="faster-whisper model: small, medium...")
     p_learn.add_argument("--language", default="", help='"en" or "es"; empty = detect')
+    p_export = sub.add_parser("export-lessons", help="the saved lessons as a training set (training/README.md)")
+    p_export.add_argument("--out", type=Path, default=None, help="folder (default: training in the app folder)")
     p_refresh = sub.add_parser("refresh-items", help="save popular items per hero from OpenDota")
     p_refresh.add_argument("--out", type=Path, default=None, help="where to save (default: the bundled data file)")
     p_bench = sub.add_parser("refresh-benchmarks", help="save public GPM and last-hit numbers per hero from OpenDota")
@@ -851,6 +867,7 @@ def main(argv: list[str] | None = None) -> int:
         "replay": cmd_replay,
         "replay-review": cmd_replay_review,
         "learn-video": cmd_learn_video,
+        "export-lessons": cmd_export_lessons,
         "refresh-items": cmd_refresh_items,
         "refresh-benchmarks": cmd_refresh_benchmarks,
         "refresh-brackets": cmd_refresh_brackets,
