@@ -21,15 +21,17 @@ from .app import CoachProcess, Event, Status, _hidden, command
 POLL_MS = 200
 MAX_LINES = 500
 
-# Dark, calm colours: players open this next to the game.
-BG, PANEL, TEXT, MUTED = "#15181e", "#1e232b", "#e6e9ef", "#8b93a3"
-GREEN, AMBER, RED, ACCENT = "#4cc38a", "#e8b04b", "#e5484d", "#c23c2a"
+# Black with a deep red accent (Castien, 2026-11-06): the colours only, no
+# Valve logo or artwork.
+BG, PANEL, TEXT, MUTED = "#0a0a0b", "#17171a", "#ecebea", "#8c8a88"
+GREEN, AMBER, RED, ACCENT = "#4cc38a", "#e8b04b", "#ff5a4f", "#b8261c"
+ACCENT_HOVER, PANEL_HOVER = "#d4362a", "#24242a"
 
 TAGS = {
     "said": TEXT,
     "skipped": MUTED,
     "connected": GREEN,
-    "match": ACCENT,
+    "match": MUTED,
     "problem": RED,
     "stopped": AMBER,
     "version": MUTED,
@@ -58,12 +60,15 @@ class AppWindow:
         style.configure("Title.TLabel", background=BG, foreground=TEXT, font=("Segoe UI Semibold", 16))
         style.configure("Head.TLabel", background=PANEL, foreground=TEXT, font=("Segoe UI Semibold", 11))
         style.configure("TButton", background=PANEL, foreground=TEXT, borderwidth=0, padding=(12, 6))
-        style.map("TButton", background=[("active", "#2a313c")])
+        style.map("TButton", background=[("active", PANEL_HOVER)])
         style.configure("Go.TButton", background=ACCENT, foreground="white", font=("Segoe UI Semibold", 11),
                         padding=(20, 8))
-        style.map("Go.TButton", background=[("active", "#d4513e")])
-        style.configure("TCheckbutton", background=BG, foreground=MUTED)
-        style.map("TCheckbutton", background=[("active", BG)])
+        style.map("Go.TButton", background=[("active", ACCENT_HOVER)])
+        style.configure("TCheckbutton", background=BG, foreground=MUTED,
+                        indicatorbackground=PANEL, indicatorforeground=TEXT)
+        style.map("TCheckbutton", background=[("active", BG)], indicatorbackground=[("selected", ACCENT)])
+        style.configure("Vertical.TScrollbar", background=PANEL_HOVER, troughcolor=PANEL, bordercolor=PANEL,
+                        arrowcolor=MUTED, lightcolor=PANEL_HOVER, darkcolor=PANEL_HOVER)
 
         outer = ttk.Frame(root, padding=16)
         outer.pack(fill="both", expand=True)
@@ -73,6 +78,8 @@ class AppWindow:
         ttk.Label(top, text="Dota 2 Live Coach", style="Title.TLabel").pack(side="left")
         self.version = ttk.Label(top, text="", style="Muted.TLabel")
         self.version.pack(side="left", padx=(10, 0), pady=(6, 0))
+
+        tk.Frame(outer, bg=ACCENT, height=2).pack(fill="x", pady=(10, 0))
 
         panel = ttk.Frame(outer, style="Panel.TFrame", padding=14)
         panel.pack(fill="x", pady=(12, 12))
@@ -91,7 +98,8 @@ class AppWindow:
         log_frame = ttk.Frame(outer)
         log_frame.pack(fill="both", expand=True)
         self.log = tk.Text(log_frame, bg=PANEL, fg=TEXT, relief="flat", wrap="word", height=14,
-                           font=("Segoe UI", 10), padx=10, pady=8, state="disabled", cursor="arrow")
+                           font=("Segoe UI", 10), padx=10, pady=8, state="disabled", cursor="arrow",
+                           borderwidth=0, highlightthickness=0, selectbackground=ACCENT)
         scroll = ttk.Scrollbar(log_frame, command=self.log.yview)
         self.log.configure(yscrollcommand=scroll.set)
         self.log.pack(side="left", fill="both", expand=True)
