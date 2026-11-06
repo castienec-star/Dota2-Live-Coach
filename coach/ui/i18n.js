@@ -98,6 +98,45 @@ const ES = {
   "Unlock the coach": "Desbloquear el coach", "No key yet? Subscribe for $2.50 a month": "¿No tienes clave? Suscríbete por $2.50 al mes",
   "Free test build: no licence needed yet.": "Versión de prueba gratis: todavía no necesitas licencia.",
   "Active on this PC.": "Activa en esta PC.",
+  // Replay review (replay.html)
+  "Replay review": "Revisar replay",
+  "Watch a replay and get advice on your decisions.": "Mira un replay y recibe consejos sobre tus decisiones.",
+  "Watch one of your replays in Dota 2 and the coach reviews it with you, out loud.":
+    "Mira uno de tus replays en Dota 2 y el coach lo revisa contigo, en voz alta.",
+  "Start review": "Iniciar revisión", "Stop review": "Detener revisión",
+  "Review off": "Revisión apagada", "Waiting for a replay": "Esperando un replay", "Reviewing": "Revisando",
+  "Pick how the coach should look, then press Start review.":
+    "Elige cómo debe mirar el coach y presiona Iniciar revisión.",
+  "Open one of your replays in Dota 2 (Watch > Replays).": "Abre uno de tus replays en Dota 2 (Ver > Repeticiones).",
+  "Reviewing your {hero}.": "Revisando tu {hero}.", "Last: ": "Último: ",
+  "Review started. Open your replay in Dota 2.": "Revisión iniciada. Abre tu replay en Dota 2.",
+  "Key moments": "Momentos clave",
+  "The coach talks over the seconds before your deaths, fights that went badly, every pause, and every 90 seconds.":
+    "El coach comenta los segundos antes de tus muertes, las peleas que salieron mal, cada pausa y cada 90 segundos.",
+  "Any graphics card with 6 GB or more. Good when you have little time: pause where you want advice.":
+    "Cualquier tarjeta gráfica de 6 GB o más. Ideal si tienes poco tiempo: pausa donde quieras un consejo.",
+  "Continuous": "Continuo",
+  "The coach keeps watching the whole replay and talks over your mistakes as they happen, like a coach next to you.":
+    "El coach mira todo el replay y comenta tus errores a medida que pasan, como un coach a tu lado.",
+  "Needs a strong graphics card (8 GB or more free). Slow the replay down if the coach falls behind.":
+    "Necesita una tarjeta gráfica potente (8 GB libres o más). Pon el replay más lento si el coach se queda atrás.",
+  "Vision model": "Modelo de visión", "Checking...": "Revisando...", "Talk it over every": "Comentar cada",
+  "It takes a frame every second and looks back over them this often.": "Toma una imagen cada segundo y las revisa con esta frecuencia.",
+  "Your hero in this replay": "Tu héroe en este replay", "Find it from my account": "Encontrarlo con mi cuenta",
+  "The coach follows only this hero, like in your real game.": "El coach sigue solo a este héroe, como en tu partida real.",
+  "What the coach said": "Lo que dijo el coach",
+  "Advice from the review will appear here.": "Aquí aparecen los consejos de la revisión.",
+  "How to review": "Cómo revisar",
+  "Press Start review, then open your match in Dota 2 under Watch > Replays.":
+    "Presiona Iniciar revisión y abre tu partida en Dota 2, en Ver > Repeticiones.",
+  "Set the replay's vision to your team and the camera to your hero, so you only see what you saw in the game.":
+    "Pon la visión del replay en tu equipo y la cámara en tu héroe, para ver solo lo que viste en la partida.",
+  "Pause the replay whenever you want the coach's view of that moment.":
+    "Pausa el replay cuando quieras la opinión del coach sobre ese momento.",
+  "Fair play.": "Juego limpio.",
+  "The coach only looks at your screen while Dota is playing a replay. In your own live games it never looks at your screen, and the moment a live match starts, the screen is off. Frames stay on your PC and are never saved.":
+    "El coach solo mira tu pantalla mientras Dota reproduce un replay. En tus partidas en vivo nunca mira tu pantalla, y en cuanto empieza una partida en vivo, la pantalla se apaga. Las imágenes se quedan en tu PC y nunca se guardan.",
+  "{n} seconds": "{n} segundos", "Note": "Nota", "following your hero {hero}": "siguiendo a tu héroe {hero}",
 };
 
 let LANG = "en";

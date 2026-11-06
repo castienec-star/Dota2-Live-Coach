@@ -12,8 +12,14 @@ The coach only tells you things you could already see or work out yourself.
 - Output is audio only. Nothing is drawn over the game.
 - It never reads game memory, edits game files, sends input, or looks up
   other players' profiles.
-- It never looks at your screen. What it can't get from GSI (your position,
-  the other heroes in the match), it asks you out loud or lets you type.
+- It never looks at your screen during your games. What it can't get from
+  GSI (your position, the other heroes in the match), it asks you out loud or
+  lets you type.
+- Replay review is the one exception, and only after the game: while you
+  watch one of your own replays, the coach may look at the replay on screen
+  with a vision model running on your PC. It only captures the screen while
+  Dota reports a replay, and the first update from a live match turns it off.
+  Frames stay in memory and are never saved or sent anywhere.
 - Voice questions (on by default, once installed): your microphone is only heard by speech
   models running on your PC. Nothing is recorded or sent anywhere.
 
@@ -69,6 +75,30 @@ do, numbered. It also reads Steam's own settings file (`localconfig.vdf`,
 read only) to see whether Dota 2 has the `-gamestateintegration` launch
 option, and prints the steps when it doesn't. When everything is already set
 up, it says nothing.
+
+## Replay review
+
+Review one of your replays with the coach: in the app, open **Replay review**
+(Dashboard or the side bar), pick a mode and press **Start review**, then open
+the match in Dota 2 under **Watch > Replays**. Set the replay's vision to your
+team and the camera to your hero, so you see what you saw in the game.
+
+- The coach follows only your own hero, the same data your game sent you.
+  It finds your hero from your own recordings, or you pick it in the window.
+- It takes a frame of the replay every second. A vision model on your PC
+  looks back over the last seconds (a few frames and your own numbers) and
+  talks your mistakes over with you in the past tense, like a coach next to
+  you: "There you stayed at half health with three of them missing..."
+  It doesn't talk over itself or repeat a point it already made.
+- **Key moments**: it talks over the seconds before each of your deaths,
+  fights that went badly, every pause, and every 90 seconds. Any graphics
+  card with 6 GB or more.
+- **Continuous**: it looks back every few seconds (10 by default) for the
+  whole replay. Needs a stronger graphics card, about 8 GB free.
+
+It needs [Ollama](https://ollama.com) and a vision model, once:
+`ollama pull qwen2.5vl:7b` (about 6 GB), or the lighter `ollama pull gemma3:4b`
+(about 4 GB). From Command Prompt: `py -m coach replay-review --mode continuous --interval 10`.
 
 ## Update
 

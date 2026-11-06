@@ -34,6 +34,9 @@ from .profile import summarize
 from .rank import TIERS, PlayerRank, tell
 from .recorder import MatchRecorder
 from .replay import replay
+from . import replay_review as replay_review_mod
+from . import vision
+from .replay_view import known_accounts
 from .rules import (
     Engine,
     PositionOf,
@@ -504,6 +507,65 @@ def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_replay_review(cfg: config_mod.Config, args: argparse.Namespace) -> int:
+    """Review a replay with the coach: your own hero only, plus a vision model
+    looking at the replay on screen (only while a replay plays)."""
+    logging.info("Dota 2 Live Coach, version from %s", version())
+    speaker = make_speaker(cfg)
+    # Only the review talks: the live reminders say what to do now, and a
+    # replay review talks over what already happened (Castien, 2026-11-06).
+    # No recording, no post-game review, no "take a break" count either.
+    coach = Coach(cfg.token)
+    hero = args.hero or None
+    if hero:
+        found = HeroIndex(load_heroes()).find(hero)
+        hero = "npc_dota_hero_" + (found.key if found is not None else hero.removeprefix("npc_dota_hero_"))
+    accounts = known_accounts(cfg.record_dir)
+    url = cfg.reminders.get("death_tip", {}).get("ollama_url", llm.DEFAULT_URL)
+    ask = None
+    if args.vision_model != "off":
+        ask = vision.ollama_vision(args.vision_model, url, args.timeout, i18n.prompt(replay_review_mod.SYSTEM))
+        have = vision.installed(args.vision_model, url)
+        if have is False:
+            logging.warning("Vision model %s not found. Install it: ollama pull %s", args.vision_model, args.vision_model)
+        elif have is None:
+            logging.warning("Ollama not reachable at %s: replay review works without looking at the screen", url)
+        else:
+            threading.Thread(target=llm.load, args=(args.vision_model, url), daemon=True).start()
+    review = replay_review_mod.ReplayReview(
+        accounts, hero, args.mode, ask, vision.grab_screen, speaker.say, interval=args.interval or None,
+        busy=lambda: speaker.busy,
+    )
+    coach.replay = review
+    coach.listeners.append(review)
+    logging.info(
+        "Replay review (%s): open one of your replays in Dota 2. The coach follows %s only, and looks at "
+        "the screen only while a replay plays.",
+        "key moments" if args.mode == "moments" else f"looks back every {review.interval:.0f} seconds",
+        hero.removeprefix("npc_dota_hero_") if hero else "your own hero",
+    )
+    if not accounts and not hero:
+        logging.warning("Replay review: can't tell which hero is yours yet. Pick your hero in the Replay review window.")
+
+    def ticking() -> None:
+        while True:
+            time.sleep(1)
+            try:
+                review.tick()
+            except Exception:
+                logging.exception("Replay review check failed")
+
+    threading.Thread(target=ticking, name="replay-review", daemon=True).start()
+    logging.info("Listening for Dota 2 on %s", cfg.url)
+    try:
+        web.run_app(make_app(coach), host=cfg.host, port=cfg.port, print=None, access_log=None)
+    finally:
+        speaker.close()
+        if ask is not None:
+            llm.unload(args.vision_model, url, timeout=1.5)
+    return 0
+
+
 def cmd_install(cfg: config_mod.Config, args: argparse.Namespace) -> int:
     dota = args.dota_path or find_dota()
     if dota is None:
@@ -718,6 +780,14 @@ def main(argv: list[str] | None = None) -> int:
     p_replay = sub.add_parser("replay", help="replay a recorded match")
     p_replay.add_argument("recording", type=Path)
     p_replay.add_argument("--speed", type=float, default=0.0, help="1.0 = real time")
+    p_rr = sub.add_parser("replay-review", help="review one of your replays with the coach")
+    p_rr.add_argument("--mode", choices=replay_review_mod.MODES, default="moments",
+                      help="moments: deaths, fights and pauses; continuous: every few seconds")
+    p_rr.add_argument("--interval", type=float, default=0.0,
+                      help="seconds between looks back (0 = the mode's own); a frame is taken every second")
+    p_rr.add_argument("--vision-model", default=vision.DEFAULT_MODEL, help='an Ollama vision model, or "off"')
+    p_rr.add_argument("--hero", default="", help="your hero in the replay, when the coach can't tell")
+    p_rr.add_argument("--timeout", type=float, default=30.0, help="seconds to wait for the vision model")
     p_refresh = sub.add_parser("refresh-items", help="save popular items per hero from OpenDota")
     p_refresh.add_argument("--out", type=Path, default=None, help="where to save (default: the bundled data file)")
     p_bench = sub.add_parser("refresh-benchmarks", help="save public GPM and last-hit numbers per hero from OpenDota")
@@ -748,6 +818,7 @@ def main(argv: list[str] | None = None) -> int:
         "run": cmd_run,
         "install": cmd_install,
         "replay": cmd_replay,
+        "replay-review": cmd_replay_review,
         "refresh-items": cmd_refresh_items,
         "refresh-benchmarks": cmd_refresh_benchmarks,
         "refresh-brackets": cmd_refresh_brackets,

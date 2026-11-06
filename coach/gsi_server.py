@@ -39,9 +39,16 @@ class Coach:
         self.enemy_items = None  # enemy items the player told the coach (coach/enemy_items.py)
         self.chat = None  # answers any other question with a model (coach/chat.py)
         self.reviews = None  # the folder of saved post-game reviews (coach/review.py)
+        # Replay review (coach/replay_review.py): cuts each replay update down
+        # to the player's own hero, or drops it.
+        self.replay = None
         self._last_summary = 0.0
 
     def handle(self, payload: dict[str, Any]) -> Snapshot:
+        if self.replay is not None:
+            payload = self.replay.see(payload)
+            if payload is None:
+                return self.state.current
         snap = self.state.update(payload)
 
         if self.state.new_match:

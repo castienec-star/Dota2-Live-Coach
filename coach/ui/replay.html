@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Replay review</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div class="solo">
+  <section class="page">
+    <header class="page-head">
+      <div><h1>Replay review</h1>
+        <p class="muted">Watch one of your replays in Dota 2 and the coach reviews it with you, out loud.</p></div>
+      <button class="btn primary big" id="go">Start review</button>
+    </header>
+
+    <div class="hero-card">
+      <div class="ring" id="ring"><span></span></div>
+      <div class="hero-text">
+        <div class="eyebrow" id="eyebrow">Review off</div>
+        <div class="headline" id="headline">Pick how the coach should look, then press Start review.</div>
+        <div class="muted" id="detail"></div>
+      </div>
+    </div>
+
+    <div class="modes" id="modes">
+      <button class="mode-card" data-mode="moments">
+        <b>Key moments</b>
+        <span class="muted">The coach talks over the seconds before your deaths, fights that went badly, every pause, and every 90 seconds.</span>
+        <span class="need">Any graphics card with 6 GB or more. Good when you have little time: pause where you want advice.</span>
+      </button>
+      <button class="mode-card" data-mode="continuous">
+        <b>Continuous</b>
+        <span class="muted">The coach keeps watching the whole replay and talks over your mistakes as they happen, like a coach next to you.</span>
+        <span class="need">Needs a strong graphics card (8 GB or more free). Slow the replay down if the coach falls behind.</span>
+      </button>
+    </div>
+
+    <div class="card rr-form">
+      <label class="field"><span class="field-label">Vision model</span>
+        <select class="input" id="model"></select>
+        <span class="hint" id="model-state">Checking...</span></label>
+      <label class="field" id="interval-field"><span class="field-label">Talk it over every</span>
+        <select class="input" id="interval"></select>
+        <span class="hint">It takes a frame every second and looks back over them this often.</span></label>
+      <label class="field"><span class="field-label">Your hero in this replay</span>
+        <select class="input" id="hero"><option value="">Find it from my account</option></select>
+        <span class="hint">The coach follows only this hero, like in your real game.</span></label>
+    </div>
+
+    <div class="grid2">
+      <div class="card feed-card">
+        <div class="card-head"><h2>What the coach said</h2></div>
+        <ol class="feed" id="feed"><li class="empty">Advice from the review will appear here.</li></ol>
+      </div>
+      <div class="card actions">
+        <h2>How to review</h2>
+        <ol class="rr-steps">
+          <li>Press Start review, then open your match in Dota 2 under Watch &gt; Replays.</li>
+          <li>Set the replay's vision to your team and the camera to your hero, so you only see what you saw in the game.</li>
+          <li>Pause the replay whenever you want the coach's view of that moment.</li>
+        </ol>
+        <div class="note fair"><b>Fair play.</b> <span>The coach only looks at your screen while Dota is playing a replay. In your own live games it never looks at your screen, and the moment a live match starts, the screen is off. Frames stay on your PC and are never saved.</span></div>
+      </div>
+    </div>
+  </section>
+</div>
+<div class="toast" id="toast"></div>
+<script src="i18n.js"></script>
+<script src="replay.js"></script>
+</body>
+</html>

@@ -948,6 +948,16 @@ UI_ES: list[tuple[str, str]] = [
     ("{label}: minutes from 1 to 120", "{label}: minutos del 1 al 120"),
     ("{label}: write a whole number", "{label}: escribe un número entero"),
     ("{label}: from {low} to {high}", "{label}: de {low} a {high}"),
+    # Replay review (coach/replay_api.py)
+    ("can't tell which hero is yours yet. Pick your hero in the Replay review window.",
+     "todavía no sé cuál héroe es el tuyo. Elige tu héroe en la ventana Revisar replay."),
+    ("this is a live match, so the screen stays off. Close Replay review and start the live coach instead.",
+     "esta es una partida en vivo, así que la pantalla queda apagada. Cierra Revisar replay e inicia el coach en vivo."),
+    ("Ollama isn't running. Start Ollama, or the coach reviews without looking at the screen.",
+     "Ollama no está abierto. Ábrelo, o el coach revisa sin mirar la pantalla."),
+    ("Not installed yet. In Command Prompt: ollama pull {model}",
+     "Todavía no está instalado. En el Símbolo del sistema: ollama pull {model}"),
+    ("Installed and ready.", "Instalado y listo."),
 ]
 
 UI = Catalog(UI_ES)

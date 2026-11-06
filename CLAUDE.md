@@ -8,6 +8,9 @@
 - Keep the README's fair-play rule: Valve Game State Integration and public
   post-game data only, audio only, no memory or screen reading, ever. What
   GSI doesn't give (position, the other heroes), the coach asks the player.
+  One exception (Castien, 2026-11-06): replay review may capture the screen,
+  only while GSI reports a replay (`coach/replay_view.py` ScreenGate), and
+  still coaches the player's own hero only.
 
 ## How to keep working (Castien, 2026-10-29)
 
