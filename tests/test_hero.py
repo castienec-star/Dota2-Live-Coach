@@ -220,6 +220,9 @@ def test_top_low_bracket_picks_have_their_own_build(tmp_path):
         # ROADMAP item 21: the batch after that.
         "nevermore", "queenofpain", "jakiro", "faceless_void", "snapfire", "venomancer",
         "ancient_apparition", "dawnbreaker", "disruptor", "ursa", "dark_willow", "slardar",
+        # ROADMAP item 22.
+        "razor", "riki", "grimstroke", "night_stalker", "warlock", "shredder", "weaver",
+        "dazzle", "winter_wyvern", "tinker", "storm_spirit", "ember_spirit",
     ):
         assert builds.get(hero), f"no build for {hero}"
 
