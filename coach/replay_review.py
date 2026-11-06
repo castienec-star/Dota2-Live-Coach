@@ -86,9 +86,12 @@ team's vision. Never the scoreboard, enemy gold or net worth.
 talk about last hits, denies, trading hits, creep equilibrium, staying near \
 your creeps, runes and rotations; never tell them to leave their lane or \
 move to another lane.
-- Never talk about items or using items, unless the facts list items the \
-player still had ready when they died. Then say they should have used them \
-in that fight (Magic Wand charges are saved for fights like that).
+- Items: Magic Wand and Magic Stick charges are saved for fights and \
+escapes (a fight over the lotus, a gank) and used when health is low; they \
+have nothing to do with farming, last hits or denies. Potions and other \
+items are for health, mana, fights and escapes. Only mention using an item \
+when it would have changed a fight or a death, for example dying with wand \
+charges still unused.
 - Last hits are creeps the player finished for gold. A kill means an enemy \
 hero died. Never call last hits kills.
 - If nothing clearly went wrong, answer only: skip
@@ -240,10 +243,10 @@ class ReplayReview:
             self._busy = False
         if not reply or reply.strip(" .\"'").lower() in ("skip", "omitir") or not self.gate.open:
             return
-        # Small vision models improvise item advice ("use your wand to farm")
-        # and call last hits kills (Castien, 2026-11-06): those lines go.
-        if not unused and mentions_items(reply, self.snap):
-            log.info("Replay review: dropped item advice: %s", reply)
+        # Small vision models tie items to farming ("use your wand to farm
+        # creeps") and call last hits kills (Castien, 2026-11-06): those go.
+        if items_for_farming(reply, self.snap):
+            log.info("Replay review: dropped item advice about farming: %s", reply)
             return
         if not fought and KILLS.search(reply):
             log.info("Replay review: dropped a line about kills that didn't happen: %s", reply)
@@ -259,14 +262,17 @@ class ReplayReview:
         return any(difflib.SequenceMatcher(None, words, _words(old)).ratio() >= SAME for old in self.recent)
 
     def prompt(self, reason: str, since: float, unused: list[str] | None = None) -> str:
-        # Items are only named when one went unused at a death: listing the
-        # inventory made the model talk about items all the time.
         s = self.snap
         hero = (s.hero_name or "unknown").removeprefix("npc_dota_hero_").replace("_", " ")
+        items = ", ".join(
+            i.name.removeprefix("item_").replace("_", " ") + (f" ({i.charges} charges)" if i.charges else "")
+            for i in s.items if i.slot.startswith("slot")
+        )
         facts = [
             f"The player is {hero}, level {s.level}.",
             stage(s.clock_time),
             numbers([snap for t, snap in self.history if t >= since] + [s]),
+            f"Items: {items}." if items else "",
             f"When they died they still had ready: {', '.join(unused)}." if unused else "",
             REASONS[reason],
         ]
@@ -328,20 +334,27 @@ def numbers(snaps: list[Snapshot]) -> str:
     return f"{span}: " + ", ".join(parts) + "."
 
 
-# Items the model brings up on its own; the player's own item names are added.
+# Item words; the player's own item names are added.
 ITEM_WORDS = {"wand", "stick", "item", "items", "potion", "salve", "tango", "tangos", "clarity", "mango",
-              "faerie", "bottle", "regen", "consumable", "consumables", "buy", "bought", "purchase",
-              "varita", "objeto", "objetos", "poción", "pocion", "comprar", "compraste"}
+              "faerie", "bottle", "varita", "objeto", "objetos", "poción", "pocion"}
+# Farming words: an item in the same sentence as one of these is the wrong idea.
+FARM_WORDS = {"farm", "farming", "farmed", "creep", "creeps", "last", "hit", "hits", "deny", "denies",
+              "denying", "cs", "wave", "experience", "xp", "granjear", "farmear", "farmeo", "creeps",
+              "súbditos", "subditos", "negar", "oleada"}
 KILLS = re.compile(r"\b(kills?|asesinatos?|kill\s+gold)\b", re.IGNORECASE)
 # Charges worth saving for a fight.
 CHARGES_WORTH = 5
 
 
-def mentions_items(reply: str, snap: Snapshot) -> bool:
-    words = set(_words(reply))
+def items_for_farming(reply: str, snap: Snapshot) -> bool:
+    """True when a sentence ties using an item to farming or last hits."""
     spells = {w for a in snap.abilities for w in a.name.split("_")}
     own = {w for i in snap.items for w in i.name.removeprefix("item_").split("_") if len(w) > 3} - spells
-    return bool(words & (ITEM_WORDS | own))
+    for sentence in re.split(r"[.!?]+", reply):
+        words = set(_words(sentence))
+        if words & (ITEM_WORDS | own) and words & FARM_WORDS:
+            return True
+    return False
 
 
 def unused_at_death(snaps: list[Snapshot]) -> list[str]:

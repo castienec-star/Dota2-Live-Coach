@@ -177,7 +177,14 @@ def test_improvised_item_advice_and_fake_kills_are_dropped():
     rig.play(31)
     assert len(rig.asked) == 3
     assert [text for text, _ in rig.said] == ["You let the wave push to their tower and lost three last hits."]
-    assert "wand" not in rig.asked[0][0].lower()  # the inventory isn't listed
+    assert "Items: magic wand." in rig.asked[0][0]  # the coach still sees the items
+
+
+def test_wand_for_a_fight_is_fine():
+    rig = Rig(mode="continuous", replies=["You went into the lotus fight at low health and never broke your wand. "
+                                          "Those charges would have kept you alive."])
+    rig.play(11)
+    assert len(rig.said) == 1
 
 
 def test_unused_wand_at_death_may_be_mentioned():
