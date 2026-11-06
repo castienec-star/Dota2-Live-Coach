@@ -27,12 +27,15 @@ MODELS = {
     DEFAULT_MODEL: "Qwen2.5-VL 7B (best, about 6 GB)",
     LIGHT_MODEL: "Gemma 3 4B (lighter, about 4 GB)",
 }
-# Wide enough to read health bars and the minimap, small enough to be quick.
-MAX_WIDTH = 1280
+# Wide enough to read health bars and the minimap, small enough that a few
+# frames fit in one ask (about 600 tokens each for Qwen2.5-VL).
+MAX_WIDTH = 896
+# Room for four frames, the numbers and the instructions.
+CONTEXT = 8192
 
 Frame = bytes  # a JPEG
 Grab = Callable[[], "Frame | None"]
-SeeAsk = Callable[[str, Frame], "str | None"]
+SeeAsk = Callable[[str, "list[Frame]"], "str | None"]
 
 
 def grab_screen(max_width: int = MAX_WIDTH) -> Frame | None:
@@ -55,20 +58,21 @@ def grab_screen(max_width: int = MAX_WIDTH) -> Frame | None:
 
 
 def ollama_vision(model: str, url: str, timeout: float, system: str, num_predict: int = 90) -> SeeAsk:
-    """Ask a local Ollama vision model about one frame; None if it is off or slow."""
+    """Ask a local Ollama vision model about a few frames (oldest first);
+    None if it is off or slow."""
     warned = False
 
-    def ask(prompt: str, frame: Frame) -> str | None:
+    def ask(prompt: str, frames: list[Frame]) -> str | None:
         nonlocal warned
         body = {
             "model": model,
             "messages": [
                 {"role": "system", "content": system},
-                {"role": "user", "content": prompt, "images": [base64.b64encode(frame).decode()]},
+                {"role": "user", "content": prompt, "images": [base64.b64encode(f).decode() for f in frames]},
             ],
             "stream": False,
             "keep_alive": llm.KEEP_ALIVE,
-            "options": {"num_predict": num_predict, "temperature": 0.4, "num_ctx": llm.CONTEXT},
+            "options": {"num_predict": num_predict, "temperature": 0.4, "num_ctx": CONTEXT},
         }
         request = urllib.request.Request(
             url.rstrip("/") + "/api/chat", json.dumps(body).encode(), {"Content-Type": "application/json"}

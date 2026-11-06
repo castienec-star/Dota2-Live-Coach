@@ -111,17 +111,17 @@ const ES = {
   "Reviewing your {hero}.": "Revisando tu {hero}.", "Last: ": "Último: ",
   "Review started. Open your replay in Dota 2.": "Revisión iniciada. Abre tu replay en Dota 2.",
   "Key moments": "Momentos clave",
-  "The coach looks at your deaths (just before them), fights that go badly, every pause, and every 90 seconds.":
-    "El coach mira tus muertes (justo antes), las peleas que van mal, cada pausa y cada 90 segundos.",
+  "The coach talks over the seconds before your deaths, fights that went badly, every pause, and every 90 seconds.":
+    "El coach comenta los segundos antes de tus muertes, las peleas que salieron mal, cada pausa y cada 90 segundos.",
   "Any graphics card with 6 GB or more. Good when you have little time: pause where you want advice.":
     "Cualquier tarjeta gráfica de 6 GB o más. Ideal si tienes poco tiempo: pausa donde quieras un consejo.",
   "Continuous": "Continuo",
-  "The coach looks every few seconds for the whole replay, like a coach watching next to you.":
-    "El coach mira cada pocos segundos todo el replay, como un coach sentado a tu lado.",
-  "Needs a strong graphics card (8 GB or more free). Lines can come a little late; slow the replay down if they do.":
-    "Necesita una tarjeta gráfica potente (8 GB libres o más). Las frases pueden llegar un poco tarde; si pasa, pon el replay más lento.",
-  "Vision model": "Modelo de visión", "Checking...": "Revisando...", "Look every": "Mirar cada",
-  "Shorter needs a faster graphics card.": "Menos tiempo necesita una tarjeta gráfica más rápida.",
+  "The coach keeps watching the whole replay and talks over your mistakes as they happen, like a coach next to you.":
+    "El coach mira todo el replay y comenta tus errores a medida que pasan, como un coach a tu lado.",
+  "Needs a strong graphics card (8 GB or more free). Slow the replay down if the coach falls behind.":
+    "Necesita una tarjeta gráfica potente (8 GB libres o más). Pon el replay más lento si el coach se queda atrás.",
+  "Vision model": "Modelo de visión", "Checking...": "Revisando...", "Talk it over every": "Comentar cada",
+  "It takes a frame every second and looks back over them this often.": "Toma una imagen cada segundo y las revisa con esta frecuencia.",
   "Your hero in this replay": "Tu héroe en este replay", "Find it from my account": "Encontrarlo con mi cuenta",
   "The coach follows only this hero, like in your real game.": "El coach sigue solo a este héroe, como en tu partida real.",
   "What the coach said": "Lo que dijo el coach",

@@ -512,10 +512,10 @@ def cmd_replay_review(cfg: config_mod.Config, args: argparse.Namespace) -> int:
     looking at the replay on screen (only while a replay plays)."""
     logging.info("Dota 2 Live Coach, version from %s", version())
     speaker = make_speaker(cfg)
-    coach = make_coach(cfg, speaker, recorder=None)
-    # A replay isn't a new game: no post-game review or "take a break" count.
-    coach.listeners = [x for x in coach.listeners if not isinstance(x, review_mod.Review)]
-    coach.reviews = None
+    # Only the review talks: the live reminders say what to do now, and a
+    # replay review talks over what already happened (Castien, 2026-11-06).
+    # No recording, no post-game review, no "take a break" count either.
+    coach = Coach(cfg.token)
     hero = args.hero or None
     if hero:
         found = HeroIndex(load_heroes()).find(hero)
@@ -533,14 +533,15 @@ def cmd_replay_review(cfg: config_mod.Config, args: argparse.Namespace) -> int:
         else:
             threading.Thread(target=llm.load, args=(args.vision_model, url), daemon=True).start()
     review = replay_review_mod.ReplayReview(
-        accounts, hero, args.mode, ask, vision.grab_screen, speaker.say, interval=args.interval or None
+        accounts, hero, args.mode, ask, vision.grab_screen, speaker.say, interval=args.interval or None,
+        busy=lambda: speaker.busy,
     )
     coach.replay = review
     coach.listeners.append(review)
     logging.info(
         "Replay review (%s): open one of your replays in Dota 2. The coach follows %s only, and looks at "
         "the screen only while a replay plays.",
-        "key moments" if args.mode == "moments" else f"every {review.interval:.0f} seconds",
+        "key moments" if args.mode == "moments" else f"looks back every {review.interval:.0f} seconds",
         hero.removeprefix("npc_dota_hero_") if hero else "your own hero",
     )
     if not accounts and not hero:
@@ -782,7 +783,8 @@ def main(argv: list[str] | None = None) -> int:
     p_rr = sub.add_parser("replay-review", help="review one of your replays with the coach")
     p_rr.add_argument("--mode", choices=replay_review_mod.MODES, default="moments",
                       help="moments: deaths, fights and pauses; continuous: every few seconds")
-    p_rr.add_argument("--interval", type=float, default=0.0, help="seconds between regular looks (0 = the mode's own)")
+    p_rr.add_argument("--interval", type=float, default=0.0,
+                      help="seconds between looks back (0 = the mode's own); a frame is taken every second")
     p_rr.add_argument("--vision-model", default=vision.DEFAULT_MODEL, help='an Ollama vision model, or "off"')
     p_rr.add_argument("--hero", default="", help="your hero in the replay, when the coach can't tell")
     p_rr.add_argument("--timeout", type=float, default=30.0, help="seconds to wait for the vision model")

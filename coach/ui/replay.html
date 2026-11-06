@@ -27,13 +27,13 @@
     <div class="modes" id="modes">
       <button class="mode-card" data-mode="moments">
         <b>Key moments</b>
-        <span class="muted">The coach looks at your deaths (just before them), fights that go badly, every pause, and every 90 seconds.</span>
+        <span class="muted">The coach talks over the seconds before your deaths, fights that went badly, every pause, and every 90 seconds.</span>
         <span class="need">Any graphics card with 6 GB or more. Good when you have little time: pause where you want advice.</span>
       </button>
       <button class="mode-card" data-mode="continuous">
         <b>Continuous</b>
-        <span class="muted">The coach looks every few seconds for the whole replay, like a coach watching next to you.</span>
-        <span class="need">Needs a strong graphics card (8 GB or more free). Lines can come a little late; slow the replay down if they do.</span>
+        <span class="muted">The coach keeps watching the whole replay and talks over your mistakes as they happen, like a coach next to you.</span>
+        <span class="need">Needs a strong graphics card (8 GB or more free). Slow the replay down if the coach falls behind.</span>
       </button>
     </div>
 
@@ -41,9 +41,9 @@
       <label class="field"><span class="field-label">Vision model</span>
         <select class="input" id="model"></select>
         <span class="hint" id="model-state">Checking...</span></label>
-      <label class="field" id="interval-field"><span class="field-label">Look every</span>
+      <label class="field" id="interval-field"><span class="field-label">Talk it over every</span>
         <select class="input" id="interval"></select>
-        <span class="hint">Shorter needs a faster graphics card.</span></label>
+        <span class="hint">It takes a frame every second and looks back over them this often.</span></label>
       <label class="field"><span class="field-label">Your hero in this replay</span>
         <select class="input" id="hero"><option value="">Find it from my account</option></select>
         <span class="hint">The coach follows only this hero, like in your real game.</span></label>

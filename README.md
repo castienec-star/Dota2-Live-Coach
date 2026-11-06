@@ -83,18 +83,22 @@ Review one of your replays with the coach: in the app, open **Replay review**
 the match in Dota 2 under **Watch > Replays**. Set the replay's vision to your
 team and the camera to your hero, so you see what you saw in the game.
 
-- The coach follows only your own hero, the same data your game sent you, so
-  its reminders work as in a real match. It finds your hero from your own
-  recordings, or you pick it in the window.
-- **Key moments**: a local vision model looks at the screen just before each
-  of your deaths, when a fight goes badly, whenever you pause, and every 90
-  seconds. Any graphics card with 6 GB or more.
-- **Continuous**: it looks every few seconds (you choose how often) for the
+- The coach follows only your own hero, the same data your game sent you.
+  It finds your hero from your own recordings, or you pick it in the window.
+- It takes a frame of the replay every second. A vision model on your PC
+  looks back over the last seconds (a few frames and your own numbers) and
+  talks your mistakes over with you in the past tense, like a coach next to
+  you: "There you stayed at half health with three of them missing..."
+  It doesn't talk over itself or repeat a point it already made.
+- **Key moments**: it talks over the seconds before each of your deaths,
+  fights that went badly, every pause, and every 90 seconds. Any graphics
+  card with 6 GB or more.
+- **Continuous**: it looks back every few seconds (10 by default) for the
   whole replay. Needs a stronger graphics card, about 8 GB free.
 
 It needs [Ollama](https://ollama.com) and a vision model, once:
 `ollama pull qwen2.5vl:7b` (about 6 GB), or the lighter `ollama pull gemma3:4b`
-(about 4 GB). From Command Prompt: `py -m coach replay-review --mode continuous --interval 8`.
+(about 4 GB). From Command Prompt: `py -m coach replay-review --mode continuous --interval 10`.
 
 ## Update
 

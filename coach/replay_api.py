@@ -53,7 +53,7 @@ class ReplayApi:
             "settings": self._settings(),
             "models": [{"id": k, "label": v} for k, v in vision.MODELS.items()],
             "heroes": [{"key": k, "name": n} for n, k in heroes],
-            "intervals": [4, 6, 8, 10, 15, 20, 30],
+            "intervals": [5, 8, 10, 15, 20, 30],
             "language": self.language(),
         }
 
