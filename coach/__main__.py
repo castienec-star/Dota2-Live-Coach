@@ -1,4 +1,4 @@
-"""Command line entry point: py -m coach [run|install|replay|refresh-items|refresh-benchmarks|refresh-brackets|refresh-hero-stats|review|say]."""
+"""Command line entry point: py -m coach [run|install|replay|refresh-items|refresh-benchmarks|refresh-brackets|refresh-hero-stats|review|say|settings|app]."""
 
 from __future__ import annotations
 
@@ -662,6 +662,17 @@ def cmd_settings(cfg: config_mod.Config, args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_app(cfg: config_mod.Config, args: argparse.Namespace) -> int:
+    """Opens the app window: start/stop the coach and see what it says."""
+    try:
+        from .app_window import open_window
+    except ImportError as exc:  # Python installed without tkinter
+        logging.error("The app window needs tkinter (%s). Run  py -m coach  instead.", exc)
+        return 1
+    open_window(cfg.app_dir)
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="coach", description="Dota 2 Live Coach")
     parser.add_argument("--config", type=Path, help="path to a coach.toml")
@@ -686,6 +697,7 @@ def main(argv: list[str] | None = None) -> int:
     p_review = sub.add_parser("review", help="print the post-game review of a recorded match")
     p_review.add_argument("recording", type=Path)
     sub.add_parser("settings", help="open the settings window")
+    sub.add_parser("app", help="open the app window (start, stop and see the coach)")
     p_say = sub.add_parser("say", help="test the voice")
     p_say.add_argument("text", nargs="?", default="Power rune in 15 seconds.")
     args = parser.parse_args(argv)
@@ -706,6 +718,7 @@ def main(argv: list[str] | None = None) -> int:
         "review": cmd_review,
         "say": cmd_say,
         "settings": cmd_settings,
+        "app": cmd_app,
     }
     return commands[args.command or "run"](cfg, args)
 

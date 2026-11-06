@@ -1,13 +1,15 @@
 name: windows app
 
-# Builds dist/DotaCoach (DotaCoach.exe, no Python or Git needed) and keeps it
-# as a download on the run's page under "Artifacts".
+# Builds dist/DotaCoach (DotaCoach.exe, no Python or Git needed) and the
+# installer dist/DotaCoachSetup.exe, and keeps both as downloads on the run's page under "Artifacts".
 on:
   push:
     branches: [main]
   pull_request:
     paths:
       - "packaging/**"
+      - "coach/app.py"
+      - "coach/app_window.py"
       - "pyproject.toml"
       - ".github/workflows/build-exe.yml"
   workflow_dispatch:
@@ -28,6 +30,7 @@ jobs:
           $app = "dist\DotaCoach\DotaCoach.exe"
           & $app --version
           if ($LASTEXITCODE -ne 0) { exit 1 }
+          if (-not (Test-Path "dist\DotaCoach\Dota 2 Live Coach.exe")) { Write-Output "App window missing"; exit 1 }
           # Replay one game-state update: proves the bundled config and data load.
           python -c "import json; p = json.load(open('tests/data/sample_payload.json')); open('smoke.jsonl', 'w').write(json.dumps({'t': 0, 'payload': p}) + '\n')"
           $out = & $app replay smoke.jsonl | Out-String
@@ -37,4 +40,17 @@ jobs:
         with:
           name: DotaCoach-windows
           path: dist/DotaCoach
+          retention-days: 30
+      - name: Build the installer
+        shell: pwsh
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) { choco install innosetup -y --no-progress; }
+          $version = python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])"
+          & $iscc "/DAppVersion=$version" packaging\installer.iss
+          if ($LASTEXITCODE -ne 0 -or -not (Test-Path dist\DotaCoachSetup.exe)) { exit 1 }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: DotaCoachSetup
+          path: dist/DotaCoachSetup.exe
           retention-days: 30

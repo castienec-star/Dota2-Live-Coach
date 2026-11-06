@@ -19,8 +19,9 @@ The coach only tells you things you could already see or work out yourself.
 
 ## Setup (Windows)
 
-**Without Python (test build).** Every change to `main` builds a
-`DotaCoach` app folder on GitHub: open the repo's **Actions** tab, pick the
+**Without Python (test build).** Every change to `main` builds an installer,
+**DotaCoachSetup** (run it, then start "Dota 2 Live Coach" from the Start
+menu), and a `DotaCoach` app folder on GitHub: open the repo's **Actions** tab, pick the
 newest **windows app** run, and download **DotaCoach-windows** under
 *Artifacts* (needs a GitHub login). Unzip it, double-click
 `Set up Dota 2.bat` once, add `-gamestateintegration` to Dota's launch
@@ -84,6 +85,17 @@ older version, your copy overrides the new defaults: delete the lines you
 didn't change on purpose (for example `enabled = false` under `[listen]`).
 
 ## Run
+
+The app window: press **Start** before your match, see whether Dota 2 is
+connected and read back what the coach said. Settings, Dota setup and your
+match reviews open from its buttons. In the Windows app, double-click
+`Dota 2 Live Coach.exe`; with Python:
+
+```
+py -m coach app
+```
+
+Or run the coach straight in the console:
 
 ```
 py -m coach

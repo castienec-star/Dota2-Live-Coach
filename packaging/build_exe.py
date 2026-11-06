@@ -23,6 +23,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 NAME = "DotaCoach"
+# The windowed app players double-click: start/stop, status, what was said.
+APP_NAME = "Dota 2 Live Coach"
+APP_CONTENTS = "_app"
 
 # Files the coach reads next to its own code (Path(__file__) lookups), as
 # (source relative to ROOT, folder inside the bundle).
@@ -61,7 +64,8 @@ Dota 2 Live Coach
    follow a match). It doesn't change the game.
 2. In Steam, right-click Dota 2 > Properties > Launch Options and add
    -gamestateintegration
-3. Double-click {name}.exe before a match and keep its window open.
+3. Double-click "{app}.exe" before a match and press Start. (Or
+   double-click {name}.exe for the same coach in a console window.)
 
 The coach only speaks. It never reads your screen or the game's memory.
 Settings: double-click "Coach settings.bat" (mode, voice, reminders, item
@@ -101,6 +105,26 @@ def pyinstaller_args(build_file: Path, work: Path, dist: Path, collect: list[str
     return args
 
 
+def app_args(work: Path, dist: Path) -> list[str]:
+    """The PyInstaller command line for the windowed app.
+
+    It imports only the window (tkinter), so its own folder (APP_CONTENTS,
+    next to _internal) stays small; the coach runs as NAME.exe beside it.
+    """
+    return [
+        str(ROOT / "packaging" / "app_launcher.py"),
+        "--name", APP_NAME,
+        "--onedir",
+        "--windowed",
+        "--contents-directory", APP_CONTENTS,
+        "--noconfirm",
+        "--paths", str(ROOT),
+        "--workpath", str(work / "app"),
+        "--distpath", str(dist / "app"),
+        "--specpath", str(work / "app"),
+    ]
+
+
 def main() -> int:
     import PyInstaller.__main__
 
@@ -120,9 +144,13 @@ def main() -> int:
     PyInstaller.__main__.run(pyinstaller_args(build_file, work, dist, collect))
 
     app = dist / NAME
+    PyInstaller.__main__.run(app_args(work, dist))
+    window = dist / "app" / APP_NAME
+    shutil.copy(window / f"{APP_NAME}.exe", app / f"{APP_NAME}.exe")
+    shutil.copytree(window / APP_CONTENTS, app / APP_CONTENTS, dirs_exist_ok=True)
     (app / "Set up Dota 2.bat").write_text(SETUP_BAT.format(name=NAME), encoding="utf-8")
     (app / "Coach settings.bat").write_text(SETTINGS_BAT.format(name=NAME), encoding="utf-8")
-    (app / "START HERE.txt").write_text(START_HERE.format(name=NAME, version=stamp), encoding="utf-8")
+    (app / "START HERE.txt").write_text(START_HERE.format(name=NAME, app=APP_NAME, version=stamp), encoding="utf-8")
     shutil.copy(ROOT / "THIRD_PARTY_NOTICES.md", app / "THIRD_PARTY_NOTICES.md")
     print(f"Built {app} (version from {stamp})")
     return 0

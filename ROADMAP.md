@@ -264,11 +264,10 @@ CLAUDE.md).
 
 These are not built until Castien decides. Recommendations in italics.
 
-- **Price, free tier and trial.** *Recommend about $4/month with a 14-day
-  trial, or clock reminders free and coaching paid.*
-- **Licensing and payments.** *Recommend a licence key sold through a
-  merchant-of-record store (Lemon Squeezy or Paddle handle tax), checked
-  offline with a grace period; no accounts at first.*
+- **Price and payments: decided** (Castien, 2026-11-06). $2.50 a month or
+  $25 a year, sold through Lemon Squeezy's hosted store (no website yet),
+  with a Lemon Squeezy licence key unlocking the app. Plan and setup steps:
+  `docs/product/paid-app.md`. Still open: a free trial or free tier.
 - **Code signing certificate** (yearly cost) so Windows does not warn on
   install. *Recommend before any public sale.*
 - **Auto-update and hosting** for patch data and builds. *Recommend GitHub
