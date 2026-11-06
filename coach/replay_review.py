@@ -144,6 +144,7 @@ class ReplayReview:
         self._last_moment = -MOMENT_GAP
         self._last_frame = -FRAME_EVERY
         self._told: set[str] = set()
+        self._focus = -1
 
     # Game state ---------------------------------------------------------
 
@@ -240,23 +241,33 @@ class ReplayReview:
 
     def _answer(self, prompt: str, frames: list[Frame], reason: str, unused: list[str] | None = None,
                 fought: bool = False) -> None:
+        started = time.monotonic()
         try:
             reply = self.ask(prompt, frames)
         finally:
             self._busy = False
-        if not reply or reply.strip(" .\"'").lower() in ("skip", "omitir") or not self.gate.open:
+        took = f"{time.monotonic() - started:.0f} s"
+        # Notes for the window, so the player sees why the coach is quiet.
+        if not reply:
+            log.info("Replay review: the vision model gave no answer (%s). Is Ollama running?", took)
+            return
+        if reply.strip(" .\"'").lower() in ("skip", "omitir") or not self.gate.open:
+            log.info("Replay review: looked, nothing clearly went wrong (%s)", took)
             return
         # Small vision models tie items to farming ("use your wand to farm
         # creeps") and call last hits kills (Castien, 2026-11-06): those go.
         if items_for_farming(reply, self.snap):
-            log.info("Replay review: dropped item advice about farming: %s", reply)
+            log.info("Replay review: dropped item advice about farming (%s): %s", took, reply)
             return
         if not fought and KILLS.search(reply):
-            log.info("Replay review: dropped a line about kills that didn't happen: %s", reply)
+            log.info("Replay review: dropped a line about kills that didn't happen (%s): %s", took, reply)
             return
         if self.repeats(reply):
-            log.info("Replay review: dropped a repeat: %s", reply)
+            log.info("Replay review: dropped a repeat (%s): %s", took, reply)
             return
+        if reason == REGULAR and time.monotonic() - started > self.interval:
+            log.info("Replay review: the vision model took %s, longer than the %.0f s you set, so it looks "
+                     "less often. Try the lighter model or a longer time.", took, self.interval)
         self.recent.append(reply)
         self.say(reply, priority=NORMAL if reason == REGULAR else HIGH, max_delay=MAX_DELAY)
 
@@ -278,6 +289,7 @@ class ReplayReview:
             f"Items: {items}." if items else "",
             f"When they died they still had ready: {', '.join(unused)}." if unused else "",
             REASONS[reason],
+            f"This time, look most at: {self.focus()}." if reason == REGULAR else "",
         ]
         examples = lessons_mod.matching(self.lessons, reason, stage_name(s.clock_time))
         if examples:
@@ -287,6 +299,13 @@ class ReplayReview:
         if self.recent:
             facts.append("Points you already made: " + " | ".join(self.recent))
         return "\n".join(f for f in facts if f)
+
+    def focus(self) -> str:
+        """A different thing to look at each regular look, so the coach
+        notices different mistakes instead of one theme."""
+        topics = FOCUS[stage_name(self.snap.clock_time)]
+        self._focus = (self._focus + 1) % len(topics)
+        return topics[self._focus]
 
     def _forget(self) -> None:
         self.frames.clear()
@@ -315,6 +334,18 @@ def stage(clock: int | None) -> str:
     if clock < 1800:
         return f"Game time {when}: the mid game."
     return f"Game time {when}: the late game."
+
+
+# What a regular look focuses on, in turn, by stage of the game.
+FOCUS = {
+    "laning": ("last hits and denies", "trading hits with the enemy laner", "where you stood compared with your creeps",
+               "the creep equilibrium (where the waves meet)", "the minimap and missing enemies",
+               "using your spells well (mana, timing)"),
+    "mid": ("where you farmed and how safe it was", "the minimap and missing enemies",
+            "how you joined or avoided fights", "towers, Roshan and other objectives", "using your spells well"),
+    "late": ("positioning in fights", "buyback and dying before objectives", "the minimap and missing enemies",
+             "farming safe areas between fights", "using your spells and items in fights"),
+}
 
 
 def stage_name(clock: int | None) -> str:

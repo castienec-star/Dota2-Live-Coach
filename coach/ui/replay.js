@@ -5,7 +5,7 @@
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 let api = null, settings = null, running = false, lastSaid = "";
-const KIND = { said: "Coach", skipped: "Late", connected: "Dota", match: "Match", problem: "Check", stopped: "Off", version: "App", log: "Note" };
+const KIND = { said: "Coach", skipped: "Late", connected: "Dota", match: "Match", problem: "Check", stopped: "Off", version: "App", log: "Note", info: "Note" };
 
 function el(tag, attrs = {}, ...kids) {
   const node = document.createElement(tag);
@@ -58,7 +58,7 @@ function addEvents(events) {
   const feed = $("#feed");
   for (const e of events) {
     const note = e.kind === "log" && e.text.startsWith("following your hero");
-    if (!note && !["said", "skipped", "problem", "stopped"].includes(e.kind)) continue;
+    if (!note && !["said", "skipped", "problem", "stopped", "info"].includes(e.kind)) continue;
     if (e.kind === "said") lastSaid = e.text;
     $(".empty", feed)?.remove();
     feed.append(el("li", { class: e.kind },

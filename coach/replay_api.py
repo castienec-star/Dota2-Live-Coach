@@ -103,7 +103,7 @@ class ReplayApi:
                     hero = next((h for h in load_heroes().values() if h.key == key), None)
                     self._following = hero.name if hero is not None else key.replace("_", " ")
                 elif e.kind == "log" and e.text.startswith(PREFIX):
-                    kind = "problem" if "can't" in text or "live match" in text else "log"
+                    kind = "problem" if "can't" in text or "live match" in text or "no answer" in text else "info"
                     e = Event(kind, i18n.ui(text, self._lang) if kind == "problem" else text, e.time)
                 shown.append(asdict(e))
             return {"events": shown, "running": self.running, "following": self._following}

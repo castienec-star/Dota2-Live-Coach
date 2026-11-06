@@ -198,3 +198,18 @@ def test_unused_wand_at_death_may_be_mentioned():
     rig.send(replay(clock=245, health=0, alive=False), dt=0.1)
     assert "still had ready: magic wand (15 charges)" in rig.asked[-1][0]
     assert len(rig.said) == 1
+
+
+def test_regular_looks_rotate_what_to_look_at():
+    rig = Rig(mode="continuous", replies=["You missed two denies.", "You trade badly into their support.",
+                                          "Your wave met under their tower."])
+    rig.play(31)
+    focuses = [p.split("This time, look most at: ")[1].split(".")[0] for p, _ in rig.asked]
+    assert len(set(focuses)) == 3
+
+
+def test_quiet_looks_leave_a_note(caplog):
+    rig = Rig(mode="continuous", replies=["skip"])
+    with caplog.at_level("INFO"):
+        rig.play(11)
+    assert "nothing clearly went wrong" in caplog.text

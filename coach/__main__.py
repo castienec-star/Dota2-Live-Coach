@@ -813,7 +813,7 @@ def main(argv: list[str] | None = None) -> int:
                       help="seconds between looks back (0 = the mode's own); a frame is taken every second")
     p_rr.add_argument("--vision-model", default=vision.DEFAULT_MODEL, help='an Ollama vision model, or "off"')
     p_rr.add_argument("--hero", default="", help="your hero in the replay, when the coach can't tell")
-    p_rr.add_argument("--timeout", type=float, default=30.0, help="seconds to wait for the vision model")
+    p_rr.add_argument("--timeout", type=float, default=60.0, help="seconds to wait for the vision model")
     p_learn = sub.add_parser("learn-video", help="lessons for replay review from a coaching video on this PC")
     p_learn.add_argument("video", type=Path)
     p_learn.add_argument("--vision-model", default=vision.DEFAULT_MODEL)
