@@ -136,6 +136,23 @@ and prints what to check: whether the GSI config file is there and up to date
 option, restarting Dota after installing, and the port. When Dota connects
 after that, it tells you.
 
+## English or Spanish
+
+The coach speaks English or Spanish (*Voice & questions > Language* in the app,
+or `[coach] language = "es"` in coach.toml), and the app window follows.
+
+- **Spoken lines**: rune, stack, health, buyback, item and question lines have
+  built-in Spanish, so they are never late. Anything else is translated once
+  by the death tips' local model (Ollama) and remembered in
+  `translations_es.json`; without a model it is said in English.
+- **Model replies** (death tips, the briefing, answers, item advice) are asked
+  for in Spanish directly. Hero and item names stay in English.
+- **Voice**: with no voice chosen, the coach picks an installed Spanish
+  Windows voice. Add one in Windows Settings > Time & language > Speech.
+- **Questions**: ask in Spanish ("¿cómo voy?", "¿qué compro?", "¿cuál es mi
+  siguiente objeto?"). The wake word stays "hey coach"; speech-to-text uses
+  the Whisper model without ".en", which understands Spanish.
+
 ## Voice reminders
 
 Once the horn sounds, the coach speaks clock reminders through Windows'

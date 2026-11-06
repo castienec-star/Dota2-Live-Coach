@@ -86,10 +86,13 @@ NICKNAMES = {
 }
 # Said about items an enemy has; "buy" is left out so "should I buy BKB
 # against Lina?" stays a question.
-_HAS = re.compile(r"\b(has|have|got|bought|built|building|carries|carrying|with)\b")
-_FORGET = re.compile(r"\b(forget|clear|reset)\b.*\bitems?\b")
+_HAS = re.compile(
+    r"\b(has|have|got|bought|built|building|carries|carrying|with"
+    r"|tiene|tienen|lleva|llevan|con)\b"  # Spanish: "Lion tiene Glimmer"
+)
+_FORGET = re.compile(r"\b(forget|clear|reset|olvida|borra)\b.*\b(items?|objetos?)\b")
 # About the player, not an enemy: "do I have BKB?", "should I get Pipe?".
-_SELF = re.compile(r"\b(i|i'm|my|me|should|do|does|what|which)\b")
+_SELF = re.compile(r"\b(i|i'm|my|me|should|do|does|what|which|yo|mi|debo|deberia|que|cual|compro)\b")
 # One answer can name several heroes: "Lion has Glimmer, and Sven has BKB".
 _PARTS = re.compile(r"[,.;!?]|\band\b(?=(?:\s+[\w'-]+){1,3}\s+(?:has|have|got|bought|built|is)\b)", re.I)
 # "Lion has Force Staff, not Glimmer": what follows "not" is a correction.

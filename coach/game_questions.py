@@ -23,11 +23,24 @@ from .lineup import _SKIP, Question, _words, parse_heroes
 from .state import MatchState
 
 # Lane and fight answers, checked in this order ("not bad" is even, not lost).
-_EVEN = re.compile(r"\b(even|equal|okay|ok|fine|alright|all right|so so|not bad|same|close|draw)\b")
-_LOST = re.compile(r"\b(lost|lose|losing|bad|badly|behind|terrible|awful|hard|rough|died|dying|feeding)\b")
-_WON = re.compile(r"\b(won|win|winning|good|great|well|ahead|easy|crushed|crushing)\b")
-_YES = re.compile(r"\b(yes|yeah|yep|yup|sure|definitely|totally|he is|she is|they are|a lot|free)\b")
-_NO = re.compile(r"\b(no|nope|nah|not)\b")
+# Spanish words too (accents are dropped first): "pareja", "la perdí", "ganada".
+_EVEN = re.compile(
+    r"\b(even|equal|okay|ok|fine|alright|all right|so so|not bad|same|close|draw"
+    r"|parej[oa]|igual|normal|mas o menos|empate|no tan mal)\b"
+)
+_LOST = re.compile(
+    r"\b(lost|lose|losing|bad|badly|behind|terrible|awful|hard|rough|died|dying|feeding"
+    r"|perdi|perdida|perdido|perdiendo|mal|atras|dificil|horrible|mori|muriendo)\b"
+)
+_WON = re.compile(
+    r"\b(won|win|winning|good|great|well|ahead|easy|crushed|crushing"
+    r"|gane|ganada|ganado|ganando|bien|facil|adelante|genial)\b"
+)
+_YES = re.compile(
+    r"\b(yes|yeah|yep|yup|sure|definitely|totally|he is|she is|they are|a lot|free"
+    r"|si|claro|mucho|bastante|libre|seguro)\b"
+)
+_NO = re.compile(r"\b(no|nope|nah|not|nada)\b")
 
 
 def parse_result(text: str) -> str | None:

@@ -21,6 +21,7 @@ import time
 from collections.abc import Callable, Iterable, Iterator
 from pathlib import Path
 
+from . import i18n
 from . import rank as rank_mod
 from . import review as review_mod
 from . import situational
@@ -91,11 +92,48 @@ INTENTS: list[tuple[str, re.Pattern[str]]] = [
     ),
 ]
 
+# The same questions in Spanish ([coach] language = "es"), accents dropped:
+# "¿Cómo voy?", "¿qué compro?", "¿cuál es mi siguiente objeto?".
+INTENTS_ES: list[tuple[str, re.Pattern[str]]] = [
+    ("buyback", re.compile(r"\b(buy ?backs?|recompra|comprar de vuelta)\b")),
+    ("rank", re.compile(r"\b(mi (rango|medalla|m ?m ?r)|m ?m ?r|cual es mi rango)\b")),
+    (
+        "how_am_i_doing",
+        re.compile(
+            r"\b(como voy|como vamos|como va (mi )?(partida|juego)|voy (ganando|perdiendo|bien|mal)"
+            r"|estoy (adelante|atras|ganando|perdiendo)|como lo estoy haciendo)\b"
+        ),
+    ),
+    ("rune", re.compile(r"\b(runas?|santuarios?|recompensas?|sabiduria)\b")),
+    (
+        "next_item",
+        re.compile(r"\b((siguiente|proximo) (objeto|item)|mi build|mi lista|que sigue en mi build)\b"),
+    ),
+    (
+        "what_to_buy",
+        re.compile(r"\b(que (compro|debo comprar|deberia comprar|me compro|saco)|comprar|objetos?|items?|recomiendas)\b"),
+    ),
+    (
+        "focus",
+        re.compile(
+            r"\b(en que me (enfoco|concentro)|que (hago|deberia hacer|debo hacer)( ahora)?|algun consejo"
+            r"|dame un consejo|consejos?|prioridad)\b"
+        ),
+    ),
+    ("today", re.compile(r"\b(hoy|esta sesion|como me fue|cuantas partidas|mi record)\b")),
+]
+
 
 def intent(text: str) -> str:
     """Turn a transcribed question into one of the intents, or "unknown"."""
-    folded = re.sub(r"[^a-z' ]+", " ", text.lower())
-    return next((name for name, pattern in INTENTS if pattern.search(folded)), "unknown")
+    folded = re.sub(r"[^a-z' ]+", " ", i18n.fold(text))
+    # The coach's language first: "mi build" is the next item, not "build".
+    lists = (INTENTS_ES, INTENTS) if i18n.language() == "es" else (INTENTS, INTENTS_ES)
+    for intents in lists:
+        found = next((name for name, pattern in intents if pattern.search(folded)), None)
+        if found is not None:
+            return found
+    return "unknown"
 
 
 def _clock(seconds: int) -> str:
@@ -401,9 +439,14 @@ class VoskWakeWord:
 class WhisperTranscriber:
     """Speech to text with faster-whisper on the CPU, kept small so FPS doesn't drop."""
 
-    def __init__(self, model: str = "base.en") -> None:
+    def __init__(self, model: str = "base.en", language: str = "en") -> None:
         from faster_whisper import WhisperModel
 
+        self.language = language
+        if language != "en":
+            # The ".en" models only understand English; the same size
+            # without it understands Spanish too.
+            model = model.removesuffix(".en")
         # Downloaded once (about 150 MB for base.en).
         self.model = WhisperModel(model, device="cpu", compute_type="int8", cpu_threads=2)
 
@@ -411,7 +454,7 @@ class WhisperTranscriber:
         import numpy as np
 
         samples = np.frombuffer(audio, dtype=np.int16).astype(np.float32) / 32768.0
-        segments, _ = self.model.transcribe(samples, language="en", beam_size=1)
+        segments, _ = self.model.transcribe(samples, language=self.language, beam_size=1)
         return " ".join(s.text for s in segments)
 
 
@@ -458,7 +501,7 @@ def start(
     wake_word = str(settings.get("wake_word", "hey coach"))
     try:
         wake = VoskWakeWord(wake_word)
-        transcribe = WhisperTranscriber(str(settings.get("model", "base.en")))
+        transcribe = WhisperTranscriber(str(settings.get("model", "base.en")), i18n.language())
     except ImportError:
         # Most of the coach's questions and answers need these, so say it out
         # loud too: a line in the console is easy to miss.

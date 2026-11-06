@@ -18,7 +18,7 @@ from __future__ import annotations
 import logging
 from collections.abc import Callable
 
-from . import hero_stats, llm, situational
+from . import hero_stats, i18n, llm, situational
 from .game_questions import Notes
 from .grounding import Grounding
 from .heroes import HeroInfo
@@ -255,7 +255,7 @@ def build(
             tip.get("ollama_model", llm.DEFAULT_MODEL),
             tip.get("ollama_url", llm.DEFAULT_URL),
             timeout,
-            SYSTEM_PROMPT,
+            i18n.prompt(SYSTEM_PROMPT),
             num_predict=90,
             label="Ollama chat",
             temperature=0.5,

@@ -10,6 +10,8 @@ import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from . import i18n
+
 APP_DIR_NAME = "Dota2LiveCoach"
 DEFAULTS_FILE = Path(__file__).resolve().parent.parent / "config" / "coach.toml"
 # Sections whose tables the player names freely (hero builds).
@@ -45,6 +47,8 @@ class Config:
     voice_max_delay: float = 4.0
     voice_max_lines: int = 2
     mode: str = "beginner"
+    # "en" or "es": what the coach speaks and the app shows (coach/i18n.py).
+    language: str = "en"
     # Reminders the mode keeps quiet; asked questions still use their settings.
     quiet: frozenset[str] = frozenset()
     reminders: dict = field(default_factory=dict)
@@ -176,6 +180,7 @@ def load(user_file: Path | None = None, app_dir: Path | None = None) -> Config:
         voice_max_delay=float(voice.get("max_delay", 4)),
         voice_max_lines=int(voice.get("max_lines", 2)),
         mode=mode,
+        language=i18n.normalize(raw.get("coach", {}).get("language", "en")),
         quiet=quiet,
         reminders=raw.get("reminders", {}),
         builds=raw.get("builds", {}),
