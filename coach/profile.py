@@ -24,6 +24,7 @@ log = logging.getLogger(__name__)
 MIN_GAME_SECONDS = 300  # shorter recordings are tests or abandons
 BIG_ITEM_COST = 1800  # items worth tracking as timings
 RECENT_GAMES = 20
+SUMMARY_VERSION = 2
 
 
 @dataclass
@@ -38,6 +39,13 @@ class MatchSummary:
     death_times: list[int] = field(default_factory=list)
     item_times: dict[str, int] = field(default_factory=dict)  # item key -> clock seconds
     started: float = 0.0  # wall-clock time of the first update
+    # End-of-game numbers for the app's match list (older summaries lack them).
+    match_id: str | None = None
+    last_hits: int | None = None
+    denies: int | None = None
+    gpm: int | None = None
+    xpm: int | None = None
+    account_id: str | None = None
 
 
 class Tally:
@@ -49,6 +57,8 @@ class Tally:
         self.hero: str | None = None
         self.last = Snapshot()
         self.team = self.win_team = None
+        self.match_id: str | None = None
+        self.account_id: str | None = None
         self.last_hits_10: int | None = None
         self.death_times: list[int] = []
         self.item_times: dict[str, int] = {}
@@ -56,6 +66,8 @@ class Tally:
 
     def add(self, snap: Snapshot) -> None:
         self.team = snap.team or self.team
+        self.match_id = snap.match_id or self.match_id
+        self.account_id = snap.account_id or self.account_id
         if snap.win_team in ("radiant", "dire"):
             self.win_team = snap.win_team
         if not snap.in_game or snap.clock_time is None:
@@ -89,6 +101,12 @@ class Tally:
             death_times=list(self.death_times),
             item_times=dict(self.item_times),
             started=started,
+            match_id=self.match_id,
+            last_hits=last.last_hits,
+            denies=last.denies,
+            gpm=last.gpm,
+            xpm=last.xpm,
+            account_id=self.account_id,
         )
 
 
@@ -132,7 +150,9 @@ class Profile:
         paths = sorted(self.record_dir.glob("*.jsonl")) if self.record_dir.is_dir() else []
         for path in paths:
             stat = path.stat()
-            stamp = f"{stat.st_size}:{int(stat.st_mtime)}"
+            # The leading number changes when MatchSummary gains fields, so
+            # old summaries are read again.
+            stamp = f"{SUMMARY_VERSION}:{stat.st_size}:{int(stat.st_mtime)}"
             entry = cache.get(path.name)
             if entry is None or entry.get("stamp") != stamp:
                 summary = summarize(path, self.items)
