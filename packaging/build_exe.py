@@ -125,6 +125,8 @@ def app_args(work: Path, dist: Path) -> list[str]:
         # The page, and the defaults the settings pages compare with.
         "--add-data", f"{ROOT / 'coach/ui'}{os.pathsep}coach/ui",
         "--add-data", f"{ROOT / 'config/coach.toml'}{os.pathsep}config",
+        # Hero and item names for the Progress page.
+        "--add-data", f"{ROOT / 'coach/data'}{os.pathsep}coach/data",
         "--collect-all", "webview",
     ]
 

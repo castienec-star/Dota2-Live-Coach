@@ -15,6 +15,7 @@
     </div>
     <nav>
       <button class="nav active" data-page="home"><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z"/></svg>Dashboard</button>
+      <button class="nav" data-page="progress"><svg viewBox="0 0 24 24"><path d="M4 19h16M6 15l4-5 3 3 5-7"/></svg>Progress</button>
       <button class="nav" data-page="reminders"><svg viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0-6 6v4l-2 3h16l-2-3V9a6 6 0 0 0-6-6zM10 19a2 2 0 0 0 4 0"/></svg>Reminders</button>
       <button class="nav" data-page="voice"><svg viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3"/></svg>Voice &amp; questions</button>
       <button class="nav" data-page="game"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/></svg>Game &amp; profile</button>
@@ -32,6 +33,11 @@
       <header class="page-head">
         <div><h1>Dashboard</h1><p class="muted">Start the coach before your match. It speaks; it never reads your screen.</p></div>
       </header>
+      <div class="banner" id="mmr-banner" hidden>
+        <div><b>What's your MMR now?</b> <span class="muted" id="mmr-banner-text">Keep it up to date so the coach compares you with players of your rank.</span></div>
+        <div class="row"><input class="input mmr-input" id="mmr-quick" inputmode="numeric" placeholder="e.g. 2450">
+          <button class="btn primary" id="mmr-quick-go">Save</button></div>
+      </div>
       <div class="hero-card">
         <div class="ring" id="ring"><span></span></div>
         <div class="hero-text">
@@ -60,6 +66,51 @@
           <button class="action" id="a-builds"><b>Item builds</b><span>Edit the build of any hero.</span></button>
           <div class="note">Add <code>-gamestateintegration</code> to Dota 2's launch options in Steam once.</div>
         </div>
+      </div>
+    </section>
+
+    <!-- Progress -->
+    <section class="page" id="page-progress">
+      <header class="page-head">
+        <div><h1>Progress</h1><p class="muted">Your MMR over time and your best heroes, from the games the coach recorded.</p></div>
+      </header>
+      <div class="tiles">
+        <div class="tile"><div class="tile-label">Current MMR</div><div class="tile-value" id="p-mmr">-</div></div>
+        <div class="tile"><div class="tile-label">Since first entry</div><div class="tile-value" id="p-change">-</div></div>
+        <div class="tile"><div class="tile-label">Games recorded</div><div class="tile-value" id="p-games">0</div></div>
+        <div class="tile"><div class="tile-label">Win rate</div><div class="tile-value" id="p-wr">-</div></div>
+      </div>
+      <div class="card section-top">
+        <div class="card-head"><div><h2>Coach's recommendations</h2><div class="muted small">From your last 20 recorded games.</div></div></div>
+        <div class="recs" id="recs"></div>
+      </div>
+      <div class="grid2 wide-left">
+        <div class="card">
+          <div class="card-head"><div><h2>MMR over time</h2><div class="muted small" id="mmr-sub"></div></div></div>
+          <div class="chart" id="mmr-chart"></div>
+        </div>
+        <div class="card mmr-card">
+          <h2>Update your MMR</h2>
+          <p class="muted small">Find it in Dota under your profile. The coach uses it to compare you with players of your rank, so it won't ask during games.</p>
+          <div class="row"><input class="input grow" id="mmr-input" inputmode="numeric" placeholder="e.g. 2450">
+            <button class="btn primary" id="mmr-go">Save</button></div>
+          <div class="muted small" id="mmr-msg"></div>
+        </div>
+      </div>
+      <div class="card section">
+        <div class="card-head"><div><h2>Last 20 games</h2><div class="muted small" id="trend-sub">One column per game, oldest on the left.</div></div>
+          <div class="seg small-seg" id="trend-metric">
+            <button data-metric="deaths" class="active">Deaths</button><button data-metric="last_hits_10">Last hits at 10:00</button><button data-metric="gpm">GPM</button>
+          </div></div>
+        <div class="chart" id="trend-chart"></div>
+      </div>
+      <div class="card section">
+        <div class="card-head"><div><h2>Your heroes</h2><div class="muted small">Win rate in your recorded games. Most played first.</div></div></div>
+        <div id="hero-chart"></div>
+      </div>
+      <div class="card section">
+        <div class="card-head"><div><h2>Recent matches</h2><div class="muted small">Click a match for its summary and what to fix. More numbers come from OpenDota (needs "Expose Public Match Data" in Dota).</div></div></div>
+        <div class="table-wrap"><table class="table" id="matches"></table></div>
       </div>
     </section>
 

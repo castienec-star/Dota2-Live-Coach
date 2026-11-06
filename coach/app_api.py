@@ -123,6 +123,32 @@ class Api:
         if url.startswith("https://"):
             webbrowser.open(url)
 
+    # Progress ------------------------------------------------------------
+
+    def _record_dir(self) -> Path:
+        own = str(self._user().get("recording", {}).get("directory") or "")
+        return Path(own) if own else self._app_dir / "recordings"
+
+    def progress(self) -> dict:
+        from . import progress
+
+        return progress.summary(self._app_dir, self._record_dir())
+
+    def match_details(self, match_id: str, account_id: str) -> dict:
+        """The player's own numbers for one match from OpenDota's public page."""
+        from . import progress
+        from .opendota import OpenDota
+
+        opendota = OpenDota(self._app_dir / "opendota")
+        # Re-asked after 6 hours: OpenDota adds parsed numbers after a while.
+        return progress.match_details(lambda path: opendota.get(path, 6 * 3600), match_id, account_id)
+
+    def add_mmr(self, value) -> dict:
+        from . import progress
+
+        ok, message = progress.MmrHistory(self._app_dir).add(value)
+        return {"ok": ok, "message": message}
+
     # Licence -------------------------------------------------------------
 
     def license_state(self) -> dict:
