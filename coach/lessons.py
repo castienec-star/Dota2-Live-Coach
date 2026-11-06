@@ -49,6 +49,7 @@ CARD_SCHEMA = {
         "point": {"type": "string"},
         "why": {"type": "string"},
         "advice": {"type": "string"},
+        "line": {"type": "string"},
         "stage": {"type": "string", "enum": list(STAGES)},
         "tags": {"type": "array", "items": {"type": "string", "enum": list(TAGS)}},
     },
@@ -59,7 +60,11 @@ SYSTEM = """\
 You turn a moment from a Dota 2 coaching video into a lesson card. You get \
 two frames from that moment and what the coach said over them. Write what \
 the coach teaches, in your own short words: the situation on screen, the \
-point the coach makes, why it matters, and what to do. Use only what the \
+point the coach makes, why it matters, and what to do. In "line", write \
+what a coach would say about it to the player afterwards, in the past tense, \
+casually, at most 30 words (for example: "There you stayed at half health \
+with three of them missing. Backing off would have saved that death."). \
+Use only what the \
 coach said and what the frames show; never add your own advice. If the \
 coach says nothing about how to play (an intro, a joke, a sponsor), answer \
 {"skip": true}. Answer as JSON only."""
@@ -75,6 +80,8 @@ class Lesson:
     tags: list[str] = field(default_factory=list)
     source: str = ""  # "video name at 12:34"
     said: str = ""  # the coach's own words
+    line: str = ""  # the past-tense line a coach would say (the training answer)
+    frames: list[str] = field(default_factory=list)  # saved frame files, oldest first
 
     def text(self) -> str:
         return f"{self.situation} {self.point} Why: {self.why} Better: {self.advice}"
@@ -148,7 +155,7 @@ def card(reply: str | None, chunk: Chunk, source: str) -> Lesson | None:
     return Lesson(
         situation=str(data.get("situation", "")), point=str(data["point"]), why=str(data.get("why", "")),
         advice=str(data.get("advice", "")), stage=stage, tags=tags,
-        source=f"{source} at {minutes}:{seconds:02d}", said=chunk.text,
+        source=f"{source} at {minutes}:{seconds:02d}", said=chunk.text, line=str(data.get("line", "")),
     )
 
 
@@ -169,29 +176,94 @@ def learn(
     stretches = list(chunks(segments))
     lessons = []
     for n, chunk in enumerate(stretches, 1):
-        frames = grab(video, [chunk.start + 1, (chunk.start + chunk.end) / 2])
+        # The start, middle and end of the moment, like replay review's looks.
+        frames = grab(video, [chunk.start + 1, (chunk.start + chunk.end) / 2, max(chunk.end - 1, chunk.start + 1)])
         if not frames:
             continue
         lesson = card(ask(f'The coach said: "{chunk.text}"', frames), chunk, video.stem)
         if lesson is None:
             continue
+        for k, frame in enumerate(frames):
+            (folder / f"{n:03d}-{k}.jpg").write_bytes(frame)
+            lesson.frames.append(f"{n:03d}-{k}.jpg")
         (folder / f"{n:03d}.json").write_text(json.dumps(asdict(lesson), indent=2, ensure_ascii=False), encoding="utf-8")
-        (folder / f"{n:03d}.jpg").write_bytes(frames[-1])
         lessons.append(lesson)
         say(f"{n}/{len(stretches)} {lesson.source}: {lesson.point}")
     say(f"Saved {len(lessons)} lessons from {len(stretches)} stretches in {folder}")
     return lessons
 
 
-def load(app_dir: Path) -> list[Lesson]:
+VIDEO_TYPES = {".mp4", ".mkv", ".webm", ".mov", ".avi"}
+
+
+def videos(path: Path) -> list[Path]:
+    """The video, or every video in a folder."""
+    if path.is_dir():
+        return sorted(p for p in path.iterdir() if p.suffix.lower() in VIDEO_TYPES)
+    return [path]
+
+
+def load(app_dir: Path, with_paths: bool = False) -> list:
+    """Every saved lesson; with_paths gives (lesson, its folder) pairs."""
     out = []
     for path in sorted((app_dir / FOLDER).glob("*/*.json")):
         try:
             data = json.loads(path.read_text(encoding="utf-8"))
-            out.append(Lesson(**{k: v for k, v in data.items() if k in Lesson.__dataclass_fields__}))
+            lesson = Lesson(**{k: v for k, v in data.items() if k in Lesson.__dataclass_fields__})
         except (OSError, ValueError, TypeError):
             log.warning("Skipped a lesson card that isn't valid: %s", path)
+            continue
+        out.append((lesson, path.parent) if with_paths else lesson)
     return out
+
+
+# Training data ---------------------------------------------------------------
+
+TRAIN_PROMPT = "Talk this moment of my replay over with me: what did I do wrong, and what would have been better?"
+
+
+def answer(lesson: Lesson) -> str:
+    """What the trained model should say: the coach-style line, else the card."""
+    if lesson.line:
+        return lesson.line
+    return " ".join(x for x in (lesson.point, lesson.why, lesson.advice) if x)
+
+
+def export(app_dir: Path, out_dir: Path, holdout: float = 0.1, system: str = "") -> tuple[int, int]:
+    """Writes train.jsonl and test.jsonl (chat format with images, as
+    Unsloth, TRL and most vision fine-tuning tools read it) plus the images.
+    Every tenth lesson of each video goes to test, to check the model on
+    moments it never saw. Returns (train, test) counts."""
+    import shutil
+
+    images = out_dir / "images"
+    images.mkdir(parents=True, exist_ok=True)
+    every = max(2, round(1 / holdout)) if holdout > 0 else 0
+    counts = {"train": 0, "test": 0}
+    files = {name: (out_dir / f"{name}.jsonl").open("w", encoding="utf-8") for name in counts}
+    try:
+        seen: dict[Path, int] = {}
+        for lesson, folder in load(app_dir, with_paths=True):
+            if not lesson.frames:
+                continue
+            seen[folder] = seen.get(folder, 0) + 1
+            split = "test" if every and seen[folder] % every == 0 else "train"
+            content = []
+            for name in lesson.frames:
+                target = images / f"{folder.name}-{name}"
+                shutil.copyfile(folder / name, target)
+                content.append({"type": "image", "image": f"images/{target.name}"})
+            content.append({"type": "text", "text": TRAIN_PROMPT})
+            messages = ([{"role": "system", "content": [{"type": "text", "text": system}]}] if system else []) + [
+                {"role": "user", "content": content},
+                {"role": "assistant", "content": [{"type": "text", "text": answer(lesson)}]},
+            ]
+            files[split].write(json.dumps({"messages": messages, "source": lesson.source}, ensure_ascii=False) + "\n")
+            counts[split] += 1
+    finally:
+        for f in files.values():
+            f.close()
+    return counts["train"], counts["test"]
 
 
 # Which tags fit each kind of moment in replay review.
