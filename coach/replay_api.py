@@ -13,7 +13,8 @@ from collections.abc import Callable
 from dataclasses import asdict
 from pathlib import Path
 
-from . import llm, vision
+from . import config as config_mod
+from . import i18n, llm, options, vision
 from .app import CoachProcess, Event
 from .heroes import load_heroes
 from .replay_review import DEFAULT_INTERVAL, MODES
@@ -34,10 +35,17 @@ class ReplayApi:
         self._proc: CoachProcess | None = None
         self._lock = threading.Lock()
         self._following = ""
+        self._lang: str | None = None
 
     @property
     def running(self) -> bool:
         return self._proc is not None and self._proc.running
+
+    def language(self) -> str:
+        """"en" or "es", as the main window ([coach] language in coach.toml)."""
+        user_file = self._app_dir / "coach.toml"
+        user = config_mod._read_toml(user_file) if user_file.is_file() else {}
+        return options.language_of(config_mod._read_toml(config_mod.DEFAULTS_FILE), user)
 
     def load(self) -> dict:
         heroes = sorted((h.name, h.key) for h in load_heroes().values())
@@ -46,15 +54,20 @@ class ReplayApi:
             "models": [{"id": k, "label": v} for k, v in vision.MODELS.items()],
             "heroes": [{"key": k, "name": n} for n, k in heroes],
             "intervals": [4, 6, 8, 10, 15, 20, 30],
+            "language": self.language(),
         }
 
     def check_model(self, model: str) -> dict:
         have = self._installed(model, llm.DEFAULT_URL)
+        lang = self.language()
         if have is None:
-            return {"ok": False, "text": "Ollama isn't running. Start Ollama, or the coach reviews without looking at the screen."}
-        if not have:
-            return {"ok": False, "text": f"Not installed yet. In Command Prompt: ollama pull {model}"}
-        return {"ok": True, "text": "Installed and ready."}
+            text = "Ollama isn't running. Start Ollama, or the coach reviews without looking at the screen."
+        elif not have:
+            text = i18n.ui("Not installed yet. In Command Prompt: ollama pull {model}", lang).replace("{model}", model)
+            return {"ok": False, "text": text}
+        else:
+            text = "Installed and ready."
+        return {"ok": bool(have), "text": i18n.ui(text, lang)}
 
     def start(self, sent: dict) -> dict:
         settings = self._save(sent)
@@ -78,6 +91,8 @@ class ReplayApi:
         return self.poll()
 
     def poll(self) -> dict:
+        if self._lang is None:
+            self._lang = self.language()
         with self._lock:
             events = self._proc.events() if self._proc is not None else []
             shown = []
@@ -88,7 +103,8 @@ class ReplayApi:
                     hero = next((h for h in load_heroes().values() if h.key == key), None)
                     self._following = hero.name if hero is not None else key.replace("_", " ")
                 elif e.kind == "log" and e.text.startswith(PREFIX):
-                    e = Event("problem" if "can't" in text or "live match" in text else "log", text, e.time)
+                    kind = "problem" if "can't" in text or "live match" in text else "log"
+                    e = Event(kind, i18n.ui(text, self._lang) if kind == "problem" else text, e.time)
                 shown.append(asdict(e))
             return {"events": shown, "running": self.running, "following": self._following}
 

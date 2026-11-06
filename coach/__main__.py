@@ -19,7 +19,7 @@ from . import config as config_mod
 from . import chat as chat_mod
 from . import enemy_items, first_run, game_questions, item_advisor, situational
 from . import health as health_mod
-from . import llm
+from . import i18n, llm
 from . import pregame as pregame_mod
 from . import review as review_mod
 from . import voice
@@ -69,10 +69,34 @@ def notes_of(coach: Coach) -> Callable[[], game_questions.Notes | None]:
     return notes
 
 
-def make_speaker(cfg: config_mod.Config) -> Speaker:
+def make_translator(cfg: config_mod.Config) -> i18n.Translator | None:
+    """Spanish for the coach's lines when [coach] language is "es": the
+    built-in catalog first, then the death tips' Ollama model, remembered in
+    the app folder (coach/i18n.py)."""
+    if cfg.language == "en":
+        return None
+    tip = cfg.reminders.get("death_tip", {})
+    ask = None
+    if tip.get("provider", "ollama") == "ollama":
+        ask = llm.ollama_asker(
+            tip.get("ollama_model", llm.DEFAULT_MODEL),
+            tip.get("ollama_url", llm.DEFAULT_URL),
+            4.0,
+            i18n.TRANSLATE_PROMPT,
+            num_predict=160,
+            label="Ollama translation",
+            temperature=0.2,
+        )
+    return i18n.Translator(cfg.language, ask, cfg.app_dir / i18n.CACHE_FILE)
+
+
+def make_speaker(cfg: config_mod.Config, voice: str | None = None, rate: int | None = None) -> Speaker:
+    voice = cfg.voice_name if voice is None else voice
+    rate = cfg.voice_rate if rate is None else rate
     return Speaker(
-        lambda: make_backend(cfg.voice_backend, cfg.voice_name, cfg.voice_rate),
+        lambda: make_backend(cfg.voice_backend, voice, rate, cfg.language),
         cfg.voice_max_delay,
+        translate=make_translator(cfg),
     )
 
 
@@ -500,7 +524,7 @@ def cmd_replay_review(cfg: config_mod.Config, args: argparse.Namespace) -> int:
     url = cfg.reminders.get("death_tip", {}).get("ollama_url", llm.DEFAULT_URL)
     ask = None
     if args.vision_model != "off":
-        ask = vision.ollama_vision(args.vision_model, url, args.timeout, replay_review_mod.SYSTEM)
+        ask = vision.ollama_vision(args.vision_model, url, args.timeout, i18n.prompt(replay_review_mod.SYSTEM))
         have = vision.installed(args.vision_model, url)
         if have is False:
             logging.warning("Vision model %s not found. Install it: ollama pull %s", args.vision_model, args.vision_model)
@@ -705,9 +729,7 @@ def cmd_review(cfg: config_mod.Config, args: argparse.Namespace) -> int:
 
 def cmd_say(cfg: config_mod.Config, args: argparse.Namespace) -> int:
     if args.voice is not None or args.rate is not None:  # the app's "Test the voice"
-        voice = cfg.voice_name if args.voice is None else args.voice
-        rate = cfg.voice_rate if args.rate is None else args.rate
-        speaker = Speaker(lambda: make_backend(cfg.voice_backend, voice, rate), cfg.voice_max_delay)
+        speaker = make_speaker(cfg, args.voice, args.rate)
     else:
         speaker = make_speaker(cfg)
     speaker.say(args.text)
@@ -789,6 +811,7 @@ def main(argv: list[str] | None = None) -> int:
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s", datefmt="%H:%M:%S")
     cfg = config_mod.load(args.config)
+    i18n.set_language(cfg.language)
     commands = {
         "run": cmd_run,
         "install": cmd_install,

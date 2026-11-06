@@ -97,7 +97,7 @@ def test_schema_is_plain_data_with_every_reminder():
     schema = options.schema()
     names = [r["name"] for g in schema["reminders"] for r in g["reminders"]]
     assert sorted(names) == sorted(DEFAULTS["reminders"])
-    assert {g["id"] for g in schema["general"]} == {"voice", "listen", "game"}
+    assert {g["id"] for g in schema["general"]} == {"language", "voice", "listen", "game"}
 
 
 class FakeCoach:

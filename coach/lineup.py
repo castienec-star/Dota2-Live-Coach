@@ -19,6 +19,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 
 from .heroes import HeroIndex, HeroInfo, _fold
+from .i18n import fold
 from .rank import QUESTION
 from .state import IN_PROGRESS, MatchState
 
@@ -41,17 +42,24 @@ _NUMBERS = {
     "1": 1, "one": 1, "won": 1, "first": 1, "2": 2, "two": 2, "to": 2, "too": 2, "second": 2,
     "3": 3, "three": 3, "tree": 3, "third": 3, "4": 4, "four": 4, "for": 4, "fore": 4,
     "fourth": 4, "5": 5, "five": 5, "fifth": 5,
+    # Spanish ([coach] language = "es"; accents are dropped before matching).
+    "uno": 1, "primero": 1, "primera": 1, "dos": 2, "segundo": 2, "segunda": 2, "tres": 3,
+    "tercero": 3, "tercera": 3, "cuatro": 4, "cuarto": 4, "cuarta": 4, "cinco": 5, "quinto": 5,
+    "quinta": 5,
 }
 _ROLES = [
-    (re.compile(r"\b(soft support|roam(er|ing)?)\b"), 4),
-    (re.compile(r"\b(hard support|support)\b"), 5),
-    (re.compile(r"\b(off ?lane|offlaner)\b"), 3),
-    (re.compile(r"\b(mid|middle|midlane|midlaner)\b"), 2),
-    (re.compile(r"\b(carry|safe ?lane)\b"), 1),
+    (re.compile(r"\b(soft support|roam(er|ing)?|soporte suave|support suave)\b"), 4),
+    (re.compile(r"\b(hard support|support|soporte( duro)?)\b"), 5),
+    (re.compile(r"\b(off ?lane|offlaner|linea dificil|linea larga)\b"), 3),
+    (re.compile(r"\b(mid|middle|midlane|midlaner|medio)\b"), 2),
+    (re.compile(r"\b(carry|safe ?lane|linea segura)\b"), 1),
 ]
-_SKIP = re.compile(r"\b(skip|never ?mind|don'?t know|no idea|stop)\b")
-_YES = re.compile(r"^(yes|yeah|yep|yup|right|correct|ok|okay|sure|good|that'?s (right|it|all|correct))\b")
-_DONE = re.compile(r"^(no|nope|nah|none|nobody|that'?s (it|all))$")
+_SKIP = re.compile(r"\b(skip|never ?mind|don'?t know|no idea|stop|saltar|salta|saltalo|no se|ni idea|olvidalo)\b")
+_YES = re.compile(
+    r"^(yes|yeah|yep|yup|right|correct|ok|okay|sure|good|that'?s (right|it|all|correct)"
+    r"|si|correcto|claro|exacto|bien|vale|eso es)\b"
+)
+_DONE = re.compile(r"^(no|nope|nah|none|nobody|that'?s (it|all)|nadie|ninguno|eso es todo|es todo)$")
 _CORRECTION = re.compile(r"^(?:no\b)?\W*(.+?)\s+not\s+(.+)$")
 # Words people say around hero names that must not be read as heroes
 # ("we" would otherwise match Weaver, "the" nothing useful).
@@ -60,6 +68,10 @@ _FILLER = {
     "has", "got", "are", "is", "on", "our", "my", "their", "team", "enemy", "enemies",
     "heroes", "hero", "with", "plus", "also", "um", "uh", "er", "erm", "so", "then", "i",
     "think", "it's", "its", "there's", "playing", "me", "them", "us", "of", "picked",
+    # Spanish
+    "y", "el", "la", "los", "las", "nosotros", "ellos", "tenemos", "tienen", "tiene", "son", "es",
+    "con", "de", "del", "mi", "mis", "su", "sus", "equipo", "enemigo", "enemigos", "heroe",
+    "heroes", "tambien", "eh", "pues", "juegan", "juega", "contra", "yo", "creo", "hay",
 }
 
 
@@ -84,7 +96,8 @@ def parse_position(text: str) -> int | None:
 
 
 def _words(text: str) -> str:
-    return " ".join(re.sub(r"[^a-z0-9' ]+", " ", text.lower().replace("-", " ")).split())
+    """Lower case words without accents or punctuation ("¿Sí?" -> "si")."""
+    return " ".join(re.sub(r"[^a-z0-9' ]+", " ", fold(text).replace("-", " ")).split())
 
 
 def parse_heroes(index: HeroIndex, text: str) -> list[HeroInfo]:

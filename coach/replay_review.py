@@ -191,7 +191,7 @@ class ReplayReview:
             reply = self.ask(prompt, frame)
         finally:
             self._busy = False
-        if not reply or reply.strip(" .").lower() == "skip" or not self.gate.open:
+        if not reply or reply.strip(" .").lower() in ("skip", "omitir") or not self.gate.open:
             return
         self.recent.append(reply)
         if reason == REGULAR:

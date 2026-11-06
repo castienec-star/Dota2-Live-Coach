@@ -14,7 +14,7 @@ from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-from . import knowledge, llm
+from . import i18n, knowledge, llm
 from .grounding import Grounding
 from .draft import Analysis, Draft, analyse
 from .heroes import HeroIndex, HeroInfo
@@ -265,7 +265,7 @@ def build(
             options.get("ollama_model", "llama3.1:8b"),
             options.get("ollama_url", "http://127.0.0.1:11434"),
             float(options.get("timeout", 20)),
-            SYSTEM_PROMPT.format(words=words),
+            i18n.prompt(SYSTEM_PROMPT.format(words=words)),
             num_predict=words * 2,
             label="Briefing",
             temperature=0.2,

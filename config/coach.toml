@@ -9,6 +9,12 @@
 #                   when you ask. A reminder you turn on or off yourself in your
 #                   own coach.toml stays as you set it, in either mode.
 mode = "beginner"
+# What the coach speaks and the app window shows: "en" (English) or "es"
+# (Spanish). Spanish sounds best with a Spanish Windows voice: add one in
+# Windows Settings > Time & language > Speech (the coach picks it when
+# [voice] name is empty). Built-in lines have Spanish of their own; the rest
+# is translated once by the death tips' model (Ollama) and remembered.
+language = "en"
 
 [server]
 # The listener only ever binds to this machine. Non-loopback hosts are refused.
@@ -69,6 +75,8 @@ chat = true
 chat_timeout = 6
 wake_word = "hey coach"
 # faster-whisper model: "tiny.en" is lighter on the CPU, "small.en" understands more.
+# In Spanish the coach uses the same size without ".en" ("base"), which
+# understands Spanish; the wake word stays "hey coach".
 model = "base.en"
 # Microphone loudness that counts as talking (raise it if noise keeps it listening).
 speech_level = 500

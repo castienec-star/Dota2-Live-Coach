@@ -27,7 +27,7 @@ import threading
 from collections.abc import Callable
 from concurrent.futures import Future, ThreadPoolExecutor
 
-from . import knowledge, llm, situational
+from . import i18n, knowledge, llm, situational
 from .benchmarks import Benchmarks, Verdict, is_support
 from .game_questions import Notes
 from .grounding import Grounding
@@ -364,7 +364,7 @@ def watch(settings: dict, advice: Advice) -> list[ItemWatch]:
 def ollama_asker(model: str, url: str, timeout: float) -> llm.Ask:
     """Ollama answers in the candidates' JSON schema, so the item is always one of them."""
     return llm.ollama_asker(
-        model, url, timeout, SYSTEM_PROMPT, label="Ollama item advice", temperature=0.2
+        model, url, timeout, i18n.prompt(SYSTEM_PROMPT), label="Ollama item advice", temperature=0.2
     )
 
 

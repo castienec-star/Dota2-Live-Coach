@@ -16,7 +16,7 @@ import time
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 
-from .. import knowledge, llm, situational
+from .. import i18n, knowledge, llm, situational
 from ..benchmarks import is_support
 from ..game_questions import Notes
 from ..grounding import Grounding
@@ -114,9 +114,11 @@ def fits(tip: str, snap: Snapshot) -> bool:
 
 
 def claude_asker(
-    model: str, effort: str, timeout: float, system: str = SYSTEM_PROMPT, label: str = "Death tips"
+    model: str, effort: str, timeout: float, system: str | None = None, label: str = "Death tips"
 ) -> Ask:
-    """Ask Claude for a tip; returns None on any failure so the game goes on."""
+    """Ask Claude for a tip; returns None on any failure so the game goes on.
+    system is the death tips' prompt unless given; in the coach's language."""
+    system = i18n.prompt(SYSTEM_PROMPT if system is None else system)
     import anthropic
 
     client = None
@@ -176,7 +178,7 @@ def claude_asker(
 
 def ollama_asker(model: str, url: str, timeout: float) -> Ask:
     """Ask a local Ollama model for a tip; returns None if it is not running or is slow."""
-    return llm.ollama_asker(model, url, timeout, SYSTEM_PROMPT, label="Ollama tip", temperature=0.4)
+    return llm.ollama_asker(model, url, timeout, i18n.prompt(SYSTEM_PROMPT), label="Ollama tip", temperature=0.4)
 
 
 # Written tips by game stage and role, from docs/strategy/fundamentals.md

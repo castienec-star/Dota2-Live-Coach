@@ -17,6 +17,7 @@ from dataclasses import asdict
 from pathlib import Path
 
 from . import config as config_mod
+from . import i18n
 from . import license as license_mod
 from . import options, settings
 from .app import CoachProcess, Status, _hidden, command
@@ -34,6 +35,18 @@ class Api:
         self._lock = threading.Lock()
         self._replay = None  # the Replay review window's api, once opened
         self._replay_window = None
+        self._lang: str | None = None  # read from coach.toml once, again after Save
+
+    # Language ------------------------------------------------------------
+
+    def language(self) -> str:
+        """"en" or "es": the language the page shows ([coach] language)."""
+        if self._lang is None:
+            self._lang = options.language_of(self._defaults(), self._user())
+        return self._lang
+
+    def _t(self, text: str) -> str:
+        return i18n.ui(text, self.language()) if isinstance(text, str) else text
 
     # The coach -----------------------------------------------------------
 
@@ -57,9 +70,20 @@ class Api:
             self._status.running = self._coach.running
             if not self._status.running:
                 self._status.connected = False
+            lang = self.language()
+            shown = []
+            for event in events:
+                row = asdict(event)
+                if event.kind in ("stopped", "problem", "connected"):
+                    # The coach's own spoken lines are in the language already.
+                    row["text"] = i18n.ui(event.text, lang)
+                shown.append(row)
+            status = asdict(self._status)
+            if status.get("problem"):
+                status["problem"] = i18n.ui(status["problem"], lang)
             return {
-                "events": [asdict(e) for e in events],
-                "status": {**asdict(self._status), "headline": self._status.headline()},
+                "events": shown,
+                "status": {**status, "headline": i18n.ui(self._status.headline(), lang)},
             }
 
     def shutdown(self) -> None:
@@ -112,7 +136,8 @@ class Api:
 
             self._voices = installed_voices()
         return {
-            "schema": options.schema(),
+            "language": self.language(),
+            "schema": options.schema(self.language()),
             "values": options.values(self._defaults(), self._user()),
             "defaults": options.values(self._defaults(), {}),
             "voices": list(self._voices),
@@ -129,16 +154,20 @@ class Api:
     def save_settings(self, sent: dict) -> dict:
         data, errors = options.saved(self._defaults(), self._user(), sent)
         if errors:
-            return {"ok": False, "errors": errors}
+            return {"ok": False, "errors": [self._t(e) for e in errors]}
+        before = self.language()
         settings.save(self._user_file, data)
+        self._lang = None
         restarted = False
         if self._coach.running:  # new settings take effect at once
             self._coach.stop()
             self._coach.start()
             restarted = True
-        return {"ok": True, "restarted": restarted, "values": options.values(self._defaults(), data)}
+        return {"ok": True, "restarted": restarted, "values": options.values(self._defaults(), data),
+                "language_changed": self.language() != before}
 
     def test_voice(self, voice: str = "", rate: int = 0) -> None:
+        # Said in the coach's language: coach.toml's, as saved.
         args = ["say", "Power rune in 15 seconds.", "--voice", voice or "", "--rate", str(int(rate))]
         subprocess.Popen(command(*args), stdin=subprocess.DEVNULL, **_hidden())
 
@@ -172,7 +201,14 @@ class Api:
     def progress(self) -> dict:
         from . import progress
 
-        return progress.summary(self._app_dir, self._record_dir())
+        out = progress.summary(self._app_dir, self._record_dir())
+        for rec in out.get("recommendations", []):
+            rec["title"] = self._t(rec.get("title", ""))
+            rec["text"] = self._t(rec.get("text", ""))
+        for match in out.get("matches", []):
+            for note in match.get("notes", []):
+                note["text"] = self._t(note.get("text", ""))
+        return out
 
     def match_details(self, match_id: str, account_id: str) -> dict:
         """The player's own numbers for one match from OpenDota's public page."""
@@ -181,21 +217,27 @@ class Api:
 
         opendota = OpenDota(self._app_dir / "opendota")
         # Re-asked after 6 hours: OpenDota adds parsed numbers after a while.
-        return progress.match_details(lambda path: opendota.get(path, 6 * 3600), match_id, account_id)
+        out = progress.match_details(lambda path: opendota.get(path, 6 * 3600), match_id, account_id)
+        if "message" in out:
+            out["message"] = self._t(out["message"])
+        for row in out.get("stats", []) + out.get("ranks", []):
+            row["label"] = self._t(row["label"])
+        out["tips"] = [self._t(t) for t in out.get("tips", [])]
+        return out
 
     def add_mmr(self, value) -> dict:
         from . import progress
 
         ok, message = progress.MmrHistory(self._app_dir).add(value)
-        return {"ok": ok, "message": message}
+        return {"ok": ok, "message": self._t(message)}
 
     # Licence -------------------------------------------------------------
 
     def license_state(self) -> dict:
         result = self._license.check()
-        return {"required": license_mod.required(), "ok": result.ok, "message": result.message,
+        return {"required": license_mod.required(), "ok": result.ok, "message": self._t(result.message),
                 "store": license_mod.STORE_URL}
 
     def activate(self, key: str) -> dict:
         result = self._license.activate(key)
-        return {"ok": result.ok, "message": result.message}
+        return {"ok": result.ok, "message": self._t(result.message)}
