@@ -85,3 +85,12 @@ def test_settings_bat_opens_the_settings_window():
     bat = build_exe.SETTINGS_BAT.format(name="DotaCoach")
     assert '"%~dp0DotaCoach.exe" settings' in bat
     assert "Coach settings.bat" in build_exe.START_HERE
+
+
+def test_app_window_is_built_windowed_next_to_the_coach(tmp_path):
+    args = build_exe.app_args(tmp_path / "work", tmp_path / "dist")
+    assert args[0].endswith("app_launcher.py")
+    assert "--windowed" in args and args[args.index("--name") + 1] == "Dota 2 Live Coach"
+    # Its own contents folder, so copying it next to DotaCoach.exe can't clash with _internal.
+    assert args[args.index("--contents-directory") + 1] == build_exe.APP_CONTENTS != "_internal"
+    assert "Dota 2 Live Coach" in build_exe.START_HERE.format(name="DotaCoach", app="Dota 2 Live Coach", version="x")

@@ -85,6 +85,17 @@ didn't change on purpose (for example `enabled = false` under `[listen]`).
 
 ## Run
 
+The app window: press **Start** before your match, see whether Dota 2 is
+connected and read back what the coach said. Settings, Dota setup and your
+match reviews open from its buttons. In the Windows app, double-click
+`Dota 2 Live Coach.exe`; with Python:
+
+```
+py -m coach app
+```
+
+Or run the coach straight in the console:
+
 ```
 py -m coach
 ```
