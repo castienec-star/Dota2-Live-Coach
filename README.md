@@ -100,6 +100,22 @@ It needs [Ollama](https://ollama.com) and a vision model, once:
 `ollama pull qwen2.5vl:7b` (about 6 GB), or the lighter `ollama pull gemma3:4b`
 (about 4 GB). From Command Prompt: `py -m coach replay-review --mode continuous --interval 10`.
 
+### Learn from coaching videos
+
+Replay review can learn how a real coach thinks from a coaching video that
+is on your PC (one you are allowed to use):
+
+```
+py -m coach learn-video "C:\Videos\lane review.mp4"
+```
+
+It writes down what the coach says (the voice packages' speech model), takes
+the frames from each moment, and has your vision model write a lesson card:
+the situation, the coach's point, why, and what to do. Cards are saved in
+the app folder's `lessons\` (open the JSON files to read or delete them). In
+replay review, the lessons that match the moment (same stage of the game,
+same kind of moment) are given to the model as a real coach's examples.
+
 ## Update
 
 New features only reach you once you update. Close the coach window, then

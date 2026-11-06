@@ -110,7 +110,7 @@ main::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 10px; 
 .feed .connected .k { background: rgba(62, 207, 142, .12); color: var(--green); }
 .feed .problem .k { background: rgba(240, 180, 76, .12); color: var(--amber); }
 .feed .problem .x { color: var(--amber); }
-.feed .skipped .x, .feed .log .x, .feed .version .x { color: var(--muted); }
+.feed .skipped .x, .feed .log .x, .feed .version .x, .feed .info .x { color: var(--muted); }
 .feed .empty { color: var(--muted); justify-content: center; padding: 60px 0; border: 0; }
 .actions { display: flex; flex-direction: column; gap: 10px; }
 .actions h2 { margin-bottom: 4px; }

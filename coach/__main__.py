@@ -36,6 +36,7 @@ from .recorder import MatchRecorder
 from .replay import replay
 from . import replay_review as replay_review_mod
 from . import vision
+from . import lessons as lessons_mod
 from .replay_view import known_accounts
 from .rules import (
     Engine,
@@ -532,9 +533,12 @@ def cmd_replay_review(cfg: config_mod.Config, args: argparse.Namespace) -> int:
             logging.warning("Ollama not reachable at %s: replay review works without looking at the screen", url)
         else:
             threading.Thread(target=llm.load, args=(args.vision_model, url), daemon=True).start()
+    lessons = lessons_mod.load(cfg.app_dir)
+    if lessons:
+        logging.info("Replay review: %d lessons from coaching videos", len(lessons))
     review = replay_review_mod.ReplayReview(
         accounts, hero, args.mode, ask, vision.grab_screen, speaker.say, interval=args.interval or None,
-        busy=lambda: speaker.busy,
+        busy=lambda: speaker.busy, lessons=lessons,
     )
     coach.replay = review
     coach.listeners.append(review)
@@ -563,6 +567,28 @@ def cmd_replay_review(cfg: config_mod.Config, args: argparse.Namespace) -> int:
         speaker.close()
         if ask is not None:
             llm.unload(args.vision_model, url, timeout=1.5)
+    return 0
+
+
+def cmd_learn_video(cfg: config_mod.Config, args: argparse.Namespace) -> int:
+    """Lesson cards for replay review from a coaching video on this PC."""
+    if not args.video.is_file():
+        print(f"No video at {args.video}")
+        return 1
+    url = cfg.reminders.get("death_tip", {}).get("ollama_url", llm.DEFAULT_URL)
+    if vision.installed(args.vision_model, url) is not True:
+        print(f"Needs Ollama running with {args.vision_model}: ollama pull {args.vision_model}")
+        return 1
+    try:
+        import av  # noqa: F401
+        import faster_whisper  # noqa: F401
+    except ImportError:
+        print('Needs the voice packages: py -m pip install -e ".[voice]"')
+        return 1
+    ask = vision.ollama_vision(args.vision_model, url, 120, lessons_mod.SYSTEM, num_predict=300,
+                               fmt=lessons_mod.CARD_SCHEMA)
+    segments = lessons_mod.transcribe(args.video, args.whisper, args.language or None)
+    lessons_mod.learn(args.video, cfg.app_dir, ask, segments, say=lambda text: print(text, flush=True))
     return 0
 
 
@@ -787,7 +813,12 @@ def main(argv: list[str] | None = None) -> int:
                       help="seconds between looks back (0 = the mode's own); a frame is taken every second")
     p_rr.add_argument("--vision-model", default=vision.DEFAULT_MODEL, help='an Ollama vision model, or "off"')
     p_rr.add_argument("--hero", default="", help="your hero in the replay, when the coach can't tell")
-    p_rr.add_argument("--timeout", type=float, default=30.0, help="seconds to wait for the vision model")
+    p_rr.add_argument("--timeout", type=float, default=60.0, help="seconds to wait for the vision model")
+    p_learn = sub.add_parser("learn-video", help="lessons for replay review from a coaching video on this PC")
+    p_learn.add_argument("video", type=Path)
+    p_learn.add_argument("--vision-model", default=vision.DEFAULT_MODEL)
+    p_learn.add_argument("--whisper", default="small", help="faster-whisper model: small, medium...")
+    p_learn.add_argument("--language", default="", help='"en" or "es"; empty = detect')
     p_refresh = sub.add_parser("refresh-items", help="save popular items per hero from OpenDota")
     p_refresh.add_argument("--out", type=Path, default=None, help="where to save (default: the bundled data file)")
     p_bench = sub.add_parser("refresh-benchmarks", help="save public GPM and last-hit numbers per hero from OpenDota")
@@ -819,6 +850,7 @@ def main(argv: list[str] | None = None) -> int:
         "install": cmd_install,
         "replay": cmd_replay,
         "replay-review": cmd_replay_review,
+        "learn-video": cmd_learn_video,
         "refresh-items": cmd_refresh_items,
         "refresh-benchmarks": cmd_refresh_benchmarks,
         "refresh-brackets": cmd_refresh_brackets,

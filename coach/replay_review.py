@@ -26,12 +26,14 @@ from __future__ import annotations
 
 import difflib
 import logging
+import re
 import threading
 import time
 from collections import deque
 from collections.abc import Callable
 from typing import Any
 
+from . import lessons as lessons_mod
 from .replay_view import ScreenGate, find_slot, is_own_match, is_spectating, own_payload
 from .speaker import HIGH, NORMAL
 from .state import MatchState, Snapshot
@@ -85,8 +87,14 @@ team's vision. Never the scoreboard, enemy gold or net worth.
 talk about last hits, denies, trading hits, creep equilibrium, staying near \
 your creeps, runes and rotations; never tell them to leave their lane or \
 move to another lane.
-- Magic Wand, Stick and potions are for health, mana or escaping, never for \
-last hits or denies.
+- Items: Magic Wand and Magic Stick charges are saved for fights and \
+escapes (a fight over the lotus, a gank) and used when health is low; they \
+have nothing to do with farming, last hits or denies. Potions and other \
+items are for health, mana, fights and escapes. Only mention using an item \
+when it would have changed a fight or a death, for example dying with wand \
+charges still unused.
+- Last hits are creeps the player finished for gold. A kill means an enemy \
+hero died. Never call last hits kills.
 - If nothing clearly went wrong, answer only: skip
 - Don't repeat a point you already made, even in other words.
 - One or two short sentences, at most 30 words, spoken aloud, no lists."""
@@ -112,12 +120,14 @@ class ReplayReview:
         clock: Callable[[], float] = time.monotonic,
         run: Callable[[Callable[[], None]], None] | None = None,
         busy: Callable[[], bool] = lambda: False,
+        lessons: list | None = None,
     ) -> None:
         if mode not in MODES:
             raise ValueError(f"mode must be one of {MODES}")
         self.accounts, self.hero, self.mode = accounts, hero, mode
         self.ask, self.grab, self.say, self.clock = ask, grab, say, clock
         self.speaking = busy
+        self.lessons = lessons or []  # lesson cards from coaching videos (coach/lessons.py)
         self.interval = interval or DEFAULT_INTERVAL[mode]
         self.gate = ScreenGate(clock)
         self.where: tuple[str, str] | None = None
@@ -134,6 +144,7 @@ class ReplayReview:
         self._last_moment = -MOMENT_GAP
         self._last_frame = -FRAME_EVERY
         self._told: set[str] = set()
+        self._focus = -1
 
     # Game state ---------------------------------------------------------
 
@@ -220,21 +231,43 @@ class ReplayReview:
             self._busy = False
             return False
         self._last_ask = now
-        prompt = self.prompt(reason, since)
+        window = [snap for t, snap in self.history if t >= since] + [self.snap]
+        unused = unused_at_death(window) if reason == DIED else []
+        fought = any(s.kills > window[0].kills or s.deaths > window[0].deaths or not s.alive for s in window)
+        prompt = self.prompt(reason, since, unused)
         picked = spread(frames, FRAMES_PER_LOOK)
-        self._run(lambda: self._answer(prompt, picked, reason))
+        self._run(lambda: self._answer(prompt, picked, reason, unused, fought))
         return True
 
-    def _answer(self, prompt: str, frames: list[Frame], reason: str) -> None:
+    def _answer(self, prompt: str, frames: list[Frame], reason: str, unused: list[str] | None = None,
+                fought: bool = False) -> None:
+        started = time.monotonic()
         try:
             reply = self.ask(prompt, frames)
         finally:
             self._busy = False
-        if not reply or reply.strip(" .\"'").lower() in ("skip", "omitir") or not self.gate.open:
+        took = f"{time.monotonic() - started:.0f} s"
+        # Notes for the window, so the player sees why the coach is quiet.
+        if not reply:
+            log.info("Replay review: the vision model gave no answer (%s). Is Ollama running?", took)
+            return
+        if reply.strip(" .\"'").lower() in ("skip", "omitir") or not self.gate.open:
+            log.info("Replay review: looked, nothing clearly went wrong (%s)", took)
+            return
+        # Small vision models tie items to farming ("use your wand to farm
+        # creeps") and call last hits kills (Castien, 2026-11-06): those go.
+        if items_for_farming(reply, self.snap):
+            log.info("Replay review: dropped item advice about farming (%s): %s", took, reply)
+            return
+        if not fought and KILLS.search(reply):
+            log.info("Replay review: dropped a line about kills that didn't happen (%s): %s", took, reply)
             return
         if self.repeats(reply):
-            log.info("Replay review: dropped a repeat: %s", reply)
+            log.info("Replay review: dropped a repeat (%s): %s", took, reply)
             return
+        if reason == REGULAR and time.monotonic() - started > self.interval:
+            log.info("Replay review: the vision model took %s, longer than the %.0f s you set, so it looks "
+                     "less often. Try the lighter model or a longer time.", took, self.interval)
         self.recent.append(reply)
         self.say(reply, priority=NORMAL if reason == REGULAR else HIGH, max_delay=MAX_DELAY)
 
@@ -242,22 +275,37 @@ class ReplayReview:
         words = _words(reply)
         return any(difflib.SequenceMatcher(None, words, _words(old)).ratio() >= SAME for old in self.recent)
 
-    def prompt(self, reason: str, since: float) -> str:
+    def prompt(self, reason: str, since: float, unused: list[str] | None = None) -> str:
         s = self.snap
         hero = (s.hero_name or "unknown").removeprefix("npc_dota_hero_").replace("_", " ")
-        items = ", ".join(i.name.removeprefix("item_").replace("_", " ") for i in s.items if i.slot.startswith("slot"))
-        ready = ", ".join(a.name.split("_", 1)[-1].replace("_", " ") for a in s.abilities if a.can_cast and a.level)
+        items = ", ".join(
+            i.name.removeprefix("item_").replace("_", " ") + (f" ({i.charges} charges)" if i.charges else "")
+            for i in s.items if i.slot.startswith("slot")
+        )
         facts = [
             f"The player is {hero}, level {s.level}.",
             stage(s.clock_time),
             numbers([snap for t, snap in self.history if t >= since] + [s]),
-            f"Items now: {items}." if items else "",
-            f"Spells ready now: {ready}." if ready else "",
+            f"Items: {items}." if items else "",
+            f"When they died they still had ready: {', '.join(unused)}." if unused else "",
             REASONS[reason],
+            f"This time, look most at: {self.focus()}." if reason == REGULAR else "",
         ]
+        examples = lessons_mod.matching(self.lessons, reason, stage_name(s.clock_time))
+        if examples:
+            facts.append("A real coach's lessons from similar moments, for how to think about it "
+                         "(only use one if the frames show the same thing):")
+            facts += [f"- {ex.text()}" for ex in examples]
         if self.recent:
             facts.append("Points you already made: " + " | ".join(self.recent))
         return "\n".join(f for f in facts if f)
+
+    def focus(self) -> str:
+        """A different thing to look at each regular look, so the coach
+        notices different mistakes instead of one theme."""
+        topics = FOCUS[stage_name(self.snap.clock_time)]
+        self._focus = (self._focus + 1) % len(topics)
+        return topics[self._focus]
 
     def _forget(self) -> None:
         self.frames.clear()
@@ -288,6 +336,25 @@ def stage(clock: int | None) -> str:
     return f"Game time {when}: the late game."
 
 
+# What a regular look focuses on, in turn, by stage of the game.
+FOCUS = {
+    "laning": ("last hits and denies", "trading hits with the enemy laner", "where you stood compared with your creeps",
+               "the creep equilibrium (where the waves meet)", "the minimap and missing enemies",
+               "using your spells well (mana, timing)"),
+    "mid": ("where you farmed and how safe it was", "the minimap and missing enemies",
+            "how you joined or avoided fights", "towers, Roshan and other objectives", "using your spells well"),
+    "late": ("positioning in fights", "buyback and dying before objectives", "the minimap and missing enemies",
+             "farming safe areas between fights", "using your spells and items in fights"),
+}
+
+
+def stage_name(clock: int | None) -> str:
+    """The lesson cards' name for the stage: laning, mid or late."""
+    if clock is None or clock < 600:
+        return "laning"
+    return "mid" if clock < 1800 else "late"
+
+
 def numbers(snaps: list[Snapshot]) -> str:
     """The player's own numbers from the first to the last of these seconds."""
     snaps = [s for s in snaps if s.clock_time is not None and s.hero_name]
@@ -311,6 +378,49 @@ def numbers(snaps: list[Snapshot]) -> str:
         parts.append(f"{b.kills - a.kills} kill(s)")
     span = f"From {clock(a)} to {clock(b)}" if b.clock_time != a.clock_time else f"At {clock(b)}"
     return f"{span}: " + ", ".join(parts) + "."
+
+
+# Item words; the player's own item names are added.
+ITEM_WORDS = {"wand", "stick", "item", "items", "potion", "salve", "tango", "tangos", "clarity", "mango",
+              "faerie", "bottle", "varita", "objeto", "objetos", "poción", "pocion"}
+# Farming words: an item in the same sentence as one of these is the wrong idea.
+FARM_WORDS = {"farm", "farming", "farmed", "creep", "creeps", "last", "hit", "hits", "deny", "denies",
+              "denying", "cs", "wave", "experience", "xp", "granjear", "farmear", "farmeo", "creeps",
+              "súbditos", "subditos", "negar", "oleada"}
+KILLS = re.compile(r"\b(kills?|asesinatos?|kill\s+gold)\b", re.IGNORECASE)
+# Charges worth saving for a fight.
+CHARGES_WORTH = 5
+
+
+def items_for_farming(reply: str, snap: Snapshot) -> bool:
+    """True when a sentence ties using an item to farming or last hits."""
+    spells = {w for a in snap.abilities for w in a.name.split("_")}
+    own = {w for i in snap.items for w in i.name.removeprefix("item_").split("_") if len(w) > 3} - spells
+    for sentence in re.split(r"[.!?]+", reply):
+        words = set(_words(sentence))
+        if words & (ITEM_WORDS | own) and words & FARM_WORDS:
+            return True
+    return False
+
+
+def unused_at_death(snaps: list[Snapshot]) -> list[str]:
+    """Items and spells the player could still use right before dying."""
+    alive = [s for s in snaps if s.alive and s.hero_name]
+    if not alive:
+        return []
+    last = alive[-1]
+    out = []
+    for i in last.items:
+        if not i.slot.startswith("slot") or not i.can_cast or i.cooldown:
+            continue
+        if i.name in ("item_magic_wand", "item_magic_stick") and (i.charges or 0) < CHARGES_WORTH:
+            continue
+        name = i.name.removeprefix("item_").replace("_", " ")
+        out.append(f"{name} ({i.charges} charges)" if i.charges else name)
+    for a in last.abilities:
+        if a.can_cast and a.level and not a.cooldown:
+            out.append(a.name.split("_", 1)[-1].replace("_", " "))
+    return out
 
 
 def _words(text: str) -> list[str]:

@@ -57,7 +57,8 @@ def grab_screen(max_width: int = MAX_WIDTH) -> Frame | None:
     return out.getvalue()
 
 
-def ollama_vision(model: str, url: str, timeout: float, system: str, num_predict: int = 90) -> SeeAsk:
+def ollama_vision(model: str, url: str, timeout: float, system: str, num_predict: int = 90,
+                  fmt: dict | None = None) -> SeeAsk:
     """Ask a local Ollama vision model about a few frames (oldest first);
     None if it is off or slow."""
     warned = False
@@ -74,6 +75,8 @@ def ollama_vision(model: str, url: str, timeout: float, system: str, num_predict
             "keep_alive": llm.KEEP_ALIVE,
             "options": {"num_predict": num_predict, "temperature": 0.4, "num_ctx": CONTEXT},
         }
+        if fmt is not None:
+            body["format"] = fmt  # a JSON schema the reply must follow
         request = urllib.request.Request(
             url.rstrip("/") + "/api/chat", json.dumps(body).encode(), {"Content-Type": "application/json"}
         )
@@ -92,7 +95,8 @@ def ollama_vision(model: str, url: str, timeout: float, system: str, num_predict
                 warned = True
                 log.warning("Ollama not reachable at %s (%s)", url, exc)
             return None
-        return llm.clean((data.get("message") or {}).get("content", ""))
+        content = (data.get("message") or {}).get("content", "")
+        return content.strip() if fmt is not None else llm.clean(content)
 
     return ask
 

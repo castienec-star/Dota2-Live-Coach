@@ -166,3 +166,60 @@ def test_numbers_and_stage():
 def test_bad_mode():
     with pytest.raises(ValueError):
         ReplayReview(set(), None, "sometimes", None, lambda: None, print)
+
+
+def test_improvised_item_advice_and_fake_kills_are_dropped():
+    rig = Rig(mode="continuous", replies=[
+        "You could have used the wand to farm creeps, gaining gold and experience.",
+        "Staying near your creeps would have helped you get those early kills.",
+        "You let the wave push to their tower and lost three last hits.",
+    ])
+    rig.play(31)
+    assert len(rig.asked) == 3
+    assert [text for text, _ in rig.said] == ["You let the wave push to their tower and lost three last hits."]
+    assert "Items: magic wand." in rig.asked[0][0]  # the coach still sees the items
+
+
+def test_wand_for_a_fight_is_fine():
+    rig = Rig(mode="continuous", replies=["You went into the lotus fight at low health and never broke your wand. "
+                                          "Those charges would have kept you alive."])
+    rig.play(11)
+    assert len(rig.said) == 1
+
+
+def test_unused_wand_at_death_may_be_mentioned():
+    rig = Rig(replies=["You died with fifteen wand charges. Breaking the wand in that fight would have saved you."])
+    wand = {"slot0": {"name": "item_magic_wand", "charges": 15, "can_cast": True, "cooldown": 0}}
+    for _ in range(5):
+        p = replay(clock=(rig.review.snap.clock_time or 239) + 1)
+        p["items"]["team2"]["player0"] = wand
+        rig.send(p)
+        rig.review.tick()
+    rig.send(replay(clock=245, health=0, alive=False), dt=0.1)
+    assert "still had ready: magic wand (15 charges)" in rig.asked[-1][0]
+    assert len(rig.said) == 1
+
+
+def test_regular_looks_rotate_what_to_look_at():
+    rig = Rig(mode="continuous", replies=["You missed two denies.", "You trade badly into their support.",
+                                          "Your wave met under their tower."])
+    rig.play(31)
+    focuses = [p.split("This time, look most at: ")[1].split(".")[0] for p, _ in rig.asked]
+    assert len(set(focuses)) == 3
+
+
+def test_quiet_looks_leave_a_note(caplog):
+    rig = Rig(mode="continuous", replies=["skip"])
+    with caplog.at_level("INFO"):
+        rig.play(11)
+    assert "nothing clearly went wrong" in caplog.text
+
+
+def test_replay_review_shows_matching_lessons():
+    from coach.lessons import Lesson
+
+    rig = Rig(mode="continuous")
+    rig.review.lessons = [Lesson("Lane at 4:00", "He stayed near his creeps", "Safe from ganks",
+                                 "Stand behind your creep wave", "laning", ["positioning", "last hits"])]
+    rig.play(11)
+    assert "A real coach's lessons" in rig.asked[0][0] and "He stayed near his creeps" in rig.asked[0][0]
