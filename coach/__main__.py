@@ -9,6 +9,7 @@ import logging
 import subprocess
 import sys
 import threading
+import time
 from collections.abc import Callable
 from pathlib import Path
 
@@ -181,6 +182,7 @@ def make_coach(
         review_say = functools.partial(speaker.say, priority=HIGH, max_delay=5)
         # A fast replay (no tips) only prints it.
         folder = cfg.app_dir / "reviews" if tips else None
+        coach.reviews = folder
         review = review_mod.Review(
             review_say,
             folder,
@@ -253,6 +255,9 @@ HOW_COMMANDS = ("how", "status")
 # Typed for "what should I focus on now?".
 FOCUS_COMMANDS = ("focus", "tip")
 
+# Typed for "how did I do today?".
+TODAY_COMMANDS = ("today", "record")
+
 # Typed to set or hear your rank: "rank archon", "mmr 2500".
 RANK_COMMANDS = ("rank", "mmr", "medal")
 
@@ -278,7 +283,7 @@ def focus(coach: Coach, tips: death_tip.BuiltinTips) -> str:
 def read_typed_picks(coach: Coach, questions: TypedQuestions | None = None) -> None:
     """Lets you type the draft in the coach window: "vs am cm lion pudge sf",
     "buy" for what to buy now, "how" for how you are doing, "focus" for the
-    one thing to work on now, "rank archon"
+    one thing to work on now, "today" for today's games, "rank archon"
     to set your rank, the answer to
     a start-of-game question shown there, or any other question for the model."""
     advice = coach.advice
@@ -295,6 +300,9 @@ def read_typed_picks(coach: Coach, questions: TypedQuestions | None = None) -> N
             continue
         if command in FOCUS_COMMANDS:
             print(focus(coach, tips), flush=True)
+            continue
+        if command in TODAY_COMMANDS:
+            print(review_mod.day_summary(coach.reviews, time.time()), flush=True)
             continue
         if command in RANK_COMMANDS and coach.advice is not None:
             print(tell(coach.advice.benchmarks.rank, line), flush=True)
@@ -421,6 +429,7 @@ def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
         advice=advice,
         enemy_items=coach.enemy_items,
         chat=chat,
+        reviews=coach.reviews,
     )
     typed = None
     if interview is not None and listening is None and typing:
@@ -442,7 +451,7 @@ def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
         logging.info('Type the enemy picks any time, e.g.  vs am cm lion pudge sf')
         logging.info(
             'Type "buy" any time to hear what to buy now, "how" for how you are doing, '
-            'or "focus" for the one thing to work on now'
+            '"focus" for the one thing to work on now, or "today" for how your games went today'
         )
         logging.info('Type your rank to compare with players of your medal, e.g.  rank archon  or  mmr 2500')
         if chat is not None:

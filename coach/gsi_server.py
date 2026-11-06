@@ -38,6 +38,7 @@ class Coach:
         self.advice = None  # what to buy now (coach/item_advisor.py)
         self.enemy_items = None  # enemy items the player told the coach (coach/enemy_items.py)
         self.chat = None  # answers any other question with a model (coach/chat.py)
+        self.reviews = None  # the folder of saved post-game reviews (coach/review.py)
         self._last_summary = 0.0
 
     def handle(self, payload: dict[str, Any]) -> Snapshot:

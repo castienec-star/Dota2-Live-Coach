@@ -5,7 +5,7 @@ import pytest
 from coach import __main__ as main_mod
 from coach.items import load_items
 from coach.profile import MatchSummary
-from coach.review import POST_GAME, Last, break_line, losing_streak, saved_results, Review, last_hit_target, points, progress, spoken, text
+from coach.review import POST_GAME, Last, break_line, day_summary, losing_streak, saved_results, saved_reviews, Review, last_hit_target, points, progress, spoken, text
 from coach.state import MatchState
 
 from test_pregame import IN_PROGRESS, write_recording
@@ -241,3 +241,59 @@ def test_a_win_breaks_the_streak(tmp_path, payload):
     feed(review, payload, range(0, 1801, 30), deaths=(1700,), won=True)
     lose(tmp_path, payload, NOON, said)
     assert not any("break" in line for line in said)
+
+
+# Local noon, so "today" is the same day in any time zone the tests run in.
+LOCAL_NOON = __import__("time").mktime((2027, 1, 15, 12, 0, 0, 0, 0, -1))
+
+
+def write_points(folder, at, won, lines, hero="luna"):
+    import time
+
+    folder.mkdir(parents=True, exist_ok=True)
+    name = f"{time.strftime('%Y%m%d-%H%M%S', time.localtime(at))}-{hero}.txt"
+    (folder / name).write_text(text(match(hero=hero, won=won), lines), encoding="utf-8")
+
+
+def test_every_point_kind_is_found_back_in_its_saved_file(tmp_path):
+    early_deaths = match(deaths=5, death_times=[200, 500, 900, 1400, 1700], last_hits_10=18, item_times={"item_bfury": 1500})
+    no_item_support = match(hero="lion", deaths=7, death_times=[700, 900, 1100, 1300, 1500, 2100, 2400], item_times={}, duration=2400)
+    write_points(tmp_path, LOCAL_NOON - HOUR, False, points(early_deaths, False, ITEMS))
+    write_points(tmp_path, LOCAL_NOON, True, points(no_item_support, True, ITEMS), hero="lion")
+    kinds = [k for _, _, k in saved_reviews(tmp_path)]
+    assert kinds == [["deaths", "last_hits", "item"], ["deaths", "item"]]
+
+
+def test_day_summary_with_no_games(tmp_path):
+    assert day_summary(tmp_path / "reviews", LOCAL_NOON).startswith("No games today yet.")
+    assert "reviews are off" in day_summary(None, LOCAL_NOON)
+
+
+def test_day_summary_counts_today_only_and_names_the_common_point(tmp_path):
+    died = ["You died 2 times before 10 minutes. In lane, stand behind your creeps."]
+    write_points(tmp_path, LOCAL_NOON - 30 * HOUR, False, died)  # yesterday
+    write_points(tmp_path, LOCAL_NOON - 3 * HOUR, False, died)
+    write_points(tmp_path, LOCAL_NOON - 2 * HOUR, True, ["You had 20 last hits at 10 minutes; aim for 35."])
+    write_points(tmp_path, LOCAL_NOON - HOUR, True, died + ["Your first big item, Manta Style, came at 24 minutes."])
+    said = day_summary(tmp_path, LOCAL_NOON)
+    assert said.startswith("Today: three games, two wins and one loss.")
+    assert "Deaths came up most, in 2 of 3 reviews. Next game, walk back to your tower" in said
+    assert said.endswith("You won the last one, a good game to stop on if you're tired.")
+
+
+def test_day_summary_after_losses_in_a_row(tmp_path):
+    write_points(tmp_path, LOCAL_NOON - HOUR, False, ["A steady game with nothing big to fix."])
+    write_points(tmp_path, LOCAL_NOON - 0.5 * HOUR, None, ["A steady game with nothing big to fix."])
+    write_points(tmp_path, LOCAL_NOON - 0.25 * HOUR, False, ["A steady game with nothing big to fix."])
+    write_points(tmp_path, LOCAL_NOON, False, ["A steady game with nothing big to fix."])
+    said = day_summary(tmp_path, LOCAL_NOON)
+    assert said.startswith("Today: four games, no wins, three losses and one I couldn't see the end of.")
+    assert "No point came up twice" in said
+    assert said.endswith("That's two losses in a row: a short break helps before the next one.")
+
+
+def test_one_game_today(tmp_path):
+    write_points(tmp_path, LOCAL_NOON, True, ["A steady game with nothing big to fix."])
+    assert day_summary(tmp_path, LOCAL_NOON) == (
+        "Today: one game, one win and no losses. You won the last one, a good game to stop on if you're tired."
+    )
