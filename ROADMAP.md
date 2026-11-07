@@ -159,8 +159,18 @@ CLAUDE.md).
     checked against `item_popularity.json`. The five that lose more than
     they win at these medals (Timbersaw, Weaver, Tinker, Storm Spirit, Ember
     Spirit, 44 to 49%) get Dragon Lance, Blink Dagger or a Black King Bar
-    before late damage. Next batch: Centaur Warrunner, Templar Assassin,
-    Arc Warden, Monkey King and the heroes after them.
+    before late damage. Next batch: item 23.
+23. [x] **Builds for the fourth batch.** The next 12 most-picked heroes from
+    Herald to Ancient still on the fallback. *Why:* same as item 20; each is
+    in about 3% of low-bracket matches. Done: Doom, Centaur Warrunner,
+    Templar Assassin, Monkey King, Arc Warden, Death Prophet, Underlord,
+    Kunkka, Clinkz, Phoenix, Marci and Pugna, ranked by picks summed over
+    all six medals Herald to Ancient in `hero_stats.json` and checked
+    against `item_popularity.json`. The five that lose more than they win
+    at these medals (Doom, Templar Assassin, Monkey King, Death Prophet,
+    Underlord, 45 to 49%) get range, Blink Dagger or a Black King Bar
+    before late items. Next batch: Chaos Knight, Keeper of the Light,
+    Ringmaster, Gyrocopter and the heroes after them.
 
 ## Ideas to look at later
 

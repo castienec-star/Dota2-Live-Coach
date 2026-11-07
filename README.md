@@ -250,18 +250,19 @@ questions during the match.
 
 Item builds are per hero in the `[builds]` section of `coach.toml`, for
 example `luna = ["Power Treads", "Manta Style", "Black King Bar"]`. The coach
-comes with simple builds for the 70 or so heroes picked most from Herald to
-Ancient (Ancient Apparition, Anti-Mage, Axe, Bristleback, Crystal Maiden, Dark
-Willow, Dawnbreaker, Dazzle, Disruptor, Dragon Knight, Drow Ranger,
-Earthshaker, Ember Spirit, Faceless Void, Grimstroke, Hoodwink, Invoker,
-Jakiro, Juggernaut, Legion Commander, Lich, Lifestealer, Lina, Lion, Luna,
-Magnus, Nature's Prophet, Necrophos, Night Stalker, Ogre Magi, Outworld
-Destroyer, Phantom Assassin, Phantom Lancer, Pudge, Queen of Pain, Razor,
-Riki, Rubick, Shadow Fiend, Shadow Shaman, Silencer, Skywrath Mage, Slardar,
-Slark, Snapfire, Sniper, Spectre, Storm Spirit, Sven, Techies, Tidehunter,
-Timbersaw, Tinker, Undying, Ursa, Vengeful Spirit, Venomancer, Viper,
-Warlock, Weaver, Windranger, Winter Wyvern, Witch Doctor, Wraith King, Zeus
-and a few roaming supports). Every bundled build starts with boots. Any other hero gets the items real players build on it most, from
+comes with simple builds for the 80 or so heroes picked most from Herald to
+Ancient (Ancient Apparition, Anti-Mage, Arc Warden, Axe, Bristleback, Centaur
+Warrunner, Clinkz, Crystal Maiden, Dark Willow, Dawnbreaker, Dazzle, Death
+Prophet, Disruptor, Doom, Dragon Knight, Drow Ranger, Earthshaker, Ember
+Spirit, Faceless Void, Grimstroke, Hoodwink, Invoker, Jakiro, Juggernaut,
+Kunkka, Legion Commander, Lich, Lifestealer, Lina, Lion, Luna, Magnus, Marci,
+Monkey King, Nature's Prophet, Necrophos, Night Stalker, Ogre Magi, Outworld
+Destroyer, Phantom Assassin, Phantom Lancer, Phoenix, Pudge, Pugna, Queen of
+Pain, Razor, Riki, Rubick, Shadow Fiend, Shadow Shaman, Silencer, Skywrath
+Mage, Slardar, Slark, Snapfire, Sniper, Spectre, Storm Spirit, Sven, Techies,
+Templar Assassin, Tidehunter, Timbersaw, Tinker, Underlord, Undying, Ursa,
+Vengeful Spirit, Venomancer, Viper, Warlock, Weaver, Windranger, Winter
+Wyvern, Witch Doctor, Wraith King, Zeus and a few roaming supports). Every bundled build starts with boots. Any other hero gets the items real players build on it most, from
 OpenDota's public item popularity bundled in `coach/data/item_popularity.json`
 (fetched 2026-10-30, patch 7.41f): boots first, then the most bought big
 items of the mid and late game, leaving out bare components (Ultimate Orb,

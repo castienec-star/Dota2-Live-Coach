@@ -355,8 +355,9 @@ position = 0
 # the coach cannot tell the first one was built into the second.
 # Some keys differ from the hero's name: Wraith King is skeleton_king, Zeus is
 # zuus, Windranger is windrunner, Necrophos is necrolyte, Lifestealer is
-# life_stealer, Shadow Fiend is nevermore, Queen of Pain is queenofpain and
-# Timbersaw is shredder.
+# life_stealer, Shadow Fiend is nevermore, Queen of Pain is queenofpain,
+# Timbersaw is shredder, Doom is doom_bringer and Underlord is
+# abyssal_underlord.
 [builds]
 default = ["Power Treads", "Black King Bar", "Satanic"]
 default_support = ["Arcane Boots", "Glimmer Cape", "Force Staff", "Aghanim's Scepter"]
@@ -450,3 +451,19 @@ winter_wyvern = ["Arcane Boots", "Force Staff", "Glimmer Cape", "Blink Dagger", 
 tinker = ["Power Treads", "Blink Dagger", "Kaya and Sange", "Black King Bar", "Shiva's Guard"]
 storm_spirit = ["Power Treads", "Kaya and Sange", "Black King Bar", "Aghanim's Scepter", "Shiva's Guard"]
 ember_spirit = ["Phase Boots", "Kaya and Sange", "Black King Bar", "Aghanim's Scepter", "Shiva's Guard"]
+# The fourth batch (ROADMAP item 23), same ranking and checks. Doom, Templar
+# Assassin, Monkey King, Death Prophet and Underlord lose more than they win
+# from Herald to Ancient (45 to 49% in hero_stats.json), so they get range,
+# an escape or a Black King Bar before the late items.
+doom_bringer = ["Phase Boots", "Blink Dagger", "Black King Bar", "Shiva's Guard", "Aghanim's Scepter"]
+centaur = ["Phase Boots", "Vanguard", "Blink Dagger", "Black King Bar", "Heart of Tarrasque"]
+templar_assassin = ["Power Treads", "Dragon Lance", "Desolator", "Black King Bar", "Daedalus"]
+monkey_king = ["Power Treads", "Desolator", "Black King Bar", "Eye of Skadi", "Abyssal Blade"]
+arc_warden = ["Power Treads", "Hand of Midas", "Maelstrom", "Black King Bar", "Bloodthorn"]
+death_prophet = ["Power Treads", "Kaya and Sange", "Black King Bar", "Shiva's Guard", "Aghanim's Scepter"]
+abyssal_underlord = ["Phase Boots", "Pipe of Insight", "Aghanim's Scepter", "Shiva's Guard", "Lotus Orb"]
+kunkka = ["Phase Boots", "Black King Bar", "Aghanim's Scepter", "Shiva's Guard", "Daedalus"]
+clinkz = ["Power Treads", "Desolator", "Aghanim's Shard", "Black King Bar", "Daedalus"]
+phoenix = ["Tranquil Boots", "Spirit Vessel", "Aghanim's Shard", "Shiva's Guard", "Refresher Orb"]
+marci = ["Phase Boots", "Blink Dagger", "Black King Bar", "Abyssal Blade", "Assault Cuirass"]
+pugna = ["Arcane Boots", "Glimmer Cape", "Aether Lens", "Force Staff", "Aghanim's Scepter"]
