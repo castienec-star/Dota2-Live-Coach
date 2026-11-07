@@ -124,3 +124,14 @@ def test_transcribe_falls_back_to_the_cpu_without_cuda(monkeypatch, tmp_path):
     monkeypatch.setitem(sys.modules, "faster_whisper", types.SimpleNamespace(WhisperModel=Model))
     assert lessons.transcribe(tmp_path / "v.mp4") == [(0.0, 2.0, "Hi")]
     assert devices == ["auto", "cpu"]
+
+
+def test_the_schema_makes_the_model_write_the_card_before_skipping():
+    schema = lessons.CARD_SCHEMA
+    assert set(schema["required"]) == set(schema["properties"])
+    assert list(schema["properties"])[-1] == "skip"
+    reply = json.dumps({"situation": "Lane, wave pushed", "point": "Farm the lane, then the camps",
+                        "why": "More gold", "advice": "Move to camps when the wave is pushed",
+                        "line": "There you waited for the wave instead of taking the camps.",
+                        "stage": "laning", "tags": ["farming"], "skip": False})
+    assert card(reply, Chunk(0, 20, "x"), "v").point == "Farm the lane, then the camps"

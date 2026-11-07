@@ -41,10 +41,12 @@ TAGS = ("laning", "last hits", "trading", "creep equilibrium", "pulling", "stack
         "positioning", "spell use")
 STAGES = ("laning", "mid", "late")
 
+# Every field is required and "skip" comes last: with Ollama's structured
+# output an optional-everything schema lets the model answer {"skip": true}
+# every time, so it writes the card first and only then says whether to skip.
 CARD_SCHEMA = {
     "type": "object",
     "properties": {
-        "skip": {"type": "boolean"},
         "situation": {"type": "string"},
         "point": {"type": "string"},
         "why": {"type": "string"},
@@ -52,9 +54,11 @@ CARD_SCHEMA = {
         "line": {"type": "string"},
         "stage": {"type": "string", "enum": list(STAGES)},
         "tags": {"type": "array", "items": {"type": "string", "enum": list(TAGS)}},
+        "skip": {"type": "boolean"},
     },
-    "required": ["skip"],
+    "required": ["situation", "point", "why", "advice", "line", "stage", "tags", "skip"],
 }
+
 
 SYSTEM = """\
 You turn a moment from a Dota 2 coaching video into a lesson card. You get \
@@ -66,8 +70,8 @@ casually, at most 30 words (for example: "There you stayed at half health \
 with three of them missing. Backing off would have saved that death."). \
 Use only what the \
 coach said and what the frames show; never add your own advice. If the \
-coach says nothing about how to play (an intro, a joke, a sponsor), answer \
-{"skip": true}. Answer as JSON only."""
+coach says nothing about how to play (an intro, a joke, a sponsor), set \
+"skip" to true; otherwise "skip" is false. Answer as JSON only."""
 
 
 @dataclass
