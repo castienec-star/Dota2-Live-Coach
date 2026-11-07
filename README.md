@@ -318,7 +318,12 @@ game: stand up, drink some water. A short break helps more than another
 queue." It is said right after the match, before you queue again, at most once
 a day. The coach only reads its own review files to count the losses; games
 more than 90 minutes apart count as separate sittings. Change the number or
-turn it off (0) with `break_after_losses` under `[reminders.review]`. Read the review of any recorded match again with
+turn it off (0) with `break_after_losses` under `[reminders.review]`.
+
+After a win that makes three or more games today, the review ends with
+"Three games today and you won this one: a good game to stop on if you're
+tired." It is said once a day at most; change the number or turn it off (0)
+with `stop_after_games` under `[reminders.review]`. Read the review of any recorded match again with
 `py -m coach review "%APPDATA%\Dota2LiveCoach\recordings\<file>.jsonl"`, or
 turn it off with `enabled = false` under `[reminders.review]`. The targets are
 explained in `docs/strategy/post-game-review.md`.

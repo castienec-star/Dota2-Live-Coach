@@ -216,6 +216,7 @@ def make_coach(
             folder,
             position,
             break_after=reminders.get("review", {}).get("break_after_losses", review_mod.BREAK_AFTER),
+            stop_after=reminders.get("review", {}).get("stop_after_games", review_mod.STOP_AFTER),
         )
     rules = (
         timers.build(reminders)

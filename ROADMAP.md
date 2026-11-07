@@ -168,9 +168,11 @@ CLAUDE.md).
   from the saved reviews, the point that came up most with one thing to try
   next game, and a good-game-to-stop-on or short-break line
   (`review.day_summary`, backed by `docs/strategy/fundamentals.md`, "Don't
-  chain-queue after losses"). Next: say it unasked once, after the review of
-  a win that follows two or more games today, so players who never ask still
-  hear "a good game to stop on".
+  chain-queue after losses"). Also done: the review of a win that makes
+  three or more games today ends with "a good game to stop on if you're
+  tired", once a day (`stop_after_games`). Next: when the player keeps
+  playing after that line and loses two in a row, the break line could
+  remind them they were ahead for the day.
 - App follow-ups to item 17: publish the app folder as a zip on a GitHub
   Release when a version is tagged (artifact downloads need a GitHub login
   and expire after 30 days); say `DotaCoach.exe install` instead of

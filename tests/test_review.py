@@ -5,7 +5,7 @@ import pytest
 from coach import __main__ as main_mod
 from coach.items import load_items
 from coach.profile import MatchSummary
-from coach.review import POST_GAME, Last, break_line, day_summary, losing_streak, saved_results, saved_reviews, Review, last_hit_target, points, progress, spoken, text
+from coach.review import POST_GAME, Last, break_line, stop_line, day_summary, losing_streak, saved_results, saved_reviews, Review, last_hit_target, points, progress, spoken, text
 from coach.state import MatchState
 
 from test_pregame import IN_PROGRESS, write_recording
@@ -297,3 +297,35 @@ def test_one_game_today(tmp_path):
     assert day_summary(tmp_path, LOCAL_NOON) == (
         "Today: one game, one win and no losses. You won the last one, a good game to stop on if you're tired."
     )
+
+
+def play(tmp_path, payload, at, said, won, **kw):
+    review = Review(said.append, tmp_path, position=lambda snap: 1, clock=lambda: at, **kw)
+    feed(review, payload, range(0, 1801, 30), deaths=(1700,), won=won)
+
+
+def test_stop_line():
+    assert stop_line(3) == "Three games today and you won this one: a good game to stop on if you're tired."
+
+
+def test_win_after_two_games_today_is_a_good_game_to_stop_on_once_a_day(tmp_path, payload):
+    said = []
+    play(tmp_path, payload, LOCAL_NOON - 30 * HOUR, said, True)  # yesterday doesn't count
+    play(tmp_path, payload, LOCAL_NOON - 2 * HOUR, said, False)
+    play(tmp_path, payload, LOCAL_NOON - HOUR, said, True)
+    assert not any("stop on" in line for line in said)
+    play(tmp_path, payload, LOCAL_NOON, said, True)
+    assert said[-1].startswith("Match review. ")
+    assert said[-1].endswith(stop_line(3))
+    assert len(said) == 4  # one spoken line per review
+    play(tmp_path, payload, LOCAL_NOON + HOUR, said, True)
+    assert "stop on" not in said[-1]  # already said today
+
+
+def test_no_stop_line_after_a_loss_or_when_turned_off(tmp_path, payload):
+    said = []
+    for at in (LOCAL_NOON - 2 * HOUR, LOCAL_NOON - HOUR):
+        play(tmp_path, payload, at, said, True, stop_after=0)
+    play(tmp_path, payload, LOCAL_NOON - 0.5 * HOUR, said, False)
+    play(tmp_path, payload, LOCAL_NOON, said, True, stop_after=0)
+    assert not any("stop on" in line for line in said)
