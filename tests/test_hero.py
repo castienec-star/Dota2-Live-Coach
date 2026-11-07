@@ -223,6 +223,9 @@ def test_top_low_bracket_picks_have_their_own_build(tmp_path):
         # ROADMAP item 22.
         "razor", "riki", "grimstroke", "night_stalker", "warlock", "shredder", "weaver",
         "dazzle", "winter_wyvern", "tinker", "storm_spirit", "ember_spirit",
+        # ROADMAP item 23.
+        "doom_bringer", "centaur", "templar_assassin", "monkey_king", "arc_warden",
+        "death_prophet", "abyssal_underlord", "kunkka", "clinkz", "phoenix", "marci", "pugna",
     ):
         assert builds.get(hero), f"no build for {hero}"
 
