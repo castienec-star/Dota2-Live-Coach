@@ -47,7 +47,8 @@ def test_learn_saves_cards_and_load_reads_them(tmp_path):
     assert len(out) == 1 and len(asked) == 2
     assert asked[1][0].startswith('The coach said: "See how')
     folder = tmp_path / "lessons" / "pro-lane-review"
-    assert (folder / "002.json").is_file() and (folder / "002.jpg").read_bytes() == b"jpg2"
+    assert (folder / "002.json").is_file() and (folder / "002-1.jpg").read_bytes() == b"jpg2"
+    assert out[0].frames == ["002-0.jpg", "002-1.jpg"]
     loaded = load(tmp_path)
     assert loaded[0].point == "He backed off" and loaded[0].source == "Pro Lane Review at 0:30"
     (folder / "bad.json").write_text("{")
@@ -80,3 +81,23 @@ def test_frames_at_reads_a_real_video(tmp_path):
             out.mux(packet)
     frames = lessons.frames_at(path, [0.5, 2.0])
     assert len(frames) == 2 and all(f[:2] == b"\xff\xd8" for f in frames)
+
+
+def test_export_writes_a_training_set_with_a_test_split(tmp_path):
+    for v in ("video-a", "video-b"):
+        folder = tmp_path / "lessons" / v
+        folder.mkdir(parents=True)
+        for n in range(1, 11):
+            (folder / f"{n:03d}-0.jpg").write_bytes(b"img")
+            lesson = Lesson("s", f"point {n}", "why", "advice", line=f"There you missed wave {n}." if n % 2 else "",
+                            frames=[f"{n:03d}-0.jpg"], source=f"{v} at 0:{n:02d}")
+            (folder / f"{n:03d}.json").write_text(json.dumps(lessons.asdict(lesson)))
+    out = tmp_path / "training"
+    train, test = lessons.export(tmp_path, out, system="SYS")
+    assert (train, test) == (18, 2)
+    rows = [json.loads(line) for line in (out / "train.jsonl").read_text().splitlines()]
+    first = rows[0]["messages"]
+    assert first[0]["role"] == "system" and first[1]["content"][0] == {"type": "image", "image": "images/video-a-001-0.jpg"}
+    assert first[2]["content"][0]["text"] == "There you missed wave 1."
+    assert rows[1]["messages"][2]["content"][0]["text"] == "point 2 why advice"  # no line: the card
+    assert (out / "images" / "video-b-010-0.jpg").is_file()
