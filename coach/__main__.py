@@ -591,7 +591,7 @@ def cmd_learn_video(cfg: config_mod.Config, args: argparse.Namespace) -> int:
                                fmt=lessons_mod.CARD_SCHEMA)
     for video in found:
         print(f"Learning from {video.name}...", flush=True)
-        segments = lessons_mod.transcribe(video, args.whisper, args.language or None)
+        segments = lessons_mod.transcribe(video, args.whisper, args.language or None, args.device)
         lessons_mod.learn(video, cfg.app_dir, ask, segments, say=lambda text: print(text, flush=True))
     return 0
 
@@ -834,6 +834,8 @@ def main(argv: list[str] | None = None) -> int:
     p_learn.add_argument("--vision-model", default=vision.DEFAULT_MODEL)
     p_learn.add_argument("--whisper", default="small", help="faster-whisper model: small, medium...")
     p_learn.add_argument("--language", default="", help='"en" or "es"; empty = detect')
+    p_learn.add_argument("--device", default="auto", choices=["auto", "cpu", "cuda"],
+                         help="where Whisper runs; auto falls back to the CPU without the CUDA libraries")
     p_export = sub.add_parser("export-lessons", help="the saved lessons as a training set (training/README.md)")
     p_export.add_argument("--out", type=Path, default=None, help="folder (default: training in the app folder)")
     p_refresh = sub.add_parser("refresh-items", help="save popular items per hero from OpenDota")
