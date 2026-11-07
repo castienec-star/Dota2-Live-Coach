@@ -112,12 +112,29 @@ def chunks(segments: Iterable[tuple[float, float, str]], seconds: float = CHUNK_
         yield current
 
 
-def transcribe(video: Path, model: str = "small", language: str | None = None) -> list[tuple[float, float, str]]:
+def transcribe(video: Path, model: str = "small", language: str | None = None,
+               device: str = "auto") -> list[tuple[float, float, str]]:
+    """Speech segments with times. With device "auto", a GPU without the
+    CUDA 12 libraries (cublas64_12.dll, cuDNN) falls back to the CPU."""
     from faster_whisper import WhisperModel
 
-    whisper = WhisperModel(model, device="auto", compute_type="int8")
-    segments, _ = whisper.transcribe(str(video), language=language, vad_filter=True)
-    return [(s.start, s.end, s.text) for s in segments]
+    def run(on: str) -> list[tuple[float, float, str]]:
+        whisper = WhisperModel(model, device=on, compute_type="int8")
+        segments, _ = whisper.transcribe(str(video), language=language, vad_filter=True)
+        return [(s.start, s.end, s.text) for s in segments]  # the work happens here
+
+    try:
+        return run(device)
+    except RuntimeError as err:
+        if device == "cpu" or not _cuda_missing(err):
+            raise
+        log.warning("The GPU can't run Whisper (%s); using the CPU, which is slower.", err)
+        return run("cpu")
+
+
+def _cuda_missing(err: Exception) -> bool:
+    text = str(err).lower()
+    return any(word in text for word in ("cublas", "cudnn", "cuda", "libcudart"))
 
 
 def frames_at(video: Path, times: list[float], max_width: int = MAX_WIDTH) -> list[Frame]:

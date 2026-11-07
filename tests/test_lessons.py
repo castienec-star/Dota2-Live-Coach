@@ -101,3 +101,26 @@ def test_export_writes_a_training_set_with_a_test_split(tmp_path):
     assert first[2]["content"][0]["text"] == "There you missed wave 1."
     assert rows[1]["messages"][2]["content"][0]["text"] == "point 2 why advice"  # no line: the card
     assert (out / "images" / "video-b-010-0.jpg").is_file()
+
+
+def test_transcribe_falls_back_to_the_cpu_without_cuda(monkeypatch, tmp_path):
+    import sys
+    import types
+
+    devices = []
+
+    class Model:
+        def __init__(self, name, device, compute_type):
+            self.device = device
+            devices.append(device)
+
+        def transcribe(self, path, **kw):
+            def segs():
+                if self.device != "cpu":
+                    raise RuntimeError("Library cublas64_12.dll is not found or cannot be loaded")
+                yield types.SimpleNamespace(start=0.0, end=2.0, text="Hi")
+            return segs(), None
+
+    monkeypatch.setitem(sys.modules, "faster_whisper", types.SimpleNamespace(WhisperModel=Model))
+    assert lessons.transcribe(tmp_path / "v.mp4") == [(0.0, 2.0, "Hi")]
+    assert devices == ["auto", "cpu"]
