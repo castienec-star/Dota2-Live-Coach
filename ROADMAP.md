@@ -162,6 +162,40 @@ CLAUDE.md).
     before late damage. Next batch: Centaur Warrunner, Templar Assassin,
     Arc Warden, Monkey King and the heroes after them.
 
+From the 2026-11-08 research run (`docs/strategy/objectives.md`,
+`docs/strategy/support-play.md`):
+
+24. [ ] **Check when tier 1 neutral items open.** Two 7.41 patch-note
+    summaries say tier 1 opens at 0:00 (was 5:00); Liquipedia said 5:00.
+    Castien: in one real match, does the Madstone counter offer a tier 1
+    item before 5:00? If yes, move the first neutral line (the one that
+    explains crafting) to about 2:00, after the first camps, and fix the
+    tables in README and `neutral-items.md`. *Why:* a coach that says
+    "neutral items are open" three minutes late looks out of date to a
+    paying player.
+25. [ ] **Say the later wisdom shrines are bigger.** In 7.41 shrines give
+    200, then 500, then 800 experience. At 14:00 and 21:00 the shrine line
+    adds "this one is worth more, take it with a teammate". Clock only.
+    *Why:* low-bracket players learn at 7:00 that the shrine is small and
+    then skip the ones worth two to four times more.
+26. [ ] **Tormentors at 20:00.** Fold them into the 20:00 Roshan line ("The
+    Tormentors are up and Roshan matters now: after a won fight, take one
+    with three or four teammates instead of farming"), and once at 30:00
+    note the stronger creep waves. *Why:* a free Aghanim's Shard for the
+    poorest teammate is the easiest objective in the game and Herald teams
+    leave both on the map for 20 minutes.
+27. [ ] **Support nudges: pull and wards.** For positions 4 and 5 only: "pull
+    the small camp now" at about :13 when the hero stands near its own easy
+    camp in the laning phase (beginner mode, a few times a match), and "you
+    have no ward, buy one" when no observer ward has been in the inventory
+    for a few minutes. *Why:* supports hear almost nothing from the coach
+    today, and the side with any vision wins low-bracket fights.
+28. [ ] **Aegis means push.** When `item_aegis` appears in the player's own
+    items, say once "You have the Aegis: take high ground with your whole
+    team now, not farm." *Why:* low-bracket teams take Roshan and then split
+    up to farm, wasting the one item that wins the base fight. GSI shows
+    the player's own items, so this keeps the fair-play rule.
+
 ## Ideas to look at later
 
 - Done: "How did I do today?" (voice, or typed `today`): today's record
