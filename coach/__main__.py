@@ -17,7 +17,7 @@ from aiohttp import web
 
 from . import config as config_mod
 from . import chat as chat_mod
-from . import enemy_items, first_run, game_questions, item_advisor, situational
+from . import enemy_items, first_run, game_questions, hero_stats, item_advisor, learn, situational
 from . import health as health_mod
 from . import i18n, llm
 from . import pregame as pregame_mod
@@ -287,6 +287,9 @@ FOCUS_COMMANDS = ("focus", "tip")
 # Typed for "how did I do today?".
 TODAY_COMMANDS = ("today", "record")
 
+# Typed for "what hero should I learn?": "learn", "learn support".
+LEARN_COMMANDS = ("learn", "heroes")
+
 # Typed to set or hear your rank: "rank archon", "mmr 2500".
 RANK_COMMANDS = ("rank", "mmr", "medal")
 
@@ -309,10 +312,21 @@ def focus(coach: Coach, tips: death_tip.BuiltinTips) -> str:
     return tips.focus(snap) if snap.alive else tips(snap)
 
 
+def learn_hero(coach: Coach, text: str) -> str:
+    """The same answer as asking "what hero should I learn?"."""
+    advice = coach.advice
+    rank = advice.benchmarks.rank.bracket() if advice is not None and advice.benchmarks.rank is not None else None
+    snap = coach.state.current
+    position = advice.position(snap) if advice is not None and advice.position and snap.hero_name else 0
+    names = {h.key: h.name for h in load_heroes().values()}
+    return learn.suggest(text, rank, hero_stats.load(), names, position)
+
+
 def read_typed_picks(coach: Coach, questions: TypedQuestions | None = None) -> None:
     """Lets you type the draft in the coach window: "vs am cm lion pudge sf",
     "buy" for what to buy now, "how" for how you are doing, "focus" for the
-    one thing to work on now, "today" for today's games, "rank archon"
+    one thing to work on now, "today" for today's games, "learn" for heroes
+    to learn, "rank archon"
     to set your rank, the answer to
     a start-of-game question shown there, or any other question for the model."""
     advice = coach.advice
@@ -332,6 +346,9 @@ def read_typed_picks(coach: Coach, questions: TypedQuestions | None = None) -> N
             continue
         if command in TODAY_COMMANDS:
             print(review_mod.day_summary(coach.reviews, time.time()), flush=True)
+            continue
+        if command in LEARN_COMMANDS:
+            print(learn_hero(coach, line), flush=True)
             continue
         if command in RANK_COMMANDS and coach.advice is not None:
             print(tell(coach.advice.benchmarks.rank, line), flush=True)
@@ -480,7 +497,8 @@ def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
         logging.info('Type the enemy picks any time, e.g.  vs am cm lion pudge sf')
         logging.info(
             'Type "buy" any time to hear what to buy now, "how" for how you are doing, '
-            '"focus" for the one thing to work on now, or "today" for how your games went today'
+            '"focus" for the one thing to work on now, "today" for how your games went today, '
+            'or "learn" (or "learn support") for heroes to learn'
         )
         logging.info('Type your rank to compare with players of your medal, e.g.  rank archon  or  mmr 2500')
         if chat is not None:

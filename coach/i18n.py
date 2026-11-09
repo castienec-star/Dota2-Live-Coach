@@ -433,9 +433,9 @@ SPEECH_ES: list[tuple[str, str]] = [
      "Moriste con {charges} cargas en la varita. Úsala cuando tengas poca vida."),
     # Answers to questions (coach/voice.py, chat.py, rank.py, review.py)
     ("I can't help with that yet. Ask me how you're doing, what to focus on, what to buy, how you did "
-     "today, or about your next item, buyback or runes.",
+     "today, what hero to learn, or about your next item, buyback or runes.",
      "Todavía no puedo ayudarte con eso. Pregúntame cómo vas, en qué enfocarte, qué comprar, cómo te fue "
-     "hoy, o por tu siguiente objeto, el buyback o las runas."),
+     "hoy, qué héroe aprender, o por tu siguiente objeto, el buyback o las runas."),
     ("I can't answer that one without the AI model. Ask me how you're doing, what to buy, or about your "
      "next item, buyback or runes.",
      "No puedo responder eso sin el modelo de IA. Pregúntame cómo vas, qué comprar, o por tu siguiente "

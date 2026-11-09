@@ -21,7 +21,7 @@ import time
 from collections.abc import Callable, Iterable, Iterator
 from pathlib import Path
 
-from . import i18n
+from . import hero_stats, i18n, learn
 from . import rank as rank_mod
 from . import review as review_mod
 from . import situational
@@ -45,12 +45,22 @@ FRAME = 1280  # samples per microphone read (80 ms)
 
 UNKNOWN = (
     "I can't help with that yet. Ask me how you're doing, what to focus on, "
-    "what to buy, how you did today, or about your next item, buyback or runes."
+    "what to buy, how you did today, what hero to learn, or about your next item, buyback or runes."
 )
 
 # First match wins, so the narrower questions come first.
 INTENTS: list[tuple[str, re.Pattern[str]]] = [
     ("buyback", re.compile(r"\bbuy ?backs?\b")),
+    # "What hero should I learn?", "which heroes are easy?", "who should I play as support?"
+    (
+        "learn_hero",
+        re.compile(
+            r"\b((what|which) heroe?s? (should|do|can|to|would) i (learn|play|pick|main|start)"
+            r"|(what|which) heroe?s? (are|is) (easy|simple|good for beginners)"
+            r"|heroe?s? to (learn|main|start with)|who should i (play|pick|learn|main)"
+            r"|(easy|simple|beginner|beginner friendly) heroe?s?)\b"
+        ),
+    ),
     # "My rank is Archon", "my MMR is 2500", "I'm a Herald", "what's my rank?"
     (
         "rank",
@@ -96,6 +106,13 @@ INTENTS: list[tuple[str, re.Pattern[str]]] = [
 # "¿Cómo voy?", "¿qué compro?", "¿cuál es mi siguiente objeto?".
 INTENTS_ES: list[tuple[str, re.Pattern[str]]] = [
     ("buyback", re.compile(r"\b(buy ?backs?|recompra|comprar de vuelta)\b")),
+    (
+        "learn_hero",
+        re.compile(
+            r"\b(que heroes? (deberia |debo |puedo )?(aprender|jugar|elegir|usar)"
+            r"|heroes? (facil(es)?|sencillos?|para aprender|para principiantes))\b"
+        ),
+    ),
     ("rank", re.compile(r"\b(mi (rango|medalla|m ?m ?r)|m ?m ?r|cual es mi rango)\b")),
     (
         "how_am_i_doing",
@@ -187,6 +204,7 @@ class Answers:
         self.tips = BuiltinTips(self.notes, position)
         self.reviews = reviews  # the saved post-game reviews, for "how did I do today?"
         self.clock = clock
+        self._hero_stats: dict | None = None  # loaded on the first "what hero should I learn?"
 
     def answer(self, text: str, snap: Snapshot) -> str:
         """The spoken answer; "" when there is nothing to say any more."""
@@ -204,9 +222,20 @@ class Answers:
             return rank_mod.tell(self.benchmarks.rank, text)
         if kind == "today":
             return review_mod.day_summary(self.reviews, self.clock())
+        if kind == "learn_hero":
+            return self.learn_hero(text, snap)
         if snap.hero_name is None:
             return "I can't see your hero yet. Ask me again once the game has started."
         return getattr(self, kind)(snap)
+
+    def learn_hero(self, text: str, snap: Snapshot) -> str:
+        """"What hero should I learn?", in a match or between games (coach/learn.py)."""
+        if self._hero_stats is None:
+            self._hero_stats = hero_stats.load()
+        rank = self.benchmarks.rank.bracket() if self.benchmarks.rank is not None else None
+        position = self.position(snap) if self.position and snap.hero_name else 0
+        names = {h.key: h.name for h in self.heroes.heroes.values()}
+        return learn.suggest(text, rank, self._hero_stats, names, position)
 
     def next_item(self, snap: Snapshot) -> str:
         target = self.items.next_item(snap) if self.items else None
