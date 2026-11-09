@@ -594,6 +594,15 @@ with a local model (see below):
   reads the coach's own review files in `reviews\`, so games played with
   the coach closed don't count. No microphone? Type `today` in the coach
   window.
+- "What hero should I learn?" (or "who should I play as support?", "easy
+  carry heroes?"), any time, also between games: two or three simple heroes
+  (Wraith King, Dragon Knight, Witch Doctor and the like) that win at least
+  half their games at your own medal this patch, with their win rate and
+  why each is easy, and a nudge to stick with one for ten games. Name a role
+  in the question, or the coach uses your position this game; otherwise you
+  hear two cores and a support. Until the coach knows your medal it names
+  the safe picks without numbers and asks for your rank. No microphone? Type
+  `learn` (or `learn support`) in the coach window.
 - "Can I buy back?": the buyback cost against your gold, or its cooldown.
 - "When is the next rune?": the next power rune, gold runes and wisdom
   shrines.

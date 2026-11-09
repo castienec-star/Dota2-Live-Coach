@@ -228,10 +228,14 @@ CLAUDE.md).
   said the first one or two times a match only; and a voice switch ("hey
   coach, quiet mode") once the settings window (item 19) exists.
 - Translations of the spoken lines.
-- "What hero should I learn?": answer with two or three forgiving heroes
-  for the player's role that win at their own medal (Wraith King, Dragon
-  Knight, Witch Doctor, Crystal Maiden in 7.41f, `low-bracket-meta.md`),
-  from `coach/data/hero_stats.json` once PR #70's refresh has run.
+- Done: "What hero should I learn?" (voice, or typed `learn`): two or three
+  heroes from a hand-made list of forgiving ones that win at least 50% at
+  the player's own medal in `coach/data/hero_stats.json`, for the role in the
+  question or this game's position (`coach/learn.py`, backed by
+  `low-bracket-meta.md` "Forgiving heroes win at every medal" and
+  `fundamentals.md` "One role, a few heroes"). Next: remember the hero the
+  player chose and, after ten games on it, say how their deaths and last
+  hits on it changed in the post-game review.
 - Hero-aware 15:00 check: for heroes that lose by farming alone (Nature's
   Prophet 43 to 46% at every medal), say "group up with your team now"
   instead of a farm line.

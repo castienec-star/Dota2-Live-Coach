@@ -233,3 +233,29 @@ def test_today_answers_without_a_hero(tmp_path, snap):
     snap.hero_name = None  # asked in the menu between games
     answers = Answers({}, BUILDS, reviews=tmp_path, clock=lambda: 1_800_000_000.0)
     assert answers.answer("how did I do today?", snap).startswith("No games today yet.")
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "What hero should I learn?",
+        "which heroes should I play as support",
+        "who should I play?",
+        "any easy heroes for me",
+        "what heroes are easy",
+        "¿Qué héroe debería aprender?",
+    ],
+)
+def test_learn_hero_intent(text):
+    assert intent(text) == "learn_hero"
+
+
+def test_learn_hero_answers_between_games(snap):
+    from coach.benchmarks import Benchmarks
+    from coach.rank import PlayerRank
+
+    snap.hero_name = None  # asked in the menu between games
+    answers = Answers({}, BUILDS, benchmarks=Benchmarks(heroes={}, rank=PlayerRank("archon")))
+    line = answers.answer("what hero should I learn as a support?", snap)
+    assert line.startswith("In Archon games this patch:")
+    assert "Wraith King" not in line  # a core, and the player asked for a support
