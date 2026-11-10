@@ -349,3 +349,57 @@ def test_game_check_with_advice_but_nothing_to_buy_keeps_the_verdict():
     rule = GameCheck(Benchmarks(), minutes=[25], advice=lambda snap: None)
     (line,) = run_check(rule, jugg(clock=1500, gpm=350, xpm=400, last_hits=80))
     assert line.endswith("buy a Black King Bar or a defensive item.")
+
+
+def prophet(clock=900, gpm=450, xpm=500, last_hits=75):
+    return Snapshot(clock_time=clock, hero_name="npc_dota_hero_furion", gpm=gpm, xpm=xpm, last_hits=last_hits)
+
+
+def test_lone_farmer_hears_to_group_up_instead_of_farming():
+    # docs/strategy/low-bracket-meta.md: Nature's Prophet loses at every
+    # medal by farming alone, so an even or behind check says to group up.
+    rule = GameCheck(Benchmarks(), minutes=[15, 25])
+    (line,) = run_check(rule, prophet(900, 380, 420, 50))
+    assert "As Nature's Prophet, " in line
+    assert "group up with your team" in line
+    assert "Farm the safe side" not in line and "Keep farming" not in line
+
+
+def test_lone_farmer_ahead_keeps_the_push_line():
+    (line,) = run_check(GameCheck(Benchmarks(), minutes=[15]), prophet(900, 900, 900, 160))
+    assert line.startswith("You're ahead for 15 minutes.")
+    assert "Nature's Prophet" not in line
+
+
+def test_anti_mage_farms_until_25_minutes():
+    def am(clock):
+        return Snapshot(clock_time=clock, hero_name="npc_dota_hero_antimage", gpm=330, xpm=380, last_hits=50)
+
+    rule = GameCheck(Benchmarks(), minutes=[15, 25])
+    (early_line,) = run_check(rule, am(900))
+    assert "Anti-Mage" not in early_line
+    (late_line,) = run_check(rule, am(1500))
+    assert "As Anti-Mage, farming alone won't catch you up" in late_line
+
+
+def test_lone_farmer_as_a_support_keeps_the_support_line():
+    rule = GameCheck(Benchmarks(), minutes=[20], position=lambda snap: 4)
+    (line,) = run_check(rule, prophet(1200, 150, 300, 5))
+    assert "Stay near your cores" in line
+    assert "Nature's Prophet" not in line
+
+
+def test_how_am_i_doing_tells_a_lone_farmer_to_group_up():
+    line = Answers({}, {}).answer("how am I doing", prophet(900, 300, 350, 40))
+    assert "As Nature's Prophet, farming alone won't catch you up" in line
+    assert "Black King Bar" in line
+
+
+def test_lone_farmer_lines_have_spanish():
+    from coach import i18n
+
+    for line in (
+        run_check(GameCheck(Benchmarks(), minutes=[15]), prophet(900, 300, 350, 40))[0],
+        Answers({}, {}).answer("how am I doing", prophet(900, 300, 350, 40)),
+    ):
+        assert all(done for _, done in i18n.SPEECH.split(line)), line

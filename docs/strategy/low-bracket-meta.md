@@ -74,7 +74,10 @@ Heroes with ids 1 to 54 only (see above).
   53.3%): a good hero to stay on while climbing.
 - **Nature's Prophet loses everywhere (43 to 46%).** Low-bracket players
   farm with him and never join fights. One line at the 15 and 25 minute check
-  ("group up with your team now") fits him better than a farm tip.
+  ("group up with your team now") fits him better than a farm tip. The
+  coach does this (`LONE_FARMERS` in `coach/benchmarks.py`); Anti-Mage hears
+  it only from 25:00, since he wins 51% at Archon to Ancient and does need
+  his early farm.
 - **Bundled builds now cover the top 25 picks** (ids 1 to 54): Shadow
   Shaman, Windranger, Anti-Mage, Earthshaker, Necrophos, Crystal Maiden,
   Lina, Dragon Knight, Lifestealer, Phantom Lancer, Tidehunter, Lich and

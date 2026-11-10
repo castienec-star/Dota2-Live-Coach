@@ -17,7 +17,7 @@ from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 
 from .. import i18n, knowledge, llm, situational
-from ..benchmarks import is_support
+from ..benchmarks import LONE_FARMERS, is_support
 from ..game_questions import Notes
 from ..grounding import Grounding
 from ..heroes import HeroIndex
@@ -228,7 +228,6 @@ def now_worded(line: str) -> str:
 # Heroes that lose at low MMR from where they stand or from farming alone,
 # not from their items (docs/strategy/low-bracket-meta.md); after laning.
 FRAGILE_RANGED = {"drow_ranger", "sniper", "lina", "nevermore"}
-LONE_FARMERS = {"furion", "antimage"}
 
 
 def hero_tip(snap: Snapshot, name: str) -> str | None:

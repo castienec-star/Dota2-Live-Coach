@@ -232,9 +232,14 @@ CLAUDE.md).
   for the player's role that win at their own medal (Wraith King, Dragon
   Knight, Witch Doctor, Crystal Maiden in 7.41f, `low-bracket-meta.md`),
   from `coach/data/hero_stats.json` once PR #70's refresh has run.
-- Hero-aware 15:00 check: for heroes that lose by farming alone (Nature's
-  Prophet 43 to 46% at every medal), say "group up with your team now"
-  instead of a farm line.
+- Done: hero-aware 15:00 and 25:00 check. Nature's Prophet (43 to 46% at
+  every medal), and Anti-Mage from 25:00, hear "group up with your team and
+  join the next fight" instead of a farm line when even or behind, in the
+  check and in "how am I doing?" (`LONE_FARMERS` in `coach/benchmarks.py`).
+  Next: other heroes whose win rate falls when they farm alone, picked from
+  the per-medal numbers in `coach/data/brackets.json`; and for a core who
+  told the coach "we're losing fights", say to fight together near a tower
+  rather than farm.
 - Upgrade-aware builds: know that Dragon Lance went into Hurricane Pike (from
   dotaconstants' item components) so builds can list both steps.
 - Questions during the match (issue #11 step 3): done in the
