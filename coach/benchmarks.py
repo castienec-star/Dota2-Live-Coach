@@ -311,18 +311,34 @@ def is_support(hero: HeroInfo | None, position: int = 0) -> bool:
     return hero is not None and "Support" in hero.roles and "Carry" not in hero.roles
 
 
-def spoken(verdict: Verdict, support: bool, items: bool = True, caveat: bool = True) -> str:
+# Heroes that lose low-bracket games by farming alone instead of joining
+# fights (docs/strategy/low-bracket-meta.md, fundamentals.md), with the minute
+# from which an even or behind verdict tells them to group up instead of to
+# farm. Anti-Mage really does need his farm until his items come online.
+LONE_FARMERS = {"furion": 0, "antimage": 25}
+
+
+def farms_alone(hero: HeroInfo | None, minute: int) -> bool:
+    """Whether this hero hears "group up" rather than "farm" at this minute."""
+    start = LONE_FARMERS.get(hero.key) if hero is not None else None
+    return start is not None and minute >= start
+
+
+def spoken(
+    verdict: Verdict, support: bool, items: bool = True, caveat: bool = True, alone: str | None = None
+) -> str:
     """The verdict as one or two short sentences, with what to do about it.
     items=False leaves out the item advice, when a counter item is named next;
-    caveat=False leaves out that a rough verdict is rough."""
-    line = _spoken(verdict, support, items)
+    caveat=False leaves out that a rough verdict is rough. alone is the name
+    of a core hero that should group up instead of farming (farms_alone)."""
+    line = _spoken(verdict, support, items, alone)
     if verdict.rough and caveat:
         group = f"{rank_mod.name(verdict.rank)} " if verdict.rank else ""
         line += f" That's a rough comparison with {group}{'supports' if support else 'cores'} in general."
     return line
 
 
-def _spoken(verdict: Verdict, support: bool, items: bool) -> str:
+def _spoken(verdict: Verdict, support: bool, items: bool, alone: str | None = None) -> str:
     minutes = f"{verdict.minute} minutes"
     if verdict.rank:
         minutes = f"{rank_mod.name(verdict.rank)} at {minutes}"
@@ -332,6 +348,11 @@ def _spoken(verdict: Verdict, support: bool, items: bool) -> str:
             "and take a tower, or Roshan after a won fight."
         )
     if verdict.kind == "even":
+        if alone and not support:
+            return (
+                f"You're about even for {minutes}. As {alone}, don't farm alone: "
+                "group up with your team and join the next fight."
+            )
         return f"You're about even for {minutes}. Keep farming and fight together with your team."
     name = METRICS[verdict.weakest]
     low = f"{name} {'are' if name.endswith('s') else 'is'} low"
@@ -344,6 +365,17 @@ def _spoken(verdict: Verdict, support: bool, items: bool) -> str:
         return (
             f"You're behind for {minutes}, your {low}. Stay near your cores, "
             "soak experience from fights, and buy Glimmer Cape or Force Staff to stay alive."
+        )
+    if alone:
+        if not items:
+            return (
+                f"You're behind for {minutes}, your {low}. As {alone}, farming alone won't "
+                "catch you up: group up with your team and join the next fight."
+            )
+        return (
+            f"You're behind for {minutes}, your {low}. As {alone}, farming alone won't "
+            "catch you up: group up with your team, join the next fight, and buy a Black King Bar "
+            "or a defensive item."
         )
     if not items:
         return (
@@ -388,4 +420,5 @@ def status(benchmarks: Benchmarks, snap: Snapshot, hero: HeroInfo | None, positi
     verdict = benchmarks.verdict(snap, support)
     if verdict is None:
         return early(snap, support, benchmarks.bracket())
-    return spoken(verdict, support, caveat=benchmarks.say_rough(snap, verdict))
+    alone = hero.name if hero is not None and farms_alone(hero, verdict.minute) else None
+    return spoken(verdict, support, caveat=benchmarks.say_rough(snap, verdict), alone=alone)

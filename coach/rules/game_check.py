@@ -5,7 +5,8 @@ coach/benchmarks.py): your own hero's GSI numbers against public numbers
 for your hero. When you told the coach the enemy heroes and one of them
 calls for a counter item, it is named too (see coach/situational.py). So is
 a defensive item when you said your team is losing fights or their carry is
-farming freely (see coach/game_questions.py).
+farming freely (see coach/game_questions.py). Heroes that lose by farming
+alone (Nature's Prophet, Anti-Mage late) hear to group up instead of to farm.
 
 With "advice" (the same pick as "what should I buy?", coach/item_advisor.py)
 it always names an item: the counter or defensive item, else the next one on
@@ -17,7 +18,7 @@ from __future__ import annotations
 from collections.abc import Callable
 
 from .. import situational
-from ..benchmarks import Benchmarks, is_support, spoken
+from ..benchmarks import Benchmarks, farms_alone, is_support, spoken
 from ..game_questions import Notes
 from ..heroes import HeroIndex, HeroInfo
 from ..items import load_items
@@ -70,11 +71,12 @@ class GameCheck:
         if verdict is None:
             return []
         caveat = self.benchmarks.say_rough(snap, verdict)
+        alone = hero.name if hero is not None and farms_alone(hero, verdict.minute) else None
         if self.advice is not None:
             pick = self.advice(snap)
             if pick is not None:
-                return [f"{spoken(verdict, support, False, caveat)} {situational.spoken(pick, None, snap)}"]
-            return [spoken(verdict, support, caveat=caveat)]
+                return [f"{spoken(verdict, support, False, caveat, alone)} {situational.spoken(pick, None, snap)}"]
+            return [spoken(verdict, support, caveat=caveat, alone=alone)]
         role = situational.role(position, support)
         notes = self.notes()
         counter = situational.against(self.enemies(), role, snap, self._items, notes.trouble if notes else None)
@@ -84,8 +86,8 @@ class GameCheck:
             if reason:
                 counter = situational.defensive(snap, role, self._items, reason)
         if counter is None:
-            return [spoken(verdict, support, caveat=caveat)]
-        return [f"{spoken(verdict, support, False, caveat)} {situational.spoken(counter, None, snap)}"]
+            return [spoken(verdict, support, caveat=caveat, alone=alone)]
+        return [f"{spoken(verdict, support, False, caveat, alone)} {situational.spoken(counter, None, snap)}"]
 
     def reset(self) -> None:
         self._done.clear()

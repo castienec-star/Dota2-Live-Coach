@@ -497,7 +497,10 @@ with a local model (see below):
 - "How am I doing?" / "Am I ahead?": from 8 minutes on, whether you are
   ahead, even or behind for this point of the match, comparing your gold,
   experience and last hits per minute with public OpenDota numbers for your
-  hero (supports only by experience), and what to do about it. Numbers for
+  hero (supports only by experience), and what to do about it. As Nature's
+  Prophet (and Anti-Mage from 25 minutes), heroes that lose low-bracket games
+  by farming alone, an even or behind answer says to group up with your team
+  instead of to farm. Numbers for
   every hero come with the coach (fetched 2026-10-30, patch 7.41f); a hero
   added after that is read once from OpenDota if `opendota` is on in
   `[pregame]`, and without it the coach compares you roughly with cores or

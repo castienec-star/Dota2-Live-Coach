@@ -304,6 +304,16 @@ SPEECH_ES: list[tuple[str, str]] = [
      "skip risky fights, and buy a Black King Bar or a defensive item.",
      "Vas atrás {minutes}, {low}. Farmea en el lado seguro del mapa cerca de tus torres, "
      "evita peleas arriesgadas y compra un Black King Bar o un objeto defensivo."),
+    ("You're about even for {minutes}. As {name}, don't farm alone: group up with your team and join the next fight.",
+     "Vas más o menos parejo {minutes}. Como {name}, no farmees solo: agrúpate con tu equipo y únete a la próxima pelea."),
+    ("You're behind for {minutes}, your {low}. As {name}, farming alone won't catch you up: "
+     "group up with your team and join the next fight.",
+     "Vas atrás {minutes}, {low}. Como {name}, farmear solo no te va a poner al día: "
+     "agrúpate con tu equipo y únete a la próxima pelea."),
+    ("You're behind for {minutes}, your {low}. As {name}, farming alone won't catch you up: "
+     "group up with your team, join the next fight, and buy a Black King Bar or a defensive item.",
+     "Vas atrás {minutes}, {low}. Como {name}, farmear solo no te va a poner al día: "
+     "agrúpate con tu equipo, únete a la próxima pelea y compra un Black King Bar o un objeto defensivo."),
     ("{minutes} minutes", "a los {minutes} minutos"),
     ("{rank} at {minutes} minutes", "para un {rank} a los {minutes} minutos"),
     ("gold is low", "tu oro está bajo"),
