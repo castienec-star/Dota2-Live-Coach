@@ -195,14 +195,18 @@ CLAUDE.md).
 - Last-hit pace, next steps (item 4 is done in `coach/rules/last_hits.py`):
   count denies too ("and 6 denies, nice") once the coach knows the lane
   matchup. Comparing with last game is done (the 10:00 line and the review's
-  opening line); next, a trend over the last five games ("your last hits
-  at 10 minutes went from 15 to 28 this week").
+  opening line), and so is the trend over the last five games ("am I
+  getting better?", typed `trend`, `review.trend_summary`).
 - Skill build reminders per hero (for example "max your first spell"),
   from public data.
 - Spoken item timing goals per hero ("aim for Battle Fury by 15 minutes").
-- A weekly progress summary from the player's own recordings (deaths per
-  game falling, last hits rising). The post-game review (item 3) already
-  writes one text file per match in `reviews/`; the summary can compare them.
+- Done: "Am I getting better?" (voice, or typed `trend`): deaths per game
+  and core last hits at 10:00 over the last five saved reviews against the
+  five before (`review.trend_summary`, backed by
+  `docs/strategy/post-game-review.md`). Next: say it unasked once a week,
+  at the end of the first review of a new week, when the player improved
+  (praise only, never "you got worse" unasked); and show the same two
+  numbers as a small chart on the app's Progress page.
 - Post-game review, next steps: name the hero the player died to most when
   they told the coach (in-match answers), compare item timings with the
   hero's public popular-item timings instead of one 20-minute rule. Saying

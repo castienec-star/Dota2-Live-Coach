@@ -52,6 +52,27 @@ The live 10:00 last-hit line (`last-hitting.md`) uses the same file, but only
 mentions last game when the player beat it: a bad lane shouldn't sound like a
 step back.
 
+## Am I getting better?
+
+Low-bracket players rarely see their own progress: the medal moves slowly
+and a single game is noise. "Am I getting better?" reads the first line of
+each saved review (deaths, last hits at 10:00, and since this question a
+", played as a support" mark) and compares the last five games with the
+five before them (fewer saved games: half and half, from four games):
+
+- deaths per game first, as dying is the most common way games are thrown
+  below Divine (point 1 above); a change under half a death is "about the
+  same";
+- last hits at 10 minutes, only from core games (a support's last hits don't
+  count towards the core target), when each half has at least two; a change
+  under two last hits is "about the same";
+- "You're getting better" when either improved; when deaths went up, the
+  same walk-back-to-your-tower tip as "How did I do today?"; otherwise a
+  pointer to "what should I focus on?". Praise first, for the same reason the
+  review praises: beginners quit tools that only criticise.
+
+Reviews saved before the support mark count as core games.
+
 ## Fair play
 
 Only the player's own GSI data (deaths with the game clock, last hits,

@@ -594,6 +594,12 @@ with a local model (see below):
   reads the coach's own review files in `reviews\`, so games played with
   the coach closed don't count. No microphone? Type `today` in the coach
   window.
+- "Am I getting better?" (or "am I improving?", "how was my week?"), any
+  time: your deaths per game over your last five games against the five
+  before, and your last hits at 10 minutes in the games you played as a
+  core, with "you're getting better" when one of them improved, or one
+  thing to try when you're dying more. It needs at least four match
+  reviews in `reviews\`. No microphone? Type `trend` in the coach window.
 - "Can I buy back?": the buyback cost against your gold, or its cooldown.
 - "When is the next rune?": the next power rune, gold runes and wisdom
   shrines.

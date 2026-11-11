@@ -329,3 +329,79 @@ def test_no_stop_line_after_a_loss_or_when_turned_off(tmp_path, payload):
     play(tmp_path, payload, LOCAL_NOON - 0.5 * HOUR, said, False)
     play(tmp_path, payload, LOCAL_NOON, said, True, stop_after=0)
     assert not any("stop on" in line for line in said)
+
+
+def write_game(folder, at, deaths, last_hits_10=None, support=False, hero="luna"):
+    import time
+
+    folder.mkdir(parents=True, exist_ok=True)
+    name = f"{time.strftime('%Y%m%d-%H%M%S', time.localtime(at))}-{hero}.txt"
+    m = match(hero=hero, deaths=deaths, last_hits_10=last_hits_10)
+    (folder / name).write_text(text(m, ["A steady game."], support=support), encoding="utf-8")
+
+
+def test_saved_games_read_back_the_numbers_and_the_support_mark(tmp_path):
+    from coach.review import saved_games
+
+    write_game(tmp_path, LOCAL_NOON - HOUR, 9, 18)
+    write_game(tmp_path, LOCAL_NOON, 3, 12, support=True, hero="lion")
+    (tmp_path / "notes.txt").write_text("not a review", encoding="utf-8")
+    games = saved_games(tmp_path)
+    assert [(g.deaths, g.last_hits_10, g.support) for g in games] == [(9, 18, False), (3, 12, True)]
+
+
+def test_trend_needs_a_few_games(tmp_path):
+    from coach.review import trend_summary
+
+    assert "reviews are off" in trend_summary(None, LOCAL_NOON)
+    write_game(tmp_path, LOCAL_NOON, 5, 30)
+    assert trend_summary(tmp_path, LOCAL_NOON) == (
+        "I need at least 4 games in my match reviews to see a trend, and I have 1. "
+        "Ask me again after a few more games."
+    )
+
+
+def test_trend_compares_the_last_five_games_with_the_five_before(tmp_path):
+    from coach.review import trend_summary
+
+    for i, (deaths, lh) in enumerate([(12, 40)] + [(9, 18)] * 5 + [(5, 26)] * 5):
+        write_game(tmp_path, LOCAL_NOON - (11 - i) * HOUR, deaths, lh)
+    write_game(tmp_path, LOCAL_NOON - 5.5 * HOUR, 4, 5, support=True, hero="lion")  # support last hits don't count
+    said = trend_summary(tmp_path, LOCAL_NOON)
+    assert said.startswith("In your last 5 games you died 5 times a game, down from ")
+    assert "Last hits at 10 minutes: 26, up from 18." in said
+    assert said.endswith("You're getting better. Keep doing what changed.")
+
+
+def test_trend_with_more_deaths_gives_the_deaths_tip(tmp_path):
+    from coach.review import trend_summary
+
+    for i, deaths in enumerate([4, 5, 9, 10]):
+        write_game(tmp_path, LOCAL_NOON - (4 - i) * HOUR, deaths)
+    said = trend_summary(tmp_path, LOCAL_NOON)
+    assert said.startswith("In your last 2 games you died 10 times a game, up from 4.")
+    assert "Last hits" not in said
+    assert "Next game, walk back to your tower" in said
+
+
+def test_trend_steady(tmp_path):
+    from coach.review import trend_summary
+
+    for i in range(6):
+        write_game(tmp_path, LOCAL_NOON - (6 - i) * HOUR, 6, 30)
+    said = trend_summary(tmp_path, LOCAL_NOON)
+    assert "about the same as before" in said
+    assert said.endswith("Pick one thing to work on: ask me what to focus on during the game.")
+
+
+def test_trend_in_spanish():
+    from coach.i18n import Catalog, SPEECH_ES
+
+    said = Catalog(SPEECH_ES).translate(
+        "In your last 5 games you died 5 times a game, down from 9. Last hits at 10 minutes: 26, up from 18. "
+        "You're getting better. Keep doing what changed."
+    )
+    assert said == (
+        "En tus últimas 5 partidas moriste 5 veces por partida, menos que las 9 de antes. "
+        "Last hits en el minuto 10: 26, más que los 18 de antes. Estás mejorando. Sigue haciendo lo que cambiaste."
+    )
