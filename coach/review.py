@@ -21,6 +21,10 @@ players who never ask how their day went still hear it.
 "How did I do today?" reads the same files back: today's wins and losses,
 the point that came up most, and whether the last game is a good one to stop
 on (day_summary).
+
+"Am I getting better?" reads their first lines back too: deaths per game,
+and last hits at 10 minutes in core games, over the last five reviews
+against the five before them (trend_summary).
 """
 
 from __future__ import annotations
@@ -62,6 +66,13 @@ STOP_AFTER = 3  # games today, the last one a win, before the review says it's a
 STOP_FILE = "stop.txt"  # the day the stop line was last said
 STAMP = "%Y%m%d-%H%M%S"  # how review files are named, before "-<hero>.txt"
 _RESULT = re.compile(r", \d+ minutes, (won|lost|result unknown)\.")
+_DEATHS = re.compile(r"\b(\d+) deaths\b")
+_LAST_HITS_10 = re.compile(r"\b(\d+) last hits at 10:00")
+SUPPORT_MARK = ", played as a support"
+TREND_GAMES = 5  # games in each half of the "am I getting better?" comparison
+TREND_MIN_GAMES = 4  # fewer saved reviews than this: too few to see a trend
+SAME_DEATHS = 0.5  # a smaller change in deaths per game is "about the same"
+SAME_LAST_HITS = 2  # likewise for last hits at 10 minutes
 # How each kind of point to fix starts in a saved review ("2. You died ..."),
 # matching death_point, last_hit_point and item_point below.
 POINT_KINDS = (
@@ -251,8 +262,10 @@ def spoken(lines: list[str]) -> str:
     return "Match review. " + " ".join(lines)
 
 
-def text(m: MatchSummary, lines: list[str], heroes: HeroIndex | None = None) -> str:
-    """The review as a short text file."""
+def text(m: MatchSummary, lines: list[str], heroes: HeroIndex | None = None, support: bool = False) -> str:
+    """The review as a short text file. The first line holds the numbers
+    trend_summary reads back; a support game says so, as its last hits
+    don't count towards the core target."""
     hero = (heroes or HeroIndex()).by_key(m.hero)
     result = {True: "won", False: "lost", None: "result unknown"}[m.won]
     head = (
@@ -261,6 +274,8 @@ def text(m: MatchSummary, lines: list[str], heroes: HeroIndex | None = None) -> 
     )
     if m.last_hits_10 is not None:
         head += f", {m.last_hits_10} last hits at 10:00"
+    if support:
+        head += SUPPORT_MARK
     body = "\n".join(f"{i}. {line}" for i, line in enumerate(lines, 1))
     return f"{head}\n\n{body}\n"
 
@@ -390,7 +405,7 @@ class Review:
             opener = progress(self.last, summary, support, self.items)
             if opener:
                 lines = [opener] + lines[: MAX_POINTS - 1]
-        self.saved = self.save(summary, lines)
+        self.saved = self.save(summary, lines, support)
         # Said in one go: a second line would wait behind the review and miss its deadline.
         rest = {False: self.suggest_break, True: self.suggest_stop}.get(summary.won, lambda: None)()
         self.say(spoken(lines) + (f" {rest}" if rest else ""))
@@ -432,13 +447,13 @@ class Review:
         except OSError as exc:
             log.warning("Could not save the last match review: %s", exc)
 
-    def save(self, m: MatchSummary, lines: list[str]) -> Path | None:
+    def save(self, m: MatchSummary, lines: list[str], support: bool = False) -> Path | None:
         if self.folder is None:
             return None
         path = self.folder / f"{time.strftime(STAMP, time.localtime(self.clock()))}-{m.hero}.txt"
         try:
             self.folder.mkdir(parents=True, exist_ok=True)
-            path.write_text(text(m, lines, self.heroes), encoding="utf-8")
+            path.write_text(text(m, lines, self.heroes, support), encoding="utf-8")
         except OSError as exc:
             log.warning("Could not save the match review: %s", exc)
             return None
@@ -486,4 +501,94 @@ def day_summary(folder: Path | None, now: float) -> str:
         losses_now = losing_streak([(when, won) for when, won, _ in games], now)
         if losses_now >= 2:
             parts.append(f"That's {_count(losses_now, 'loss')} in a row: a short break helps before the next one.")
+    return " ".join(parts)
+
+
+@dataclass(frozen=True)
+class SavedGame:
+    """A saved review's numbers, read back from its first line."""
+
+    when: float
+    deaths: int
+    last_hits_10: int | None
+    support: bool
+
+
+def saved_games(folder: Path) -> list[SavedGame]:
+    """The numbers of each review file in folder, oldest first; files whose
+    first line can't be read are skipped. Reviews saved before the support
+    mark existed count as core games."""
+    games = []
+    for path in sorted(folder.glob("*.txt")):
+        try:
+            when = time.mktime(time.strptime(path.name[: len("20260101-000000")], STAMP))
+            with path.open(encoding="utf-8") as f:
+                head = f.readline()
+        except (OSError, ValueError, UnicodeDecodeError):
+            continue
+        deaths = _DEATHS.search(head)
+        if _RESULT.search(head) is None or deaths is None:
+            continue
+        last_hits = _LAST_HITS_10.search(head)
+        games.append(
+            SavedGame(
+                when,
+                int(deaths.group(1)),
+                int(last_hits.group(1)) if last_hits else None,
+                SUPPORT_MARK in head,
+            )
+        )
+    return games
+
+
+def _average(values: list[int]) -> float:
+    return sum(values) / len(values)
+
+
+def _change(now: float, before: float, same: float) -> str:
+    """"down from 8", "up from 18" or "about the same as before"."""
+    if abs(now - before) < same:
+        return "about the same as before"
+    return f"{'down' if now < before else 'up'} from {round(before)}"
+
+
+def trend_summary(folder: Path | None, now: float) -> str:
+    """The answer to "am I getting better?": deaths per game, and last hits
+    at 10 minutes in core games, over the last few saved reviews against the
+    same number of games before them (docs/strategy/post-game-review.md,
+    "Am I getting better?")."""
+    if folder is None:
+        return "Match reviews are off, so I can't compare your games."
+    games = saved_games(folder) if folder.is_dir() else []
+    if len(games) < TREND_MIN_GAMES:
+        return (
+            f"I need at least {TREND_MIN_GAMES} games in my match reviews to see a trend, "
+            f"and I have {len(games)}. Ask me again after a few more games."
+        )
+    size = min(TREND_GAMES, len(games) // 2)
+    recent, before = games[-size:], games[-2 * size : -size]
+    deaths_now = _average([g.deaths for g in recent])
+    deaths_before = _average([g.deaths for g in before])
+    parts = [
+        f"In your last {size} games you died {round(deaths_now)} times a game, "
+        f"{_change(deaths_now, deaths_before, SAME_DEATHS)}."
+    ]
+    fewer_deaths = deaths_now <= deaths_before - SAME_DEATHS
+    more_deaths = deaths_now >= deaths_before + SAME_DEATHS
+    better_last_hits = False
+    lh_now = [g.last_hits_10 for g in recent if not g.support and g.last_hits_10 is not None]
+    lh_before = [g.last_hits_10 for g in before if not g.support and g.last_hits_10 is not None]
+    if len(lh_now) >= 2 and len(lh_before) >= 2:
+        avg_now, avg_before = _average(lh_now), _average(lh_before)
+        better_last_hits = avg_now >= avg_before + SAME_LAST_HITS
+        parts.append(
+            f"Last hits at 10 minutes: {round(avg_now)}, {_change(avg_now, avg_before, SAME_LAST_HITS)}."
+        )
+    if fewer_deaths or better_last_hits:
+        parts.append("You're getting better. Keep doing what changed.")
+    elif more_deaths:
+        tip = NEXT_GAME["deaths"][1]
+        parts.append(f"Dying less is the quickest way to win more games. Next game, {tip}.")
+    else:
+        parts.append("Steady so far. Pick one thing to work on: ask me what to focus on during the game.")
     return " ".join(parts)

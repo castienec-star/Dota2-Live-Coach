@@ -287,6 +287,9 @@ FOCUS_COMMANDS = ("focus", "tip")
 # Typed for "how did I do today?".
 TODAY_COMMANDS = ("today", "record")
 
+# Typed for "am I getting better?".
+TREND_COMMANDS = ("trend", "progress")
+
 # Typed to set or hear your rank: "rank archon", "mmr 2500".
 RANK_COMMANDS = ("rank", "mmr", "medal")
 
@@ -312,7 +315,8 @@ def focus(coach: Coach, tips: death_tip.BuiltinTips) -> str:
 def read_typed_picks(coach: Coach, questions: TypedQuestions | None = None) -> None:
     """Lets you type the draft in the coach window: "vs am cm lion pudge sf",
     "buy" for what to buy now, "how" for how you are doing, "focus" for the
-    one thing to work on now, "today" for today's games, "rank archon"
+    one thing to work on now, "today" for today's games, "trend" for whether
+    you're getting better, "rank archon"
     to set your rank, the answer to
     a start-of-game question shown there, or any other question for the model."""
     advice = coach.advice
@@ -332,6 +336,9 @@ def read_typed_picks(coach: Coach, questions: TypedQuestions | None = None) -> N
             continue
         if command in TODAY_COMMANDS:
             print(review_mod.day_summary(coach.reviews, time.time()), flush=True)
+            continue
+        if command in TREND_COMMANDS:
+            print(review_mod.trend_summary(coach.reviews, time.time()), flush=True)
             continue
         if command in RANK_COMMANDS and coach.advice is not None:
             print(tell(coach.advice.benchmarks.rank, line), flush=True)
@@ -480,7 +487,8 @@ def cmd_run(cfg: config_mod.Config, args: argparse.Namespace) -> int:
         logging.info('Type the enemy picks any time, e.g.  vs am cm lion pudge sf')
         logging.info(
             'Type "buy" any time to hear what to buy now, "how" for how you are doing, '
-            '"focus" for the one thing to work on now, or "today" for how your games went today'
+            '"focus" for the one thing to work on now, "today" for how your games went today, '
+            'or "trend" for whether you are getting better'
         )
         logging.info('Type your rank to compare with players of your medal, e.g.  rank archon  or  mmr 2500')
         if chat is not None:
@@ -765,7 +773,7 @@ def cmd_review(cfg: config_mod.Config, args: argparse.Namespace) -> int:
     heroes = HeroIndex()
     position = configured_position(cfg.pregame, summary.hero)
     support = review_mod.is_support(heroes.by_key(summary.hero), position)
-    print(review_mod.text(summary, review_mod.points(summary, support, items), heroes), end="")
+    print(review_mod.text(summary, review_mod.points(summary, support, items), heroes, support), end="")
     return 0
 
 

@@ -233,3 +233,17 @@ def test_today_answers_without_a_hero(tmp_path, snap):
     snap.hero_name = None  # asked in the menu between games
     answers = Answers({}, BUILDS, reviews=tmp_path, clock=lambda: 1_800_000_000.0)
     assert answers.answer("how did I do today?", snap).startswith("No games today yet.")
+
+
+@pytest.mark.parametrize(
+    "text",
+    ["Am I getting better?", "am I improving", "how was my week", "how did I do this week", "show my progress"],
+)
+def test_trend_intent(text):
+    assert intent(text) == "trend"
+
+
+def test_trend_answers_without_a_hero(tmp_path, snap):
+    snap.hero_name = None  # asked in the menu between games
+    answers = Answers({}, BUILDS, reviews=tmp_path, clock=lambda: 1_800_000_000.0)
+    assert answers.answer("am I getting better?", snap).startswith("I need at least 4 games")

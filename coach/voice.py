@@ -59,6 +59,14 @@ INTENTS: list[tuple[str, re.Pattern[str]]] = [
             r"|i am (an? |in )?(" + "|".join(rank_mod.TIERS) + r")|what'?s my rank)\b"
         ),
     ),
+    # "Am I getting better?", "am I improving?", "how was my week?"
+    (
+        "trend",
+        re.compile(
+            r"\b(am i (getting|playing) better|am i improving|getting better|improving|my progress"
+            r"|this week|my week|last (few|five|ten) games|trend)\b"
+        ),
+    ),
     (
         "how_am_i_doing",
         re.compile(
@@ -97,6 +105,10 @@ INTENTS: list[tuple[str, re.Pattern[str]]] = [
 INTENTS_ES: list[tuple[str, re.Pattern[str]]] = [
     ("buyback", re.compile(r"\b(buy ?backs?|recompra|comprar de vuelta)\b")),
     ("rank", re.compile(r"\b(mi (rango|medalla|m ?m ?r)|m ?m ?r|cual es mi rango)\b")),
+    (
+        "trend",
+        re.compile(r"\b(estoy mejorando|he mejorado|mejorando|mi progreso|esta semana|ultimas partidas)\b"),
+    ),
     (
         "how_am_i_doing",
         re.compile(
@@ -204,6 +216,8 @@ class Answers:
             return rank_mod.tell(self.benchmarks.rank, text)
         if kind == "today":
             return review_mod.day_summary(self.reviews, self.clock())
+        if kind == "trend":
+            return review_mod.trend_summary(self.reviews, self.clock())
         if snap.hero_name is None:
             return "I can't see your hero yet. Ask me again once the game has started."
         return getattr(self, kind)(snap)
