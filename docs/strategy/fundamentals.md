@@ -34,6 +34,20 @@ missing"; it says "look at the minimap".
 | Stack the nearest camp at :53 | supports | clock and hero near a camp |
 | A death before 10:00 is usually from walking past the river without vision | everyone | death with clock under 10:00 |
 
+### Why the map calls matter
+
+New players hear "power rune in 15 seconds" and don't know what to do with
+it. In beginner mode the first call of each kind in a match says why
+(`explain` in `coach/rules/timers.py`), then the short line takes over:
+
+| Call | The reason given the first time | Source |
+|---|---|---|
+| Power rune | Spawns in the river from 6:00; haste or double damage can win a fight, so mid checks it | [Liquipedia, Runes](https://liquipedia.net/dota2/Runes) |
+| Gold runes | Gold for the whole team; the closest hero takes it when it's safe | [Liquipedia, Runes](https://liquipedia.net/dota2/Runes) |
+| Wisdom shrines | Experience for your team; someone should take your side's | [Liquipedia, Runes](https://liquipedia.net/dota2/Runes) |
+| Water rune (mid) | Refills some health and mana; take it between waves | [Liquipedia, Runes](https://liquipedia.net/dota2/Runes) |
+| Stack the camp | Pull the creeps out at :53 so a second camp spawns at :00, then farm both | [Liquipedia, Creep Stacking](https://liquipedia.net/dota2/Creep_Stacking) |
+
 ## Mid game, 10:00 to 25:00
 
 | What to say | Who | GSI signal |

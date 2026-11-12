@@ -180,3 +180,70 @@ def test_neutral_tiers_follow_config(payload):
 
 def test_neutral_tiers_can_be_turned_off():
     assert all(r.name != "neutral_items" for r in build({"neutral_items": {"enabled": False}}))
+
+
+def test_beginner_mode_explains_the_first_call_only(payload):
+    said = []
+    engine = Engine(build({}, beginner=True), said.append)
+    play(MatchState(), payload, range(220, 470), engine)
+    assert [line for line in said if not line.startswith("Neutral")] == [
+        "Gold runes in 15 seconds. They give gold to your whole team, so take the closest one when it's safe.",
+        # Positions aren't known here, so mid's water rune is said too.
+        "Water rune in 10 seconds. It refills some health and mana, so grab it between waves to stay in lane longer.",
+        ("Power rune in 15 seconds. It spawns in the river; mid should check it, "
+         "because haste or double damage can win a fight."),
+        ("Wisdom shrines in 20 seconds. The shrine on your side gives your team experience, "
+         "so make sure someone takes it."),
+        # 8:00: both again, now the short lines.
+        "Power rune in 15 seconds. Gold runes in 15 seconds.",
+    ]
+
+
+def test_experienced_mode_never_explains(payload):
+    said = []
+    engine = Engine(build({}), said.append)
+    play(MatchState(), payload, range(220, 230), engine)
+    assert said == ["Gold runes in 15 seconds."]
+
+
+def test_explain_times_from_config(payload):
+    said = []
+    engine = Engine(build({"water_rune": {"explain_times": 2}}, beginner=True), said.append)
+    play(MatchState(), payload, range(100, 300), engine)
+    water = [line for line in said if line.startswith("Water rune")]
+    assert len(water) == 2 and all("refills" in line for line in water)
+    said.clear()
+    engine = Engine(build({"water_rune": {"explain_times": 0}}, beginner=True), said.append)
+    play(MatchState(), payload, range(100, 300), engine)
+    assert [line for line in said if line.startswith("Water rune")] == ["Water rune in 10 seconds."] * 2
+
+
+def test_unsaid_stack_call_does_not_use_up_the_explanation():
+    reminder = StackReminder(**{k: v for k, v in build({}, beginner=True)[4].__dict__.items() if not k.startswith("_")})
+    assert reminder.name == "stack"
+    state = MatchState()
+    away = {"map": {"clock_time": 112, "game_state": "DOTA_GAMERULES_STATE_GAME_IN_PROGRESS"},
+            "hero": {"alive": True, "xpos": 0, "ypos": 0}}
+    state.update(away)
+    away["map"]["clock_time"] = 113
+    state.update(away)
+    assert reminder.check(state) == []
+    camp = reminder.camps[0]
+    near = {"map": {"clock_time": 172, "game_state": "DOTA_GAMERULES_STATE_GAME_IN_PROGRESS"},
+            "hero": {"alive": True, "xpos": camp.x, "ypos": camp.y}}
+    state.update(near)
+    near["map"]["clock_time"] = 173
+    state.update(near)
+    [line] = reminder.check(state)
+    assert "walk away" in line
+
+
+def test_new_match_explains_again(payload):
+    reminders = build({}, beginner=True)
+    gold = next(r for r in reminders if r.name == "bounty_rune")
+    said = []
+    engine = Engine([gold], said.append)
+    play(MatchState(), payload, range(220, 230), engine)
+    gold.reset()
+    play(MatchState(), payload, range(220, 230), engine)
+    assert len(said) == 2 and all("whole team" in line for line in said)
