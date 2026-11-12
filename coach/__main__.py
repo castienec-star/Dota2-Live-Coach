@@ -219,7 +219,7 @@ def make_coach(
             stop_after=reminders.get("review", {}).get("stop_after_games", review_mod.STOP_AFTER),
         )
     rules = (
-        timers.build(reminders)
+        timers.build(reminders, beginner=cfg.mode == "beginner")
         + hero.build(reminders, cfg.builds, position, enemies)
         + power_windows
         + objectives.build(reminders)

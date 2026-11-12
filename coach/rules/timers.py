@@ -30,7 +30,12 @@ class TimedReminder:
     # After this game time only every other event is said, so runes don't
     # crowd out the rest late in the game; None or 0 = all of them.
     thin_after: int | None = None
+    # Beginner mode: a longer line that says why, for the first explain_times
+    # calls of a match that are actually said (build(beginner=True)).
+    explain: str = ""
+    explain_times: int = 0
     _fired: set[int] = field(default_factory=set, repr=False)
+    _explained: int = field(default=0, repr=False)
 
     def event_times(self, start: int, end: int) -> list[int]:
         """Event times (game clock) whose reminder falls in (start, end]."""
@@ -62,14 +67,24 @@ class TimedReminder:
                 self._fired.add(t)
                 line = self.line(state.current, t)
                 if line:
+                    if self.explaining():
+                        self._explained += 1
                     lines.append(line)
         return lines[-1:]
 
+    def explaining(self) -> bool:
+        """True while the next line said is the longer, explaining one."""
+        return bool(self.explain) and self._explained < self.explain_times
+
+    def template(self) -> str:
+        return self.explain if self.explaining() else self.message
+
     def line(self, snap: Snapshot, t: int) -> str | None:
-        return self.message.format(lead=self.lead)
+        return self.template().format(lead=self.lead)
 
     def reset(self) -> None:
         self._fired.clear()
+        self._explained = 0
 
 
 @dataclass
@@ -110,7 +125,7 @@ class StackReminder(TimedReminder):
         if camp is None:
             return None
         kind = camp.type.removeprefix("flooded_")
-        return self.message.format(lead=self.lead, camp=kind)
+        return self.template().format(lead=self.lead, camp=kind)
 
 
 @dataclass
@@ -135,13 +150,49 @@ class NeutralTierReminder(TimedReminder):
         return message.format(lead=self.lead, tier=tier)
 
 
-# Patch 7.41 timings.
+# Patch 7.41 timings. "explain" is the beginner-mode first-time line: why the
+# call matters, from docs/strategy/fundamentals.md ("Why the map calls matter").
 DEFAULTS: dict[str, dict] = {
-    "power_rune": {"message": "Power rune in {lead} seconds.", "first": 360, "every": 120, "lead": 15, "thin_after": 1200},
-    "bounty_rune": {"message": "Gold runes in {lead} seconds.", "first": 240, "every": 240, "lead": 15, "thin_after": 1200},
-    "wisdom_shrine": {"message": "Wisdom shrines in {lead} seconds.", "first": 420, "every": 420, "lead": 20},
-    "water_rune": {"message": "Water rune in {lead} seconds.", "first": 120, "every": 120, "until": 240, "lead": 10},
-    "stack": {"message": "Stack the {camp} camp.", "first": 113, "every": 60, "until": 713, "lead": 0, "radius": 1000},
+    "power_rune": {
+        "message": "Power rune in {lead} seconds.",
+        "explain": (
+            "Power rune in {lead} seconds. It spawns in the river; mid should check it, "
+            "because haste or double damage can win a fight."
+        ),
+        "first": 360, "every": 120, "lead": 15, "thin_after": 1200,
+    },
+    "bounty_rune": {
+        "message": "Gold runes in {lead} seconds.",
+        "explain": (
+            "Gold runes in {lead} seconds. They give gold to your whole team, "
+            "so take the closest one when it's safe."
+        ),
+        "first": 240, "every": 240, "lead": 15, "thin_after": 1200,
+    },
+    "wisdom_shrine": {
+        "message": "Wisdom shrines in {lead} seconds.",
+        "explain": (
+            "Wisdom shrines in {lead} seconds. The shrine on your side gives your team experience, "
+            "so make sure someone takes it."
+        ),
+        "first": 420, "every": 420, "lead": 20,
+    },
+    "water_rune": {
+        "message": "Water rune in {lead} seconds.",
+        "explain": (
+            "Water rune in {lead} seconds. It refills some health and mana, "
+            "so grab it between waves to stay in lane longer."
+        ),
+        "first": 120, "every": 120, "until": 240, "lead": 10,
+    },
+    "stack": {
+        "message": "Stack the {camp} camp.",
+        "explain": (
+            "Stack the {camp} camp. Hit the creeps now and walk away, "
+            "so a new camp spawns and you can farm both later."
+        ),
+        "first": 113, "every": 60, "until": 713, "lead": 0, "radius": 1000,
+    },
     "neutral_items": {
         "first_message": (
             "Neutral items are open. Clear jungle camps to collect Madstone, "
@@ -157,13 +208,20 @@ DEFAULTS: dict[str, dict] = {
 CLASSES: dict[str, type[TimedReminder]] = {"stack": StackReminder, "neutral_items": NeutralTierReminder}
 
 
-def build(settings: dict[str, dict]) -> list[TimedReminder]:
-    """Make reminders from defaults overlaid with the [reminders.*] config tables."""
+# Beginner mode explains each call this many times a match, unless the
+# reminder's own explain_times says otherwise (0 = never).
+EXPLAIN_TIMES = 1
+
+
+def build(settings: dict[str, dict], beginner: bool = False) -> list[TimedReminder]:
+    """Make reminders from defaults overlaid with the [reminders.*] config tables.
+    beginner: the first call of each match says why it matters (explain)."""
     reminders = []
     for name, defaults in DEFAULTS.items():
         merged = {**defaults, **settings.get(name, {})}
         if not merged.pop("enabled", True):
             continue
+        merged["explain_times"] = merged.get("explain_times", EXPLAIN_TIMES) if beginner else 0
         cls = CLASSES.get(name, TimedReminder)
         reminders.append(cls(name=name, **merged))
     return reminders

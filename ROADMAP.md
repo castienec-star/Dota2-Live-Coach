@@ -222,11 +222,13 @@ CLAUDE.md).
   the coach their lane was lost, a laning-phase line about playing for
   experience under their tower (the "what should I focus on now?" answer is item
   14).
-- Modes, next steps (item 9 is done: `[coach] mode` in `coach.toml`): a
-  longer, explaining first-time version of each line in beginner mode
-  ("Power rune in 15 seconds. Mid should check it: it can win the lane"),
-  said the first one or two times a match only; and a voice switch ("hey
-  coach, quiet mode") once the settings window (item 19) exists.
+- Modes, next steps (item 9 is done: `[coach] mode` in `coach.toml`): the
+  longer, explaining first-time line in beginner mode is done for runes,
+  shrines and stacks (`explain` in `coach/rules/timers.py`, once a match,
+  `explain_times`). Next: the same for the night and Roshan lines and the
+  low-health "back off"; skip the explanation once the player has heard it
+  in a few matches (a count in the app folder); and a voice switch ("hey
+  coach, quiet mode").
 - Translations of the spoken lines.
 - "What hero should I learn?": answer with two or three forgiving heroes
   for the player's role that win at their own medal (Wraith King, Dragon

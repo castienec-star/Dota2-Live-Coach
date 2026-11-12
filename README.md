@@ -230,7 +230,10 @@ mode = "experienced"
 ```
 
 The default, `mode = "beginner"`, says every reminder in this section and asks short
-questions during the match.
+questions during the match. The first rune, shrine and stack call of each match
+also says why it matters ("Gold runes in 15 seconds. They give gold to your
+whole team, so take the closest one when it's safe."), then the short line takes
+over. `explain_times = 0` in a reminder's table turns that off, `2` says it twice.
 
 ### Your hero
 

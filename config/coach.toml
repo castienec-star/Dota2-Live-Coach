@@ -101,7 +101,8 @@ enemy_items_every = 10
 # limited to some positions with e.g. positions = [4, 5]; while the coach
 # doesn't know your position, it says them all. After "thin_after" seconds only
 # every other rune is called, so they don't crowd out the rest late in the game
-# (thin_after = 0 to hear them all).
+# (thin_after = 0 to hear them all). In beginner mode the first call of each
+# match also says why it matters; explain_times = 0 turns that off, 2 says it twice.
 [reminders.power_rune]
 first = 360
 every = 120

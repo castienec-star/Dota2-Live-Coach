@@ -219,6 +219,18 @@ SPEECH_ES: list[tuple[str, str]] = [
     ("Wisdom shrines in {lead} seconds.", "Santuarios de sabiduría en {lead} segundos."),
     ("Water rune in {lead} seconds.", "Runa de agua en {lead} segundos."),
     ("Stack the {camp} camp.", "Stackea el campamento {camp}."),
+    # Beginner mode's first-time reasons (timers.DEFAULTS "explain")
+    ("It spawns in the river; mid should check it, because haste or double damage can win a fight.",
+     "Aparece en el río; el medio debería revisarla, porque la de velocidad o la de doble daño "
+     "pueden ganar una pelea."),
+    ("They give gold to your whole team, so take the closest one when it's safe.",
+     "Dan oro a todo tu equipo, así que toma la más cercana cuando sea seguro."),
+    ("The shrine on your side gives your team experience, so make sure someone takes it.",
+     "El santuario de tu lado da experiencia a tu equipo, así que asegúrate de que alguien lo tome."),
+    ("It refills some health and mana, so grab it between waves to stay in lane longer.",
+     "Recupera algo de vida y maná, así que tómala entre oleadas para aguantar más en la línea."),
+    ("Hit the creeps now and walk away, so a new camp spawns and you can farm both later.",
+     "Golpea a los creeps ahora y aléjate, así aparece un campamento nuevo y luego puedes farmear los dos."),
     ("Neutral items are open. Clear jungle camps to collect Madstone, and when the Madstone "
      "counter flashes, click it and pick one.",
      "Ya hay objetos neutrales. Limpia campamentos de la jungla para juntar Madstone, y cuando "

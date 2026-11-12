@@ -40,7 +40,7 @@ def test_config_reads_the_language(tmp_path):
 def test_time_critical_lines_have_built_in_spanish():
     # Rune, stack and neutral item calls must never wait for a model.
     for name, defaults in timers.DEFAULTS.items():
-        for key in ("message", "first_message"):
+        for key in ("message", "first_message", "explain"):
             if key in defaults:
                 line = defaults[key].format(lead=15, camp="large", tier=2)
                 assert not english_left(line), (name, line)
