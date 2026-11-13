@@ -10,6 +10,7 @@ from coach.game_questions import ASKS, ITEMS_CHECK, parse_result, parse_yes_no
 from coach.lineup import parse_position
 from coach.rules import objectives, timers, windows
 from coach.rules.death_tip import STAGE_TIPS, now_worded
+from coach.rules.hero import AegisPush
 from coach.speaker import Speaker
 
 
@@ -48,7 +49,8 @@ def test_time_critical_lines_have_built_in_spanish():
     assert i18n.speech("Power rune in 15 seconds.", "es") == "Runa de poder en 15 segundos."
     for line in ("Low health, back off.", "You're at 20 percent health. Use your Healing Salve before the next fight.",
                  "You are under buyback gold. Buyback costs 1200.", "Use your wand, 12 charges.",
-                 "Skill point unused.", "You have gold for Black King Bar.", "Place your observer ward."):
+                 "Skill point unused.", "You have gold for Black King Bar.", "Place your observer ward.",
+                 AegisPush.PUSH, AegisPush.EXPIRING):
         assert not english_left(line), line
 
 

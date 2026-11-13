@@ -120,6 +120,9 @@ REMINDER_GROUPS = (
         Reminder("ward", "Place your ward", "When an observer ward stays in your inventory.", _r(
             "ward", ("hold_seconds", "After carrying it", "seconds", "", 10, 600),
         )),
+        Reminder("aegis", "You have the Aegis: push", "When you pick up the Aegis, and a minute before it runs out.", _r(
+            "aegis", ("warn_after", "Runs-out warning after", "seconds", "0 turns it off.", 0, 300),
+        )),
     )),
     Group("coaching", "Coaching", "Tips and check-ins that help you improve.", (
         Reminder("death_tip", "A tip after you die", "One short tip while you wait to respawn.", _r(

@@ -247,6 +247,7 @@ questions during the match.
 | Skill point unused | 10 s after a level-up you haven't spent (up to level 16) |
 | Use your wand | Hurt under 50% with a Magic Wand/Stick of 10+ charges |
 | Place your observer ward | An observer ward has sat in your inventory for 60 s |
+| You have the Aegis: take high ground with your whole team now | The Aegis appears in your inventory; 4 minutes later, if you still hold it, "Your Aegis runs out in a minute". Beginner mode only; `[reminders.aegis]` |
 
 Item builds are per hero in the `[builds]` section of `coach.toml`, for
 example `luna = ["Power Treads", "Manta Style", "Black King Bar"]`. The coach

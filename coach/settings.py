@@ -28,6 +28,7 @@ REMINDERS = {
     "buyback": "Not enough gold to buy back",
     "skill_point": "Unspent skill point",
     "ward": "Place the ward you carry",
+    "aegis": "You have the Aegis: push",
     "death_tip": "A tip after you die",
     "power_rune": "Power rune",
     "bounty_rune": "Bounty (gold) runes",

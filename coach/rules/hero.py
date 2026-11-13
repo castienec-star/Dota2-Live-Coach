@@ -488,12 +488,55 @@ class WardReminder(HeroRule):
         self._since = None
 
 
+class AegisPush(HeroRule):
+    """The Aegis is for taking high ground, not for farming.
+
+    Low-bracket teams kill Roshan and then split up to farm, and the Aegis runs
+    out unused (docs/strategy/fundamentals.md: "Go high ground only with your
+    whole team, ideally with Aegis"). When the Aegis appears in your own
+    inventory, say once to push with the team; warn_after seconds later, if you
+    still hold it, say it is about to run out. GSI shows your own items, so this
+    needs nothing else.
+    """
+
+    name = "aegis"
+
+    PUSH = "You have the Aegis: take high ground with your whole team now, don't go farm."
+    EXPIRING = "Your Aegis runs out in a minute: push with your team now."
+
+    def __init__(self, warn_after: int = 240) -> None:
+        super().__init__(0)
+        self.warn_after = warn_after
+        self._since: int | None = None
+        self._warned = False
+
+    def evaluate(self, snap: Snapshot) -> str | None:
+        if snap.item("item_aegis") is None:
+            # Used up (you died and came back), expired, or not yet taken.
+            self._since = None
+            self._warned = False
+            return None
+        if self._since is None:
+            self._since = snap.clock_time
+            return self.PUSH
+        if not self._warned and self.warn_after and snap.clock_time - self._since >= self.warn_after:
+            self._warned = True
+            return self.EXPIRING
+        return None
+
+    def reset(self) -> None:
+        super().reset()
+        self._since = None
+        self._warned = False
+
+
 RULES = {
     "low_health": LowHealth,
     "buyback": Buyback,
     "skill_point": SkillPoint,
     "wand": WandCharges,
     "ward": WardReminder,
+    "aegis": AegisPush,
 }
 
 
