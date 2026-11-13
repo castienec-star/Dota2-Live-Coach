@@ -3,6 +3,7 @@ import pytest
 from coach.items import load_items, lookup
 from coach.rules import Engine
 from coach.rules.hero import (
+    AegisPush,
     Buyback,
     ItemReady,
     LowHealth,
@@ -444,7 +445,7 @@ def test_default_config_builds(tmp_path):
     cfg = config.load(app_dir=tmp_path)
     rules = build(cfg.reminders, cfg.builds)
     assert {r.name for r in rules} >= {
-        "low_health", "buyback", "skill_point", "wand", "ward", "item_ready", "worth_buying",
+        "low_health", "buyback", "skill_point", "wand", "ward", "aegis", "item_ready", "worth_buying",
     }
 
 
@@ -457,3 +458,21 @@ def test_spirit_breaker_builds(tmp_path):
     assert ready.build_for("spirit_breaker")[1].name == "Spirit Vessel"
     assert ready.build_for("spirit_breaker", 4)[1].name == "Spirit Vessel"
     assert ready.build_for("spirit_breaker", 3)[1].name == "Shadow Blade"
+
+
+def test_aegis_push_once_then_runs_out_warning(payload):
+    steps = [{}, {"items.slot5": {"name": "item_aegis"}}] + [{"items.slot5": {"name": "item_aegis"}} for _ in range(5)]
+    steps += [{"items.slot5": {"name": "item_aegis"}, "dt": 240}, {"items.slot5": {"name": "item_aegis"}, "dt": 10}]
+    said = run(AegisPush(), payload, steps)
+    assert said == [AegisPush.PUSH, AegisPush.EXPIRING]
+
+
+def test_aegis_said_again_for_the_next_one(payload):
+    aegis = {"items.slot5": {"name": "item_aegis"}}
+    gone = {"items.slot5": {"name": "empty"}}
+    said = run(AegisPush(warn_after=0), payload, [dict(aegis), dict(gone), dict(aegis, dt=600), dict(aegis, dt=300)])
+    assert said == [AegisPush.PUSH, AegisPush.PUSH]
+
+
+def test_aegis_quiet_without_it(payload):
+    assert run(AegisPush(), payload, [{}, {"dt": 300}]) == []

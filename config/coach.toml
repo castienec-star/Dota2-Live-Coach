@@ -185,6 +185,12 @@ below = 50
 # Remind when an observer ward has sat in your inventory this many seconds.
 hold_seconds = 60
 
+[reminders.aegis]
+# When you pick up the Aegis: take high ground with your whole team, don't farm.
+# warn_after seconds later, if you still hold it, a reminder that it runs out
+# soon (the Aegis lasts 5 minutes). 0 turns that second line off.
+warn_after = 240
+
 [reminders.death_tip]
 # While you wait to respawn, the coach speaks one short tip based on your own
 # hero's stats. Where tips come from:

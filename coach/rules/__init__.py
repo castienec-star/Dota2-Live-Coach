@@ -31,6 +31,7 @@ PRIORITY = {
     "wisdom_shrine": HIGH,
     "water_rune": HIGH,
     "stack": HIGH,
+    "aegis": HIGH,
 }
 
 

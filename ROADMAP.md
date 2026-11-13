@@ -235,6 +235,10 @@ CLAUDE.md).
 - Hero-aware 15:00 check: for heroes that lose by farming alone (Nature's
   Prophet 43 to 46% at every medal), say "group up with your team now"
   instead of a farm line.
+- Done: "Aegis means push" (item 28 in the research PR #103): when the
+  Aegis appears in the player's own inventory, "take high ground with your
+  whole team now, don't go farm", and a minute before it runs out a last
+  push line (`AegisPush` in `coach/rules/hero.py`, `[reminders.aegis]`).
 - Upgrade-aware builds: know that Dragon Lance went into Hurricane Pike (from
   dotaconstants' item components) so builds can list both steps.
 - Questions during the match (issue #11 step 3): done in the
